@@ -50,11 +50,20 @@
   /* Inputs — softer rounded, refined focus */
   .input { @apply w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-[13px] transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-100 placeholder:text-gray-400; }
   /* Buttons — rounded, modern, gradient primary */
-  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 px-4 py-2 text-[13px] font-semibold text-white shadow-md shadow-brand-500/25 hover:shadow-lg hover:shadow-brand-500/40 hover:from-brand-600 hover:to-brand-700 transition-all disabled:opacity-50; }
-  .btn-accent  { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 px-4 py-2 text-[13px] font-semibold text-white shadow-md shadow-accent-500/25 hover:shadow-lg hover:shadow-accent-500/40 transition-all; }
-  .btn-outline { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-[13px] font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-200 dark:hover:bg-white/[0.08]; }
-  .btn-ghost   { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-[13px] font-medium text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-white/[0.06]; }
-  .btn-danger  { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-[13px] font-semibold text-white shadow-md shadow-red-600/20 hover:shadow-lg hover:shadow-red-600/30 hover:bg-red-700 transition-all; }
+  /* Buttons — unified system */
+  .btn-base    { @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-3.5 py-2 text-[13px] font-semibold transition-all; }
+  .btn-primary { @apply btn-base bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-md shadow-brand-500/25 hover:shadow-lg hover:shadow-brand-500/40 hover:from-brand-600 hover:to-brand-700 disabled:opacity-50; }
+  .btn-accent  { @apply btn-base bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md shadow-accent-500/25 hover:shadow-lg hover:shadow-accent-500/40 hover:from-accent-600 hover:to-accent-700; }
+  /* Soft — tinted bg, brand text, rings on inset (great for secondary header actions) */
+  .btn-soft        { @apply btn-base bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200/70 hover:bg-brand-100 hover:ring-brand-300 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/20 dark:hover:bg-brand-500/15 dark:hover:ring-brand-500/30; }
+  .btn-soft-accent { @apply btn-base bg-accent-50 text-accent-700 ring-1 ring-inset ring-accent-200/70 hover:bg-accent-100 hover:ring-accent-300 dark:bg-accent-500/10 dark:text-accent-300 dark:ring-accent-500/20 dark:hover:bg-accent-500/15; }
+  .btn-soft-gray   { @apply btn-base bg-gray-100/80 text-gray-700 ring-1 ring-inset ring-gray-200/60 hover:bg-gray-200/70 dark:bg-white/[0.04] dark:text-gray-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.08]; }
+  /* Outline — refined to be lighter and consistent */
+  .btn-outline { @apply btn-base border border-gray-200 bg-white text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-200 dark:hover:bg-white/[0.08]; }
+  .btn-ghost   { @apply btn-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/[0.06]; }
+  .btn-danger  { @apply btn-base bg-red-600 text-white shadow-md shadow-red-600/20 hover:shadow-lg hover:shadow-red-600/30 hover:bg-red-700; }
+  /* Header action group — consistent gap and alignment */
+  .header-actions { @apply flex flex-wrap items-center gap-2; }
   /* Badge */
   .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset; }
   .label { @apply block text-[12px] font-medium text-gray-700 mb-1.5 dark:text-gray-300; }
@@ -1214,7 +1223,10 @@ function Dashboard({ data }) {
       <PageHeader
         title="Ecosystem overview"
         subtitle="A live snapshot of partnerships, programs, funding and member activity."
-        action={<><a href="#/intelligence" className="btn-outline mr-2"><Icon.intel className="h-4 w-4"/> Intelligence</a><a href="#/africonnect" className="btn-primary"><Icon.africonnect className="h-4 w-4"/> Africonnect</a></>}
+        action={<div className="header-actions">
+          <a href="#/intelligence" className="btn-soft"><Icon.intel className="h-4 w-4"/> Intelligence</a>
+          <a href="#/africonnect" className="btn-soft-accent"><Icon.africonnect className="h-4 w-4"/> Africonnect</a>
+        </div>}
       />
       <QuickActions items={[
         { icon: Icon.plus,        title: "Onboard a hub",     desc: "Add a new member to the ecosystem", href: "#/members" },
@@ -2049,10 +2061,10 @@ function HubsList({ data, update, search }) {
   return (
     <div>
       <PageHeader title="Member Services" subtitle="Manage 500+ Afrilabs hubs across the continent — onboarding, payments, segmentation, communications."
-        action={<>
-          <button className="btn-outline mr-2" onClick={()=>sendCampaign("ALL_HUBS")}><Icon.send className="h-4 w-4"/> Targeted message</button>
+        action={<div className="header-actions">
+          <button className="btn-soft" onClick={()=>sendCampaign("ALL_HUBS")}><Icon.send className="h-4 w-4"/> Targeted message</button>
           <button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> Onboard hub</button>
-        </>} />
+        </div>} />
 
       {/* TOP STATS */}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
