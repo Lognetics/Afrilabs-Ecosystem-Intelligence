@@ -1545,29 +1545,44 @@ function ContactsList({ data, update, search }) {
         <button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New contact</button>
       </div>
 
-      <div className="card">
-        <table className="table-base">
-          <thead><tr><th>Contact</th><th>Company</th><th>Lifecycle</th><th>Lead score</th><th>Last contact</th><th>Tags</th><th></th></tr></thead>
-          <tbody>
-            {filtered.map(c => (
-              <tr key={c.id}>
-                <td>
-                  <div className="flex items-center gap-2.5">
-                    <div className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[11px] font-bold text-white">{c.firstName[0]}{c.lastName[0]}</div>
-                    <div><div className="font-semibold text-[13px]">{c.firstName} {c.lastName}</div><div className="text-[11px] text-gray-500">{c.title}</div></div>
-                  </div>
-                </td>
-                <td className="text-[13px]">{c.company}</td>
-                <td><StageBadge stage={c.lifecycle}/></td>
-                <td><div className="flex items-center gap-2"><div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-200 dark:bg-white/5"><div className={cls("h-full rounded-full", c.leadScore >= 80 ? "bg-brand-500" : c.leadScore >= 50 ? "bg-accent-500" : "bg-gray-400")} style={{width: c.leadScore + "%"}}/></div><span className="text-[11px] font-semibold">{c.leadScore}</span></div></td>
-                <td className="text-[11px] text-gray-500">{relTime(c.lastContactedAt)}</td>
-                <td><div className="flex flex-wrap gap-1">{(c.tags||[]).slice(0,2).map(t => <span key={t} className="rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-700 dark:bg-white/[0.06] dark:text-gray-300">{t}</span>)}</div></td>
-                <td className="text-right"><button onClick={()=>setViewing(c)} title="Open" className="action-icon"><Icon.eye className="h-3.5 w-3.5"/></button></td>
-              </tr>
-            ))}
-            {filtered.length === 0 && <tr><td colSpan="7" className="py-8 text-center text-gray-500 text-[13px]">No contacts match.</td></tr>}
-          </tbody>
-        </table>
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filtered.map(c => {
+          const scoreColor = c.leadScore >= 80 ? "bg-brand-500" : c.leadScore >= 50 ? "bg-accent-500" : "bg-gray-400";
+          const dealsCount = data.deals.filter(d => d.contactId === c.id).length;
+          return (
+            <div key={c.id} onClick={()=>setViewing(c)}
+                 className="group cursor-pointer rounded-2xl border border-gray-200/80 bg-white p-4 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md hover:shadow-brand-500/10 dark:border-white/[0.06] dark:bg-ink-800/60 dark:hover:border-brand-500/40">
+              <div className="flex items-start gap-3">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[13px] font-bold text-white shadow-md shadow-brand-500/25">{c.firstName[0]}{c.lastName[0]}</div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-[14px] font-bold leading-tight">{c.firstName} {c.lastName}</h3>
+                  <p className="truncate text-[11px] text-gray-500">{c.title ?? "—"}</p>
+                  <p className="mt-0.5 truncate text-[11px] font-medium text-gray-700 dark:text-gray-300">{c.company}</p>
+                </div>
+                <StageBadge stage={c.lifecycle}/>
+              </div>
+              <div className="mt-3 rounded-xl bg-gray-50/80 p-3 dark:bg-white/[0.02]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Lead score</span>
+                  <span className="text-[12px] font-bold tabular-nums">{c.leadScore}<span className="text-gray-400">/100</span></span>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-white/[0.08]">
+                  <div className={cls("h-full rounded-full transition-all", scoreColor)} style={{width: c.leadScore + "%"}}/>
+                </div>
+              </div>
+              {(c.tags||[]).length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {(c.tags||[]).slice(0,3).map(t => <span key={t} className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-700 dark:bg-white/[0.06] dark:text-gray-300">{t}</span>)}
+                </div>
+              )}
+              <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2.5 text-[11px] text-gray-500 dark:border-white/[0.05]">
+                <span className="flex items-center gap-1"><Icon.deals className="h-3 w-3"/> {dealsCount} deal{dealsCount===1?"":"s"}</span>
+                <span>{relTime(c.lastContactedAt)}</span>
+              </div>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && <div className="col-span-full rounded-2xl border border-dashed border-gray-300 bg-white py-10 text-center text-[13px] text-gray-500 dark:border-white/[0.06] dark:bg-ink-800/60">No contacts match.</div>}
       </div>
 
       <Modal open={creating || !!editing || !!viewing} onClose={()=>{setCreating(false); setEditing(null); setViewing(null);}}
@@ -2245,38 +2260,67 @@ function HubsList({ data, update, search }) {
             <select className="rounded-md border border-gray-300 bg-white px-2 py-1 dark:border-white/10 dark:bg-gray-800" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="">Any status</option>{HUB_STATUS.map(s=><option key={s}>{s}</option>)}</select>
           </div>
         </div>
-        <table className="table-base">
-          <thead><tr><th></th><th>Hub</th><th>Country · Region</th><th>Tier</th><th>Status</th><th>Engage</th><th>Payment</th><th>Renewal</th><th></th></tr></thead>
-          <tbody>
-            {filtered.map(h => {
-              const last = data.payments.filter(p=>p.hubId===h.id).sort((a,b)=>new Date(b.periodEnd)-new Date(a.periodEnd))[0];
-              const r = renewalInfo(h);
-              return (
-                <tr key={h.id}>
-                  <td className="!w-6">{isPriorityHub(h) && <Icon.star className="h-3.5 w-3.5 text-purple-500" title="Priority hub"/>}</td>
-                  <td><div className="font-semibold text-[13px]">{h.name}</div><div className="text-[11px] text-gray-500">{h.sector ?? "—"}{h.africonnectId ? ` · ${h.africonnectId}` : ""}</div></td>
-                  <td className="text-[12px]"><div>{h.country}</div><div className="text-[11px] text-gray-500">{h.region}</div></td>
-                  <td><StageBadge stage={h.membershipTier}/></td>
-                  <td><StageBadge stage={h.status}/></td>
-                  <td><div className="flex items-center gap-1.5"><div className="h-1.5 w-12 overflow-hidden rounded-full bg-gray-200 dark:bg-white/5"><div className={cls("h-full rounded-full", h.engagementScore >= 70 ? "bg-brand-500" : h.engagementScore >= 40 ? "bg-accent-500" : "bg-red-400")} style={{width: h.engagementScore + "%"}}/></div><span className="text-[11px] font-semibold">{h.engagementScore}</span></div></td>
-                  <td className="text-[11px]">{last ? <><StageBadge stage={last.status}/> <span className="ml-1 font-mono">{fmtCurrency(last.amount)}</span></> : <span className="text-gray-400">—</span>}</td>
-                  <td className="text-[11px]">
-                    {r.status === "no-payment" ? <span className="text-gray-400">—</span>
-                      : r.status === "expired" ? <span className="text-red-600 dark:text-red-400">Expired {Math.abs(r.days)}d ago</span>
-                      : r.status === "renewal-soon" ? <span className="text-accent-700 dark:text-accent-300 font-medium">In {r.days}d</span>
-                      : r.status === "renewal-upcoming" ? <span className="text-blue-600 dark:text-blue-400">In {r.days}d</span>
-                      : <span className="text-gray-500">{r.days}d</span>}
-                  </td>
-                  <td className="space-x-2 whitespace-nowrap text-right">
-                    <button onClick={()=>setPaymentFor(h)} className="text-[11px] font-semibold text-accent-700 dark:text-accent-400 hover:underline">+Pay</button>
-                    <button onClick={()=>setViewing(h)} className="text-[12px] font-semibold text-brand-700 dark:text-brand-400 hover:underline">Open</button>
-                  </td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && <tr><td colSpan="9" className="py-10 text-center text-gray-500 text-[13px]">No hubs match filters.</td></tr>}
-          </tbody>
-        </table>
+        <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
+          {filtered.map(h => {
+            const last = data.payments.filter(p=>p.hubId===h.id).sort((a,b)=>new Date(b.periodEnd)-new Date(a.periodEnd))[0];
+            const r = renewalInfo(h);
+            const initials = h.name.split(" ").map(n=>n[0]).slice(0,2).join("").toUpperCase();
+            const engagementColor = h.engagementScore >= 70 ? "bg-brand-500" : h.engagementScore >= 40 ? "bg-accent-500" : "bg-red-400";
+            return (
+              <div key={h.id} onClick={()=>setViewing(h)}
+                   className="group cursor-pointer rounded-2xl border border-gray-200/80 bg-white p-4 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md hover:shadow-brand-500/10 dark:border-white/[0.06] dark:bg-ink-800/60 dark:hover:border-brand-500/40">
+                <div className="flex items-start gap-3">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500/15 to-accent-500/10 text-[13px] font-bold text-brand-700 dark:text-brand-300">{initials}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      {isPriorityHub(h) && <Icon.star className="h-3 w-3 shrink-0 text-purple-500" title="Priority hub"/>}
+                      <h3 className="truncate text-[14px] font-bold leading-tight">{h.name}</h3>
+                    </div>
+                    <p className="mt-0.5 truncate text-[11px] text-gray-500">{h.city ? `${h.city}, ` : ""}{h.country} · {h.region}</p>
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                  <StageBadge stage={h.membershipTier}/>
+                  <StageBadge stage={h.status}/>
+                  {h.sector && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-700 dark:bg-white/[0.06] dark:text-gray-300">{h.sector}</span>}
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3 rounded-xl bg-gray-50/80 p-3 dark:bg-white/[0.02]">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Engagement</p>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-white/[0.08]">
+                        <div className={cls("h-full rounded-full", engagementColor)} style={{width: h.engagementScore + "%"}}/>
+                      </div>
+                      <span className="text-[11px] font-bold tabular-nums">{h.engagementScore}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Renewal</p>
+                    <p className="mt-1 text-[11px] font-semibold">
+                      {r.status === "no-payment" ? <span className="text-gray-400">— No payments</span>
+                       : r.status === "expired" ? <span className="text-red-600 dark:text-red-400">Expired {Math.abs(r.days)}d ago</span>
+                       : r.status === "renewal-soon" ? <span className="text-accent-700 dark:text-accent-300">In {r.days}d</span>
+                       : r.status === "renewal-upcoming" ? <span className="text-blue-600 dark:text-blue-400">In {r.days}d</span>
+                       : <span className="text-brand-700 dark:text-brand-400">In {r.days}d</span>}
+                    </p>
+                  </div>
+                  <div className="col-span-2 -mt-1 flex items-center justify-between text-[11px]">
+                    <span className="text-gray-500">Last payment</span>
+                    {last ? <span className="flex items-center gap-1.5"><StageBadge stage={last.status}/><span className="font-mono font-semibold">{fmtCurrency(last.amount)}</span></span> : <span className="text-gray-400">—</span>}
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] text-gray-400">{h.africonnectId ?? ""}</span>
+                  <div className="flex items-center gap-1.5" onClick={e=>e.stopPropagation()}>
+                    <button onClick={()=>setPaymentFor(h)} className="rounded-full bg-accent-50 px-2.5 py-1 text-[11px] font-semibold text-accent-700 ring-1 ring-inset ring-accent-200/70 hover:bg-accent-100 dark:bg-accent-500/10 dark:text-accent-300 dark:ring-accent-500/20">+ Payment</button>
+                    <button onClick={()=>setViewing(h)} className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700 ring-1 ring-inset ring-brand-200/70 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/20">Open</button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {filtered.length === 0 && <div className="col-span-full py-10 text-center text-[13px] text-gray-500">No hubs match filters.</div>}
+        </div>
       </div>
 
       <Modal open={!!viewing || creating || !!editing} onClose={()=>{setViewing(null); setCreating(false); setEditing(null);}}
@@ -3135,62 +3179,103 @@ function EventsList({ data, update }) {
 // ════════════════════════════════════════════════════════════════════════
 function TasksList({ data, update }) {
   const eventById = Object.fromEntries(data.events.map(e=>[e.id,e]));
-  const [filterStatus, setFilterStatus] = useState("");
   const [filterDept, setFilterDept] = useState("");
-  const filtered = data.tasks.filter(t => (!filterStatus || t.status===filterStatus) && (!filterDept || t.department===filterDept));
+  const [draggingId, setDraggingId] = useState(null);
   const counts = TASK_STATUS.reduce((a,s)=>({...a,[s]:data.tasks.filter(t=>t.status===s).length}),{});
 
-  const updateStatus = (t, status) => update(d => {
-    const idx = d.tasks.findIndex(x=>x.id===t.id);
+  const moveStatus = (taskId, status) => update(d => {
+    const idx = d.tasks.findIndex(x=>x.id===taskId);
+    if (idx < 0) return d;
     d.tasks[idx].status = status;
     if (status === "DONE") d.tasks[idx].completedAt = new Date().toISOString();
-    logAudit(d, "UPDATE", "Task", t.id);
+    else d.tasks[idx].completedAt = null;
+    logAudit(d, "UPDATE", "Task", taskId);
     return d;
   });
   const remove = (t) => update(d => { d.tasks = d.tasks.filter(x=>x.id!==t.id); logAudit(d, "DELETE", "Task", t.id); return d; });
 
-  const statusData = TASK_STATUS.map((s,i)=>({label:s.replace("_"," "), value:counts[s], color:["#94a3b8","#3b82f6","#ef4444","#3d9462"][i]})).filter(d=>d.value>0);
-  const deptData = DEPARTMENTS.map(d => ({label:d.code, value:data.tasks.filter(t=>t.department===d.code).length})).filter(d=>d.value>0).sort((a,b)=>b.value-a.value);
   const priorityData = PRIORITIES.map((p,i)=>({label:p, value:data.tasks.filter(t=>t.priority===p).length, color:["#94a3b8","#3b82f6","#fb7d12","#ef4444"][i]})).filter(d=>d.value>0);
+  const deptData = DEPARTMENTS.map(d => ({label:d.code, value:data.tasks.filter(t=>t.department===d.code).length})).filter(d=>d.value>0).sort((a,b)=>b.value-a.value);
+
+  const columnConfig = {
+    TODO:        { color:"#94a3b8", label:"To do",       glow:"bg-gray-400" },
+    IN_PROGRESS: { color:"#3b82f6", label:"In progress", glow:"bg-blue-500" },
+    BLOCKED:     { color:"#ef4444", label:"Blocked",     glow:"bg-red-500" },
+    DONE:        { color:"#338e9b", label:"Done",        glow:"bg-brand-500" },
+  };
+  const priorityTone = { CRITICAL:"red", HIGH:"orange", MEDIUM:"blue", LOW:"gray" };
 
   return (
     <div>
-      <PageHeader title="Tasks" subtitle="Cross-departmental delivery items across events and programs." />
+      <PageHeader title="Tasks" subtitle="Cross-departmental delivery items — drag cards between columns to update status." />
+
       <div className="grid gap-3 md:grid-cols-4">
         <StatCard icon={Icon.tasks}   label="TODO"        value={counts.TODO}        accent="gray"   />
         <StatCard icon={Icon.refresh} label="In progress" value={counts.IN_PROGRESS} accent="blue"   />
         <StatCard icon={Icon.alert}   label="Blocked"     value={counts.BLOCKED}     accent="red"    />
         <StatCard icon={Icon.check}   label="Done"        value={counts.DONE}        accent="green"  />
       </div>
-      <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By status</h3></div><div className="p-4"><DonutChart data={statusData} size={160} thickness={20}/></div></div>
-        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By priority</h3></div><div className="p-4"><DonutChart data={priorityData} size={160} thickness={20}/></div></div>
-        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By department</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{deptData.length ? <BarChart data={deptData.slice(0,8)} height={180}/> : <p className="py-8 text-center text-[12px] text-gray-500">No tasks</p>}</div></div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By priority</h3></div><div className="p-4"><DonutChart data={priorityData} size={160} thickness={20}/></div></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By department</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{deptData.length ? <BarChart data={deptData.slice(0,8)} height={180}/> : <p className="py-8 text-center text-[12px] text-gray-500">No tasks</p>}</div></div>
       </div>
-      <div className="mt-6 card">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4 dark:border-white/5">
-          <h3 className="text-base font-semibold">All tasks ({filtered.length})</h3>
-          <div className="flex gap-2 text-xs">
-            <select className="input !py-1.5" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="">Any status</option>{TASK_STATUS.map(s=><option key={s}>{s}</option>)}</select>
-            <select className="input !py-1.5" value={filterDept} onChange={e=>setFilterDept(e.target.value)}><option value="">Any dept</option>{DEPARTMENTS.map(d=><option key={d.code} value={d.code}>{d.name}</option>)}</select>
-          </div>
-        </div>
-        <table className="table-base">
-          <thead><tr><th>Title</th><th>Department</th><th>Event</th><th>Priority</th><th>Status</th><th></th></tr></thead>
-          <tbody>
-            {filtered.map(t => (
-              <tr key={t.id}>
-                <td className={t.status==="DONE" ? "line-through text-gray-400" : ""}>{t.title}</td>
-                <td className="text-xs">{DEPARTMENTS.find(d=>d.code===t.department)?.name ?? t.department ?? "—"}</td>
-                <td className="text-xs">{eventById[t.eventId]?.name ?? "—"}</td>
-                <td><StageBadge stage={t.priority}/></td>
-                <td><select className="stage-select uppercase" value={t.status} onChange={e=>updateStatus(t, e.target.value)}>{TASK_STATUS.map(s=><option key={s}>{s}</option>)}</select></td>
-                <td className="text-right"><button onClick={()=>remove(t)} title="Delete" className="action-icon action-icon-danger"><Icon.trash className="h-3.5 w-3.5"/></button></td>
-              </tr>
-            ))}
-            {filtered.length === 0 && <tr><td colSpan="6" className="py-6 text-center text-gray-500">No tasks.</td></tr>}
-          </tbody>
-        </table>
+
+      <div className="mt-6 mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-[14px] font-bold">Board</h3>
+        <select className="input !py-1.5 !text-[12px] max-w-[180px]" value={filterDept} onChange={e=>setFilterDept(e.target.value)}>
+          <option value="">All departments</option>
+          {DEPARTMENTS.map(d=><option key={d.code} value={d.code}>{d.name}</option>)}
+        </select>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {TASK_STATUS.map(status => {
+          const cfg = columnConfig[status];
+          const tasks = data.tasks.filter(t => t.status === status && (!filterDept || t.department === filterDept));
+          const total = tasks.length;
+          return (
+            <div key={status}
+                 className="rounded-2xl border border-gray-200/80 bg-gray-50/50 dark:border-white/[0.06] dark:bg-white/[0.02]"
+                 onDragOver={(e)=>e.preventDefault()}
+                 onDrop={()=>{ if (draggingId) moveStatus(draggingId, status); setDraggingId(null); }}>
+              <div className="flex items-center justify-between border-b border-gray-200/70 px-3 py-2.5 dark:border-white/[0.05]">
+                <span className="flex items-center gap-2 text-[12px] font-bold">
+                  <span className={cls("h-2 w-2 rounded-full", cfg.glow)}/>
+                  {cfg.label}
+                </span>
+                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-gray-700 dark:bg-ink-800 dark:text-gray-300">{total}</span>
+              </div>
+              <div className="space-y-2 p-2 min-h-[120px]">
+                {tasks.map(t => {
+                  const ev = eventById[t.eventId];
+                  const dept = DEPARTMENTS.find(d=>d.code===t.department);
+                  return (
+                    <div key={t.id} draggable
+                         onDragStart={()=>setDraggingId(t.id)}
+                         onDragEnd={()=>setDraggingId(null)}
+                         className={cls(
+                           "group cursor-grab rounded-xl border bg-white p-2.5 shadow-sm transition hover:shadow-md hover:border-brand-300 active:cursor-grabbing dark:border-white/[0.08] dark:bg-ink-800 dark:hover:border-brand-500/40",
+                           t.status === "DONE" && "opacity-60",
+                           draggingId === t.id && "rotate-[1deg] opacity-50"
+                         )}>
+                      <div className="flex items-start gap-2">
+                        <p className={cls("flex-1 text-[12px] font-semibold leading-tight", t.status === "DONE" && "line-through text-gray-400")}>{t.title}</p>
+                        <button onClick={()=>remove(t)} title="Delete" className="action-icon action-icon-danger opacity-0 group-hover:opacity-100"><Icon.trash className="h-3 w-3"/></button>
+                      </div>
+                      {ev && <p className="mt-1 line-clamp-1 text-[10px] text-gray-500">{ev.name}</p>}
+                      <div className="mt-2 flex items-center justify-between gap-1.5">
+                        <Badge tone={priorityTone[t.priority] ?? "gray"}>{t.priority}</Badge>
+                        {dept && <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[9px] font-medium text-gray-700 dark:bg-white/[0.06] dark:text-gray-300">{dept.code}</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+                {tasks.length === 0 && <p className="py-6 text-center text-[10px] text-gray-400">Drop tasks here</p>}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -3617,26 +3702,32 @@ function PeopleList({ data, update }) {
         <div className="card lg:col-span-2 animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Headcount by department</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{headcountByDept.length ? <BarChart data={headcountByDept} height={200}/> : <p className="py-8 text-center text-[12px] text-gray-500">No staff assigned</p>}</div></div>
         <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Role mix</h3></div><div className="p-4"><DonutChart data={roleData} size={160} thickness={20}/></div></div>
       </div>
-      <div className="mt-6 card">
-        <table className="table-base">
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th></th></tr></thead>
-          <tbody>
-            {data.users.map(u => (
-              <tr key={u.id}>
-                <td>
-                  <div className="flex items-center gap-2.5">
-                    <div className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[10px] font-bold text-white">{u.name.split(" ").map(n=>n[0]).slice(0,2).join("")}</div>
-                    <span className="font-semibold text-[13px]">{u.name}</span>
-                  </div>
-                </td>
-                <td className="text-[12px] text-gray-500">{u.email}</td>
-                <td><Badge tone={u.role==="SUPER_ADMIN"?"purple":u.role==="COO"||u.role==="ED"?"orange":"blue"}>{u.role.replace("_"," ")}</Badge></td>
-                <td className="text-[12px]">{DEPARTMENTS.find(d=>d.code===u.department)?.name ?? <span className="text-gray-400">—</span>}</td>
-                <td className="text-right"><button onClick={()=>remove(u)} title="Remove" className="action-icon action-icon-danger"><Icon.trash className="h-3.5 w-3.5"/></button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {data.users.map(u => {
+          const dept = DEPARTMENTS.find(d=>d.code===u.department);
+          const isMe = u.id === data.settings.currentUserId;
+          return (
+            <div key={u.id} className="group relative rounded-2xl border border-gray-200/80 bg-white p-4 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md hover:shadow-brand-500/10 dark:border-white/[0.06] dark:bg-ink-800/60 dark:hover:border-brand-500/40">
+              {isMe && <span className="absolute right-3 top-3 rounded-full bg-brand-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}
+              <div className="flex items-start gap-3">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[14px] font-bold text-white shadow-md shadow-brand-500/25">{u.name.split(" ").map(n=>n[0]).slice(0,2).join("")}</div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-[14px] font-bold leading-tight">{u.name}</h3>
+                  <p className="mt-0.5 truncate text-[11px] text-gray-500">{u.email}</p>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                <Badge tone={u.role==="SUPER_ADMIN"?"purple":u.role==="COO"||u.role==="ED"?"orange":"blue"}>{u.role.replace(/_/g," ")}</Badge>
+                {dept && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-700 dark:bg-white/[0.06] dark:text-gray-300">{dept.name}</span>}
+              </div>
+              <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2.5 dark:border-white/[0.05]">
+                <span className="text-[11px] text-gray-500">Joined {fmtDate(u.createdAt)}</span>
+                <button onClick={()=>remove(u)} title="Remove" className="action-icon action-icon-danger opacity-0 group-hover:opacity-100 transition"><Icon.trash className="h-3.5 w-3.5"/></button>
+              </div>
+            </div>
+          );
+        })}
+        {data.users.length === 0 && <div className="col-span-full rounded-2xl border border-dashed border-gray-300 bg-white py-10 text-center text-[13px] text-gray-500 dark:border-white/[0.06] dark:bg-ink-800/60">No people yet.</div>}
       </div>
       <Modal open={creating} onClose={()=>setCreating(false)} title="Add person" size="md">
         <form onSubmit={save} className="p-6 space-y-4">
