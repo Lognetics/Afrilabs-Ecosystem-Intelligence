@@ -133,7 +133,22 @@
   /* Better table row spacing — applied selectively via .table-roomy */
   .table-roomy tbody td { padding-top: 14px; padding-bottom: 14px; }
   /* Sticky table header */
-  .table-base thead th { position: sticky; top: 0; z-index: 1; }
+  .table-base thead th { position: sticky; top: 0; z-index: 1; white-space: nowrap; }
+  /* Table cells: vertical-align middle, no wrap by default for rhythm */
+  .table-base tbody td { vertical-align: middle; }
+  .table-base tbody td:first-child { padding-left: 1.25rem; }
+  .table-base tbody td:last-child  { padding-right: 1.25rem; }
+  .table-base thead th:first-child { padding-left: 1.25rem; }
+  .table-base thead th:last-child  { padding-right: 1.25rem; }
+  /* Helper combo: name + meta below */
+  .tbl-name-block { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .tbl-name-block .name { font-weight: 600; font-size: 13px; line-height: 1.3; color: rgb(17 24 39); }
+  .dark .tbl-name-block .name { color: rgb(243 244 246); }
+  .tbl-name-block .meta { font-size: 11px; line-height: 1.2; color: rgb(107 114 128); }
+  /* Date / time cells should never break to two lines */
+  .cell-date, .cell-time { white-space: nowrap; font-size: 11px; color: rgb(107 114 128); }
+  /* Cell with a small chip badge inside should align left */
+  .cell-tight { padding-top: 10px; padding-bottom: 10px; }
 </style>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
@@ -558,31 +573,46 @@ function Modal({ open, onClose, title, children, size="md" }) {
   );
 }
 
-function StatCard({ label, value, hint, accent="green", trend, sparkline, href, onClick }) {
+function StatCard({ label, value, hint, accent="green", trend, sparkline, href, onClick, icon }) {
   const accentMap = {
-    green:{bg:"from-brand-500/8 to-transparent", text:"text-brand-700 dark:text-brand-300", color:"#338e9b"},
-    orange:{bg:"from-accent-500/10 to-transparent", text:"text-accent-700 dark:text-accent-300", color:"#ea6a32"},
-    blue:{bg:"from-blue-500/8 to-transparent", text:"text-blue-700 dark:text-blue-300", color:"#3b82f6"},
-    red:{bg:"from-red-500/8 to-transparent", text:"text-red-700 dark:text-red-300", color:"#ef4444"},
-    purple:{bg:"from-purple-500/8 to-transparent", text:"text-purple-700 dark:text-purple-300", color:"#a855f7"},
-    gray:{bg:"from-gray-500/8 to-transparent", text:"text-gray-600 dark:text-gray-300", color:"#6b7280"},
+    green:  { color:"#338e9b", iconBg:"from-brand-500/15 to-accent-500/10", iconText:"text-brand-700 dark:text-brand-300", labelText:"text-brand-700 dark:text-brand-300", hoverBorder:"hover:border-brand-300 dark:hover:border-brand-500/40" },
+    orange: { color:"#ea6a32", iconBg:"from-accent-500/15 to-accent-500/8", iconText:"text-accent-700 dark:text-accent-300", labelText:"text-accent-700 dark:text-accent-300", hoverBorder:"hover:border-accent-300 dark:hover:border-accent-500/40" },
+    blue:   { color:"#3b82f6", iconBg:"from-blue-500/15 to-blue-500/8", iconText:"text-blue-700 dark:text-blue-300", labelText:"text-blue-700 dark:text-blue-300", hoverBorder:"hover:border-blue-300 dark:hover:border-blue-500/40" },
+    red:    { color:"#ef4444", iconBg:"from-red-500/15 to-red-500/8", iconText:"text-red-700 dark:text-red-300", labelText:"text-red-700 dark:text-red-300", hoverBorder:"hover:border-red-300 dark:hover:border-red-500/40" },
+    purple: { color:"#a855f7", iconBg:"from-purple-500/15 to-purple-500/8", iconText:"text-purple-700 dark:text-purple-300", labelText:"text-purple-700 dark:text-purple-300", hoverBorder:"hover:border-purple-300 dark:hover:border-purple-500/40" },
+    gray:   { color:"#6b7280", iconBg:"from-gray-500/15 to-gray-500/8", iconText:"text-gray-700 dark:text-gray-300", labelText:"text-gray-700 dark:text-gray-300", hoverBorder:"hover:border-gray-300 dark:hover:border-gray-500/40" },
   };
   const a = accentMap[accent] || accentMap.green;
+  const I = icon || Icon.layers;
+  const interactive = !!(href || onClick);
   const inner = (
-    <div className="relative">
-      <div className="flex items-start justify-between">
-        <p className={cls("text-[10px] font-bold uppercase tracking-[0.12em]", a.text)}>{label}</p>
-        {trend != null && <span className={cls("text-[10px] font-bold", trend > 0 ? "text-brand-600 dark:text-brand-400" : trend < 0 ? "text-red-600 dark:text-red-400" : "text-gray-500")}>{trend > 0 ? "↑" : trend < 0 ? "↓" : "—"} {Math.abs(trend)}%</span>}
+    <>
+      <div className="flex items-start gap-3">
+        <div className={cls("grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br transition group-hover:scale-105", a.iconBg, a.iconText)}>
+          <I className="h-5 w-5"/>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <p className={cls("truncate text-[10px] font-bold uppercase tracking-[0.12em]", a.labelText)}>{label}</p>
+            {trend != null && <span className={cls("shrink-0 text-[10px] font-bold", trend > 0 ? "text-brand-600 dark:text-brand-400" : trend < 0 ? "text-red-600 dark:text-red-400" : "text-gray-500")}>{trend > 0 ? "↑" : trend < 0 ? "↓" : "—"} {Math.abs(trend)}%</span>}
+          </div>
+          <p className="mt-0.5 truncate text-[22px] font-black leading-[1.15] tracking-tight text-gray-900 dark:text-gray-50">{value}</p>
+          {hint && <p className="mt-0.5 truncate text-[11px] text-gray-500 dark:text-gray-400">{hint}</p>}
+        </div>
+        {interactive && <Icon.chevronRight className="h-4 w-4 shrink-0 text-gray-300 group-hover:text-brand-500 transition"/>}
       </div>
-      <p className="mt-1.5 text-2xl font-black tracking-tight text-gray-900 dark:text-gray-50">{value}</p>
-      {hint && <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">{hint}</p>}
-      {sparkline && <div className="mt-2 -mr-2"><SparkLine data={sparkline} color={a.color} height={32} width={140} /></div>}
-    </div>
+      {sparkline && <div className="mt-2.5 -mb-1"><SparkLine data={sparkline} color={a.color} height={28} width={220} /></div>}
+    </>
   );
-  const cls_outer = cls("stat-card relative overflow-hidden bg-gradient-to-br", a.bg, "from-white to-white dark:from-ink-800/60 dark:to-ink-800/60", (href || onClick) && "card-hover cursor-pointer");
-  if (href) return <a href={href} className={cls_outer}>{inner}</a>;
+  const cls_outer = cls(
+    "group rounded-2xl border border-gray-200/80 bg-white p-3.5 transition dark:border-white/[0.06] dark:bg-ink-800/60",
+    "hover:shadow-md hover:-translate-y-0.5",
+    a.hoverBorder,
+    interactive && "cursor-pointer"
+  );
+  if (href) return <a href={href} className={cls_outer + " block"}>{inner}</a>;
   if (onClick) return <button onClick={onClick} className={cls_outer + " w-full text-left"}>{inner}</button>;
-  return <div className={cls_outer + " card-hover"}>{inner}</div>;
+  return <div className={cls_outer}>{inner}</div>;
 }
 
 // QuickActions — clickable shortcut row for Dashboard
@@ -1193,10 +1223,10 @@ function Dashboard({ data }) {
         { icon: Icon.refresh,     title: "Sync to Africonnect", desc: "Push profiles to the network", href: "#/africonnect" },
       ]} />
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard href="#/members"      label="Member hubs"       value={fmtNum(data.hubs.length)} hint={`${paidHubs} paid · ${data.hubs.length-paidHubs} other`} accent="green" trend={5} sparkline={hubsTrend} />
-        <StatCard href="#/programs"     label="Active programs"   value={data.programs.filter(p=>p.status==="ACTIVE").length} hint={`${data.programs.length} total`} accent="orange" trend={0} sparkline={[3,4,4,5,5,5,5]} />
-        <StatCard href="#/funding"      label="Total funding"     value={fmtCurrency(totalFunding)} hint="Pledged → disbursed" accent="blue" trend={12} sparkline={fundingTrend} />
-        <StatCard href="#/partnerships" label="Live partnerships" value={activePartnerships} hint={`${data.partnerships.length} pipeline`} accent="purple" trend={3} sparkline={[1,1,2,2,2,2,2]} />
+        <StatCard icon={Icon.hubs}         href="#/members"      label="Member hubs"       value={fmtNum(data.hubs.length)} hint={`${paidHubs} paid · ${data.hubs.length-paidHubs} other`} accent="green" trend={5} sparkline={hubsTrend} />
+        <StatCard icon={Icon.programs}     href="#/programs"     label="Active programs"   value={data.programs.filter(p=>p.status==="ACTIVE").length} hint={`${data.programs.length} total`} accent="orange" trend={0} sparkline={[3,4,4,5,5,5,5]} />
+        <StatCard icon={Icon.funding}      href="#/funding"      label="Total funding"     value={fmtCurrency(totalFunding)} hint="Pledged → disbursed" accent="blue" trend={12} sparkline={fundingTrend} />
+        <StatCard icon={Icon.partnerships} href="#/partnerships" label="Live partnerships" value={activePartnerships} hint={`${data.partnerships.length} pipeline`} accent="purple" trend={3} sparkline={[1,1,2,2,2,2,2]} />
       </div>
 
       {/* CHARTS ROW */}
@@ -1346,10 +1376,10 @@ function CRMOverview({ data }) {
   return (
     <div>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Pipeline value" value={fmtCurrency(pipelineValue)} hint={`${data.deals.filter(d=>d.stage!=="WON"&&d.stage!=="LOST").length} open deals`} accent="blue" trend={8} sparkline={[2,3,3,4,4,5,5]} />
-        <StatCard label="Closed-won YTD" value={fmtCurrency(wonValue)} hint={`${data.deals.filter(d=>d.stage==="WON").length} deals`} accent="green" trend={15} sparkline={[1,1,2,2,3,3,4]} />
-        <StatCard label="Win rate" value={winRate + "%"} hint="Won / closed" accent="orange" trend={2} />
-        <StatCard label="Active contacts" value={data.contacts.length} hint={`${data.contacts.filter(c=>c.lifecycle==="CUSTOMER").length} customers`} accent="purple" sparkline={[5,6,6,7,7,8,8]} />
+        <StatCard icon={Icon.deals}    label="Pipeline value" value={fmtCurrency(pipelineValue)} hint={`${data.deals.filter(d=>d.stage!=="WON"&&d.stage!=="LOST").length} open deals`} accent="blue" trend={8} sparkline={[2,3,3,4,4,5,5]} />
+        <StatCard icon={Icon.trending} label="Closed-won YTD" value={fmtCurrency(wonValue)} hint={`${data.deals.filter(d=>d.stage==="WON").length} deals`} accent="green" trend={15} sparkline={[1,1,2,2,3,3,4]} />
+        <StatCard icon={Icon.star}     label="Win rate" value={winRate + "%"} hint="Won / closed" accent="orange" trend={2} />
+        <StatCard icon={Icon.contacts} label="Active contacts" value={data.contacts.length} hint={`${data.contacts.filter(c=>c.lifecycle==="CUSTOMER").length} customers`} accent="purple" sparkline={[5,6,6,7,7,8,8]} />
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
@@ -2026,11 +2056,11 @@ function HubsList({ data, update, search }) {
 
       {/* TOP STATS */}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
-        <StatCard label="Total hubs"     value={data.hubs.length} hint="All members" accent="green"  trend={12} sparkline={[24,26,27,28,29,30,30]} />
-        <StatCard label="Paid"           value={paid}     hint="Active subscriptions" accent="green"  trend={5}  sparkline={[18,19,20,21,21,22,22]} />
-        <StatCard label="Pending"        value={pending}  hint="Awaiting payment"     accent="orange" />
-        <StatCard label="Expired"        value={expired}  hint="Need renewal"         accent="red"    trend={-3} />
-        <StatCard label="MRR (est)"      value={fmtCurrency(mrr)} hint="Monthly recurring" accent="purple" trend={8} sparkline={[8,9,9,10,11,11,12]} />
+        <StatCard icon={Icon.hubs}    label="Total hubs"  value={data.hubs.length} hint="All members" accent="green"  trend={12} sparkline={[24,26,27,28,29,30,30]} />
+        <StatCard icon={Icon.check}   label="Paid"        value={paid}     hint="Active subscriptions" accent="green"  trend={5}  sparkline={[18,19,20,21,21,22,22]} />
+        <StatCard icon={Icon.refresh} label="Pending"     value={pending}  hint="Awaiting payment"     accent="orange" />
+        <StatCard icon={Icon.alert}   label="Expired"     value={expired}  hint="Need renewal"         accent="red"    trend={-3} />
+        <StatCard icon={Icon.funding} label="MRR (est)"   value={fmtCurrency(mrr)} hint="Monthly recurring" accent="purple" trend={8} sparkline={[8,9,9,10,11,11,12]} />
       </div>
 
       {/* CHARTS ROW */}
@@ -2600,10 +2630,10 @@ function ProgramsList({ data, update, search }) {
         action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New program</button>} />
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total programs" value={data.programs.length} accent="green" />
-        <StatCard label="Active" value={data.programs.filter(p=>p.status==="ACTIVE").length} accent="green" trend={5} />
-        <StatCard label="Total budget" value={fmtCurrency(data.programs.reduce((s,p)=>s+(p.budget||0), 0))} accent="blue" />
-        <StatCard label="Programs with funding" value={data.programs.filter(p => data.fundingSources.some(f => f.programId === p.id)).length} accent="purple" />
+        <StatCard icon={Icon.programs} label="Total programs" value={data.programs.length} accent="green" />
+        <StatCard icon={Icon.trending} label="Active" value={data.programs.filter(p=>p.status==="ACTIVE").length} accent="green" trend={5} />
+        <StatCard icon={Icon.funding}  label="Total budget" value={fmtCurrency(data.programs.reduce((s,p)=>s+(p.budget||0), 0))} accent="blue" />
+        <StatCard icon={Icon.layers}   label="Programs with funding" value={data.programs.filter(p => data.fundingSources.some(f => f.programId === p.id)).length} accent="purple" />
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
@@ -2763,10 +2793,10 @@ function FundingList({ data, update }) {
         action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ Add funding</button>} />
 
       <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Pledged"   value={fmtCurrency(totals.PLEDGED || 0)} accent="orange" />
-        <StatCard label="Approved"  value={fmtCurrency(totals.APPROVED || 0)} accent="blue" />
-        <StatCard label="Disbursed" value={fmtCurrency(totals.DISBURSED || 0)} accent="green" />
-        <StatCard label="Total"     value={fmtCurrency(total)} hint={`${data.fundingSources.length} sources`} accent="purple" />
+        <StatCard icon={Icon.bookmark} label="Pledged"   value={fmtCurrency(totals.PLEDGED || 0)} accent="orange" />
+        <StatCard icon={Icon.check}    label="Approved"  value={fmtCurrency(totals.APPROVED || 0)} accent="blue" />
+        <StatCard icon={Icon.send}     label="Disbursed" value={fmtCurrency(totals.DISBURSED || 0)} accent="green" />
+        <StatCard icon={Icon.funding}  label="Total"     value={fmtCurrency(total)} hint={`${data.fundingSources.length} sources`} accent="purple" />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
@@ -2944,10 +2974,10 @@ function EventsList({ data, update }) {
         action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New event</button>} />
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total events" value={data.events.length} accent="green" />
-        <StatCard label="Registered" value={totalRegistered} accent="blue" trend={8} />
-        <StatCard label="Attended" value={totalAttended} hint={`${attRate}% attendance`} accent="orange" />
-        <StatCard label="Open tasks" value={data.tasks.filter(t=>t.status!=="DONE").length} accent="purple" />
+        <StatCard icon={Icon.events} label="Total events" value={data.events.length} accent="green" />
+        <StatCard icon={Icon.people} label="Registered" value={totalRegistered} accent="blue" trend={8} />
+        <StatCard icon={Icon.check}  label="Attended" value={totalAttended} hint={`${attRate}% attendance`} accent="orange" />
+        <StatCard icon={Icon.tasks}  label="Open tasks" value={data.tasks.filter(t=>t.status!=="DONE").length} accent="purple" />
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
@@ -2963,7 +2993,7 @@ function EventsList({ data, update }) {
 
       <h3 className="mt-6 mb-2 text-[12px] font-bold uppercase tracking-widest text-gray-500">Lifecycle stages</h3>
       <div className="grid gap-3 md:grid-cols-5">
-        {EVENT_STATUS.map(s => <StatCard key={s} label={s.replace(/_/g," ")} value={counts[s]} accent={s==="COMPLETED"?"purple":s==="EXECUTION"?"orange":s==="PROMOTION"?"blue":s==="POST_EVENT"?"purple":"gray"} />)}
+        {EVENT_STATUS.map(s => <StatCard key={s} icon={Icon.events} label={s.replace(/_/g," ")} value={counts[s]} accent={s==="COMPLETED"?"purple":s==="EXECUTION"?"orange":s==="PROMOTION"?"blue":s==="POST_EVENT"?"purple":"gray"} />)}
       </div>
 
       <div className="mt-6 card">
@@ -3069,10 +3099,10 @@ function TasksList({ data, update }) {
     <div>
       <PageHeader title="Tasks" subtitle="Cross-departmental delivery items across events and programs." />
       <div className="grid gap-3 md:grid-cols-4">
-        <StatCard label="TODO"        value={counts.TODO}        accent="gray"   />
-        <StatCard label="In progress" value={counts.IN_PROGRESS} accent="blue"   />
-        <StatCard label="Blocked"     value={counts.BLOCKED}     accent="red"    />
-        <StatCard label="Done"        value={counts.DONE}        accent="green"  />
+        <StatCard icon={Icon.tasks}   label="TODO"        value={counts.TODO}        accent="gray"   />
+        <StatCard icon={Icon.refresh} label="In progress" value={counts.IN_PROGRESS} accent="blue"   />
+        <StatCard icon={Icon.alert}   label="Blocked"     value={counts.BLOCKED}     accent="red"    />
+        <StatCard icon={Icon.check}   label="Done"        value={counts.DONE}        accent="green"  />
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By status</h3></div><div className="p-4"><DonutChart data={statusData} size={160} thickness={20}/></div></div>
@@ -3235,10 +3265,10 @@ function CampaignsList({ data, update }) {
       <PageHeader title="Campaigns & Ad Engine" subtitle="Broadcast opportunities to all hubs, paid members, regions or sectors."
         action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New campaign</button>} />
       <div className="grid gap-3 md:grid-cols-4">
-        <StatCard label="Total reach" value={reach} hint={`${sent.length} sent`} accent="blue" trend={12} />
-        <StatCard label="Open rate" value={openRate + "%"} hint={`${opens} opens`} accent="green" />
-        <StatCard label="Click rate" value={clickRate + "%"} hint={`${clicks} clicks`} accent="orange" />
-        <StatCard label="Total campaigns" value={data.campaigns.length} accent="purple" />
+        <StatCard icon={Icon.send}      label="Total reach" value={reach} hint={`${sent.length} sent`} accent="blue" trend={12} />
+        <StatCard icon={Icon.eye}       label="Open rate" value={openRate + "%"} hint={`${opens} opens`} accent="green" />
+        <StatCard icon={Icon.trending}  label="Click rate" value={clickRate + "%"} hint={`${clicks} clicks`} accent="orange" />
+        <StatCard icon={Icon.campaigns} label="Total campaigns" value={data.campaigns.length} accent="purple" />
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By channel</h3></div><div className="p-4"><DonutChart data={channelData} size={160} thickness={20}/></div></div>
@@ -3364,10 +3394,10 @@ function ProcurementList({ data, update }) {
       <PageHeader title="Procurement & Operations" subtitle="Bookings, vendors and logistics."
         action={<button onClick={()=>setCreating(true)} className="btn-primary"><Icon.plus className="h-4 w-4"/> New booking</button>} />
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total spend" value={fmtCurrency(totals.spend)} accent="blue" trend={5} />
-        <StatCard label="Confirmed" value={totals.confirmed} accent="green" />
-        <StatCard label="Requested" value={totals.requested} accent="orange" />
-        <StatCard label="Bookings" value={data.bookings.length} accent="purple" />
+        <StatCard icon={Icon.funding}     label="Total spend" value={fmtCurrency(totals.spend)} accent="blue" trend={5} />
+        <StatCard icon={Icon.check}       label="Confirmed" value={totals.confirmed} accent="green" />
+        <StatCard icon={Icon.alert}       label="Requested" value={totals.requested} accent="orange" />
+        <StatCard icon={Icon.procurement} label="Bookings" value={data.bookings.length} accent="purple" />
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By type</h3></div><div className="p-4"><DonutChart data={typeData} size={160} thickness={20}/></div></div>
@@ -3440,9 +3470,9 @@ function JobsList({ data, update }) {
       <PageHeader title="Jobs board" subtitle="Roles across the ecosystem — hubs, startups, partners."
         action={<button onClick={()=>setCreating(true)} className="btn-primary"><Icon.plus className="h-4 w-4"/> Post job</button>} />
       <div className="grid gap-3 md:grid-cols-3">
-        <StatCard label="Open roles" value={data.jobs.length} accent="green" trend={5} />
-        <StatCard label="Hiring orgs" value={Object.keys(orgData).length} accent="blue" />
-        <StatCard label="Job types" value={typeData.length} accent="purple" />
+        <StatCard icon={Icon.jobs}   label="Open roles" value={data.jobs.length} accent="green" trend={5} />
+        <StatCard icon={Icon.hubs}   label="Hiring orgs" value={Object.keys(orgData).length} accent="blue" />
+        <StatCard icon={Icon.layers} label="Job types" value={typeData.length} accent="purple" />
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By type</h3></div><div className="p-4">{typeData.length ? <DonutChart data={typeData} size={160} thickness={20}/> : <p className="py-8 text-center text-[12px] text-gray-500">No jobs</p>}</div></div>
@@ -3521,9 +3551,9 @@ function PeopleList({ data, update }) {
       <PageHeader title="People (HR)" subtitle="Staff and role assignments."
         action={<button onClick={()=>setCreating(true)} className="btn-primary"><Icon.plus className="h-4 w-4"/> Add person</button>} />
       <div className="grid gap-3 md:grid-cols-3">
-        <StatCard label="Total people" value={data.users.length} accent="green" />
-        <StatCard label="Departments" value={DEPARTMENTS.length} accent="blue" />
-        <StatCard label="Roles in use" value={new Set(data.users.map(u=>u.role)).size} accent="purple" />
+        <StatCard icon={Icon.people} label="Total people" value={data.users.length} accent="green" />
+        <StatCard icon={Icon.depts}  label="Departments" value={DEPARTMENTS.length} accent="blue" />
+        <StatCard icon={Icon.layers} label="Roles in use" value={new Set(data.users.map(u=>u.role)).size} accent="purple" />
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <div className="card lg:col-span-2 animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Headcount by department</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{headcountByDept.length ? <BarChart data={headcountByDept} height={200}/> : <p className="py-8 text-center text-[12px] text-gray-500">No staff assigned</p>}</div></div>
@@ -3839,10 +3869,10 @@ function AuditLog({ data }) {
     <div>
       <PageHeader title="Audit & Compliance" subtitle="Immutable record of system events, financial actions and integrations." />
       <div className="grid gap-3 md:grid-cols-4">
-        <StatCard label="Total events" value={data.auditLog.length} accent="green" sparkline={auditTrend} />
-        <StatCard label="Last 24h" value={data.auditLog.filter(l => Date.now() - new Date(l.createdAt).getTime() < 86400000).length} accent="blue" />
-        <StatCard label="Unique actors" value={new Set(data.auditLog.map(l=>l.actorEmail)).size} accent="purple" />
-        <StatCard label="Entity types" value={Object.keys(entityData).length} accent="orange" />
+        <StatCard icon={Icon.audit}    label="Total events"  value={data.auditLog.length} accent="green" sparkline={auditTrend} />
+        <StatCard icon={Icon.refresh}  label="Last 24h"      value={data.auditLog.filter(l => Date.now() - new Date(l.createdAt).getTime() < 86400000).length} accent="blue" />
+        <StatCard icon={Icon.contacts} label="Unique actors" value={new Set(data.auditLog.map(l=>l.actorEmail)).size} accent="purple" />
+        <StatCard icon={Icon.layers}   label="Entity types"  value={Object.keys(entityData).length} accent="orange" />
       </div>
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Action mix</h3></div><div className="p-4"><DonutChart data={actionData} size={160} thickness={20}/></div></div>
