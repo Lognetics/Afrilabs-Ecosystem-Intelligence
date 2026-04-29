@@ -6,12 +6,26 @@
   "framework": null,
   "cleanUrls": true,
   "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*\\.html)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    }
+  ],
   "rewrites": [
-    { "source": "/crm",                "destination": "/app.html" },
-    { "source": "/crm/:slug*",         "destination": "/app.html" },
-    { "source": "/tasks",              "destination": "/app.html" },
-    { "source": "/procurement",        "destination": "/app.html" },
-    { "source": "/people",             "destination": "/app.html" },
-    { "source": "/settings",           "destination": "/app.html" }
+    { "source": "/crm",          "destination": "/app.html" },
+    { "source": "/crm/:slug*",   "destination": "/app.html" },
+    { "source": "/tasks",        "destination": "/app.html" },
+    { "source": "/procurement",  "destination": "/app.html" },
+    { "source": "/people",       "destination": "/app.html" },
+    { "source": "/settings",     "destination": "/app.html" }
   ]
 }
