@@ -1,9 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "echo 'Static deploy — serving docs/ folder. Next.js build skipped.'",
-  "installCommand": "echo 'No install needed for static deploy.'",
+  "buildCommand": "echo 'Static deploy — serving docs/ folder.'",
+  "installCommand": "echo 'No install needed.'",
   "outputDirectory": "docs",
   "framework": null,
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/crm",                "destination": "/app.html" },
+    { "source": "/crm/:slug*",         "destination": "/app.html" },
+    { "source": "/tasks",              "destination": "/app.html" },
+    { "source": "/procurement",        "destination": "/app.html" },
+    { "source": "/people",             "destination": "/app.html" },
+    { "source": "/settings",           "destination": "/app.html" }
+  ]
 }

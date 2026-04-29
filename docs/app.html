@@ -431,14 +431,25 @@ function useStore() {
 }
 
 // ════════════════════════════════════════════════════════════════════════
-//  ROUTING (hash-based)
+//  ROUTING (hash + pathname-aware so /crm, /tasks etc. work as direct URLs)
 // ════════════════════════════════════════════════════════════════════════
+function getRoute() {
+  // Hash takes precedence for SPA navigation; otherwise infer from pathname.
+  if (window.location.hash) return window.location.hash.slice(1) || "/dashboard";
+  const path = window.location.pathname.replace(/\/+$/, "");
+  // /app or /app.html → default
+  if (!path || path === "/app" || path === "/app.html" || path === "/index.html") return "/dashboard";
+  // Treat the rest (/crm, /crm/contacts, /tasks, /procurement, /people, /settings,
+  // /partnerships, /programs, etc.) as the route directly
+  return path;
+}
 function useRoute() {
-  const [route, setRoute] = useState(() => window.location.hash.slice(1) || "/dashboard");
+  const [route, setRoute] = useState(getRoute);
   useEffect(() => {
-    const onHash = () => setRoute(window.location.hash.slice(1) || "/dashboard");
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    const onChange = () => setRoute(getRoute());
+    window.addEventListener("hashchange", onChange);
+    window.addEventListener("popstate", onChange);
+    return () => { window.removeEventListener("hashchange", onChange); window.removeEventListener("popstate", onChange); };
   }, []);
   return route;
 }
