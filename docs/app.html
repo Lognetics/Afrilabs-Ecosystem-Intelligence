@@ -622,6 +622,54 @@ function StatCard({ label, value, hint, accent="green", trend, sparkline, href, 
   return <div className={cls_outer}>{inner}</div>;
 }
 
+// HeaderButton — pill button with QuickActions card aesthetic (gradient icon box,
+// chevron indicator, hover lift). Use for every header action across the app.
+function HeaderButton({ href, onClick, icon, children, primary, accent="brand", target, rel }) {
+  const I = icon || Icon.layers;
+  const accentMap = {
+    brand:  { iconBg: "from-brand-500/18 to-accent-500/10",  iconText: "text-brand-700 dark:text-brand-300",  chev:"group-hover:text-brand-500", border:"hover:border-brand-300 dark:hover:border-brand-500/40" },
+    accent: { iconBg: "from-accent-500/20 to-accent-500/8",  iconText: "text-accent-700 dark:text-accent-300",chev:"group-hover:text-accent-500", border:"hover:border-accent-300 dark:hover:border-accent-500/40" },
+    purple: { iconBg: "from-purple-500/18 to-purple-500/8",  iconText: "text-purple-700 dark:text-purple-300",chev:"group-hover:text-purple-500", border:"hover:border-purple-300 dark:hover:border-purple-500/40" },
+  };
+  const a = accentMap[accent] || accentMap.brand;
+
+  if (primary) {
+    // Filled gradient pill — for primary creation/CTA actions
+    const Tag = href ? "a" : "button";
+    return (
+      <Tag href={href} onClick={onClick} target={target} rel={rel}
+           className={cls(
+             "group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 py-1 pl-1 pr-3.5 text-[13px] font-semibold text-white shadow-md shadow-brand-500/25 transition-all duration-200",
+             "hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand-500/40 hover:from-brand-600 hover:to-brand-700"
+           )}>
+        <span className="grid h-7 w-7 place-items-center rounded-full bg-white/20 text-white transition group-hover:scale-105">
+          <I className="h-3.5 w-3.5"/>
+        </span>
+        <span>{children}</span>
+        <Icon.chevronRight className="h-3.5 w-3.5 text-white/70 transition group-hover:translate-x-0.5 group-hover:text-white"/>
+      </Tag>
+    );
+  }
+
+  // Outline pill with gradient icon box — for secondary nav/header actions
+  const Tag = href ? "a" : "button";
+  return (
+    <Tag href={href} onClick={onClick} target={target} rel={rel}
+         className={cls(
+           "group inline-flex items-center gap-2 rounded-full border border-gray-200/80 bg-white py-1 pl-1 pr-3.5 text-[13px] font-semibold text-gray-700 shadow-[0_1px_2px_rgba(11,24,36,0.04)] transition-all duration-200",
+           "hover:-translate-y-0.5 hover:shadow-md hover:shadow-brand-500/10",
+           a.border,
+           "dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-gray-200"
+         )}>
+      <span className={cls("grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br transition group-hover:scale-105", a.iconBg, a.iconText)}>
+        <I className="h-3.5 w-3.5"/>
+      </span>
+      <span>{children}</span>
+      <Icon.chevronRight className={cls("h-3.5 w-3.5 text-gray-300 transition group-hover:translate-x-0.5", a.chev)}/>
+    </Tag>
+  );
+}
+
 // QuickActions — clickable shortcut row for Dashboard
 function QuickActions({ items }) {
   return (
@@ -1222,8 +1270,8 @@ function Dashboard({ data }) {
         title="Ecosystem overview"
         subtitle="A live snapshot of partnerships, programs, funding and member activity."
         action={<div className="header-actions">
-          <a href="#/intelligence" className="btn-outline"><Icon.intel className="h-4 w-4"/> Intelligence</a>
-          <a href="#/africonnect" className="btn-primary"><Icon.africonnect className="h-4 w-4"/> Africonnect</a>
+          <HeaderButton href="#/intelligence" icon={Icon.intel} accent="brand">Intelligence</HeaderButton>
+          <HeaderButton href="#/africonnect"  icon={Icon.africonnect} accent="accent">Africonnect</HeaderButton>
         </div>}
       />
       <QuickActions items={[
@@ -2060,8 +2108,8 @@ function HubsList({ data, update, search }) {
     <div>
       <PageHeader title="Member Services" subtitle="Manage 500+ Afrilabs hubs across the continent — onboarding, payments, segmentation, communications."
         action={<div className="header-actions">
-          <button className="btn-outline" onClick={()=>sendCampaign("ALL_HUBS")}><Icon.send className="h-4 w-4"/> Targeted message</button>
-          <button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> Onboard hub</button>
+          <HeaderButton onClick={()=>sendCampaign("ALL_HUBS")} icon={Icon.send} accent="brand">Targeted message</HeaderButton>
+          <HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>Onboard hub</HeaderButton>
         </div>} />
 
       {/* TOP STATS */}
@@ -2467,7 +2515,7 @@ function PartnershipsList({ data, update, search }) {
   return (
     <div>
       <PageHeader title="Partnerships" subtitle="Pipeline of investors, donors, corporates and government partners."
-        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ New partnership</button>} />
+        action={<HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>New partnership</HeaderButton>} />
 
       <div className="mb-5 flex flex-wrap gap-2">
         <button onClick={()=>setFilterStage("")} className={cls("rounded-md border px-2 py-1 text-xs", !filterStage ? "border-brand-300 bg-brand-50 text-brand-700" : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100")}>All ({data.partnerships.length})</button>
@@ -2637,7 +2685,7 @@ function ProgramsList({ data, update, search }) {
   return (
     <div>
       <PageHeader title="Programs" subtitle="Accelerators, initiatives, research and ecosystem projects."
-        action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New program</button>} />
+        action={<HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>New program</HeaderButton>} />
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Icon.programs} label="Total programs" value={data.programs.length} accent="green" />
@@ -2800,7 +2848,7 @@ function FundingList({ data, update }) {
   return (
     <div>
       <PageHeader title="Funding & Grants" subtitle="Investments, grants and sponsorships across the ecosystem."
-        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ Add funding</button>} />
+        action={<HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>Add funding</HeaderButton>} />
 
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard icon={Icon.bookmark} label="Pledged"   value={fmtCurrency(totals.PLEDGED || 0)} accent="orange" />
@@ -2981,7 +3029,7 @@ function EventsList({ data, update }) {
   return (
     <div>
       <PageHeader title="Events & Activation" subtitle="AAG and program events from planning through post-event analysis."
-        action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New event</button>} />
+        action={<HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>New event</HeaderButton>} />
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Icon.events} label="Total events" value={data.events.length} accent="green" />
@@ -3273,7 +3321,7 @@ function CampaignsList({ data, update }) {
   return (
     <div>
       <PageHeader title="Campaigns & Ad Engine" subtitle="Broadcast opportunities to all hubs, paid members, regions or sectors."
-        action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New campaign</button>} />
+        action={<HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>New campaign</HeaderButton>} />
       <div className="grid gap-3 md:grid-cols-4">
         <StatCard icon={Icon.send}      label="Total reach" value={reach} hint={`${sent.length} sent`} accent="blue" trend={12} />
         <StatCard icon={Icon.eye}       label="Open rate" value={openRate + "%"} hint={`${opens} opens`} accent="green" />
@@ -3402,7 +3450,7 @@ function ProcurementList({ data, update }) {
   return (
     <div>
       <PageHeader title="Procurement & Operations" subtitle="Bookings, vendors and logistics."
-        action={<button onClick={()=>setCreating(true)} className="btn-primary"><Icon.plus className="h-4 w-4"/> New booking</button>} />
+        action={<HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>New booking</HeaderButton>} />
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Icon.funding}     label="Total spend" value={fmtCurrency(totals.spend)} accent="blue" trend={5} />
         <StatCard icon={Icon.check}       label="Confirmed" value={totals.confirmed} accent="green" />
@@ -3478,7 +3526,7 @@ function JobsList({ data, update }) {
   return (
     <div>
       <PageHeader title="Jobs board" subtitle="Roles across the ecosystem — hubs, startups, partners."
-        action={<button onClick={()=>setCreating(true)} className="btn-primary"><Icon.plus className="h-4 w-4"/> Post job</button>} />
+        action={<HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>Post job</HeaderButton>} />
       <div className="grid gap-3 md:grid-cols-3">
         <StatCard icon={Icon.jobs}   label="Open roles" value={data.jobs.length} accent="green" trend={5} />
         <StatCard icon={Icon.hubs}   label="Hiring orgs" value={Object.keys(orgData).length} accent="blue" />
@@ -3559,7 +3607,7 @@ function PeopleList({ data, update }) {
   return (
     <div>
       <PageHeader title="People (HR)" subtitle="Staff and role assignments."
-        action={<button onClick={()=>setCreating(true)} className="btn-primary"><Icon.plus className="h-4 w-4"/> Add person</button>} />
+        action={<HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>Add person</HeaderButton>} />
       <div className="grid gap-3 md:grid-cols-3">
         <StatCard icon={Icon.people} label="Total people" value={data.users.length} accent="green" />
         <StatCard icon={Icon.depts}  label="Departments" value={DEPARTMENTS.length} accent="blue" />
