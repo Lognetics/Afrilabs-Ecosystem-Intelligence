@@ -99,6 +99,9 @@ const TIERS = ["STANDARD","PREMIUM","STRATEGIC"];
 const HUB_STATUS = ["ACTIVE","PENDING","SUSPENDED","CHURNED"];
 const PARTNER_TYPES = ["INVESTOR","DONOR","CORPORATE","GOVERNMENT","NGO","FOUNDATION"];
 const PARTNERSHIP_STAGES = ["PROSPECT","ENGAGED","NEGOTIATION","ACTIVE","DORMANT"];
+const DEAL_STAGES = ["LEAD","QUALIFIED","PROPOSAL","NEGOTIATION","WON","LOST"];
+const ACTIVITY_TYPES = ["CALL","MEETING","EMAIL","NOTE","TASK"];
+const CONTACT_LIFECYCLE = ["LEAD","MQL","SQL","CUSTOMER","CHURNED"];
 const PROGRAM_TYPES = ["ACCELERATOR","INITIATIVE","RESEARCH","ECOSYSTEM_PROJECT"];
 const PROGRAM_STATUS = ["DRAFT","ACTIVE","PAUSED","COMPLETED"];
 const FUNDING_TYPES = ["GRANT","INVESTMENT","SPONSORSHIP"];
@@ -342,10 +345,48 @@ function buildSeed() {
     {id:"al_3", action:"SYNC",   entity:"Hub", entityId:null, actorEmail:"africonnect@system", createdAt: days(0.3)},
   ];
 
+  // ─── CRM seed: contacts, deals, notes, crm activities ───
+  const contacts = [
+    {id:"c_1", firstName:"Rachel", lastName:"Adeyemi", email:"rachel@mcfoundation.org", phone:"+1-555-0101", title:"Programme Officer", company:"Mastercard Foundation", partnerId:"pn_mc", lifecycle:"SQL", leadScore:85, tags:["sponsor","priority"], owner:"u_p", lastContactedAt:days(2), createdAt:days(60)},
+    {id:"c_2", firstName:"David", lastName:"Okoye", email:"david@afdb.org", phone:"+225-555-0102", title:"Investment Director", company:"African Development Bank", partnerId:"pn_afdb", lifecycle:"CUSTOMER", leadScore:92, tags:["investor","strategic"], owner:"u_p", lastContactedAt:days(1), createdAt:days(120)},
+    {id:"c_3", firstName:"Sarah", lastName:"Ibrahim", email:"sarah@google.com", phone:"+1-555-0103", title:"Africa Lead", company:"Google for Startups", partnerId:"pn_google", lifecycle:"MQL", leadScore:70, tags:["corporate","tech"], owner:"u_p", lastContactedAt:days(7), createdAt:days(45)},
+    {id:"c_4", firstName:"Klaus", lastName:"Schmidt", email:"klaus@giz.de", phone:"+49-555-0104", title:"Partnership Manager", company:"GIZ", partnerId:"pn_giz", lifecycle:"LEAD", leadScore:55, tags:["donor","Europe"], owner:"u_p", lastContactedAt:days(14), createdAt:days(30)},
+    {id:"c_5", firstName:"James", lastName:"Whitfield", email:"james@ifc.org", phone:"+1-555-0105", title:"Senior VP", company:"IFC", partnerId:"pn_ifc", lifecycle:"SQL", leadScore:88, tags:["investor","priority"], owner:"u_p", lastContactedAt:days(3), createdAt:days(80)},
+    {id:"c_6", firstName:"Naledi", lastName:"Khumalo", email:"naledi@microsoft.com", phone:"+27-555-0106", title:"Africa Partnerships", company:"Microsoft Africa", partnerId:"pn_ms", lifecycle:"MQL", leadScore:75, tags:["corporate","tech"], owner:"u_p", lastContactedAt:days(10), createdAt:days(50)},
+    {id:"c_7", firstName:"Tendai", lastName:"Mukoki", email:"tendai@mtn.com", phone:"+27-555-0107", title:"Foundation Director", company:"MTN Foundation", partnerId:"pn_mtn", lifecycle:"SQL", leadScore:80, tags:["foundation","telecom"], owner:"u_p", lastContactedAt:days(5), createdAt:days(70)},
+    {id:"c_8", firstName:"Amelia", lastName:"Carter", email:"amelia@undp.org", phone:"+1-555-0108", title:"Program Lead", company:"UNDP", partnerId:"pn_undp", lifecycle:"LEAD", leadScore:50, tags:["NGO","global"], owner:"u_p", lastContactedAt:days(20), createdAt:days(25)},
+  ];
+
+  const deals = [
+    {id:"d_1", title:"AAG 2026 Lead Sponsorship", contactId:"c_1", partnerId:"pn_mc", value:200000, stage:"NEGOTIATION", probability:65, expectedCloseDate: future(45), owner:"u_p", source:"OUTBOUND", createdAt:days(40), updatedAt:days(2)},
+    {id:"d_2", title:"Catalytic Africa Match Fund", contactId:"c_5", partnerId:"pn_ifc", value:1500000, stage:"PROPOSAL", probability:55, expectedCloseDate: future(60), owner:"u_p", source:"INBOUND", createdAt:days(35), updatedAt:days(3)},
+    {id:"d_3", title:"Hub Capacity Sponsorship", contactId:"c_3", partnerId:"pn_google", value:125000, stage:"QUALIFIED", probability:40, expectedCloseDate: future(75), owner:"u_p", source:"OUTBOUND", createdAt:days(20), updatedAt:days(7)},
+    {id:"d_4", title:"GIZ Initiative Grant", contactId:"c_4", partnerId:"pn_giz", value:50000, stage:"LEAD", probability:25, expectedCloseDate: future(120), owner:"u_p", source:"REFERRAL", createdAt:days(14), updatedAt:days(10)},
+    {id:"d_5", title:"Microsoft Cloud Credits", contactId:"c_6", partnerId:"pn_ms", value:425000, stage:"NEGOTIATION", probability:70, expectedCloseDate: future(30), owner:"u_p", source:"INBOUND", createdAt:days(50), updatedAt:days(4)},
+    {id:"d_6", title:"MTN Foundation Multi-year", contactId:"c_7", partnerId:"pn_mtn", value:500000, stage:"PROPOSAL", probability:60, expectedCloseDate: future(90), owner:"u_p", source:"OUTBOUND", createdAt:days(60), updatedAt:days(5)},
+    {id:"d_7", title:"UNDP Research Partnership", contactId:"c_8", partnerId:"pn_undp", value:575000, stage:"LEAD", probability:20, expectedCloseDate: future(150), owner:"u_p", source:"OUTBOUND", createdAt:days(8), updatedAt:days(8)},
+    {id:"d_8", title:"AfDB Strategic Investment", contactId:"c_2", partnerId:"pn_afdb", value:275000, stage:"WON", probability:100, expectedCloseDate: days(20), closedAt: days(20), owner:"u_p", source:"INBOUND", createdAt:days(90), updatedAt:days(20)},
+  ];
+
+  const crmActivities = [
+    {id:"ca_1", type:"CALL",    title:"Discovery call with Rachel",     contactId:"c_1", dealId:"d_1", durationMin:45, owner:"u_p", completedAt:days(2),  note:"Round 2 talks. Interested in AAG sponsorship at lead-tier. Asked for cohort metrics."},
+    {id:"ca_2", type:"EMAIL",   title:"Sent IFC investment deck",       contactId:"c_5", dealId:"d_2", owner:"u_p", completedAt:days(3),  note:"Forwarded match-fund proposal v3 with regional impact data."},
+    {id:"ca_3", type:"MEETING", title:"Quarterly review with Microsoft", contactId:"c_6", dealId:"d_5", durationMin:60, owner:"u_p", completedAt:days(4),  note:"Reviewed cloud credit allocation. Naledi will confirm budget end of week."},
+    {id:"ca_4", type:"NOTE",    title:"Add'l context on MTN priorities", contactId:"c_7", dealId:"d_6", owner:"u_p", completedAt:days(5),  note:"MTN wants explicit West Africa focus. Reflect in proposal v2."},
+    {id:"ca_5", type:"TASK",    title:"Send Google deck refresh",        contactId:"c_3", dealId:"d_3", owner:"u_p", dueDate: future(3), note:"Update slide 12 with 2026 hub coverage."},
+  ];
+
+  const notes = [
+    {id:"n_1", body:"Strong fit for AAG. Decision-maker is Rachel. Budget cycle ends Sept.", contactId:"c_1", authorId:"u_p", createdAt:days(2)},
+    {id:"n_2", body:"AfDB has confirmed disbursement for Q2.", contactId:"c_2", authorId:"u_p", createdAt:days(20)},
+    {id:"n_3", body:"James is bullish on match-fund model — wants regional impact data.", contactId:"c_5", authorId:"u_p", createdAt:days(3)},
+  ];
+
   return {
     users, hubs, payments, partners, partnerships, partnershipPrograms,
     programs, programHubs, fundingSources, events, eventPartners, tasks,
     campaigns, activities, bookings, jobs, auditLog,
+    contacts, deals, crmActivities, notes,
     syncLog: [],
     settings: { currentUserId:"u_admin", africonnectKey: "demo-key-replace-in-prod" },
     version: 1,
@@ -362,7 +403,13 @@ function loadStore() {
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return buildSeed();
     const parsed = JSON.parse(raw);
-    if (parsed && parsed.version === 1) return parsed;
+    if (parsed && parsed.version === 1) {
+      // Migrate: ensure CRM arrays exist on stores from earlier versions
+      const seed = buildSeed();
+      const ensure = (k) => { if (!Array.isArray(parsed[k])) parsed[k] = seed[k]; };
+      ["contacts","deals","crmActivities","notes","syncLog"].forEach(ensure);
+      return parsed;
+    }
     return buildSeed();
   } catch (e) { return buildSeed(); }
 }
@@ -459,12 +506,12 @@ function StatCard({ label, value, hint, accent="green", trend, sparkline }) {
     <div className={cls("stat-card relative overflow-hidden card-hover bg-gradient-to-br", a.bg, "from-white to-white dark:from-gray-800 dark:to-gray-800")}>
       <div className="relative">
         <div className="flex items-start justify-between">
-          <p className={cls("text-xs font-semibold uppercase tracking-wider", a.text)}>{label}</p>
-          {trend != null && <span className={cls("text-xs font-bold", trend > 0 ? "text-brand-600" : trend < 0 ? "text-red-600" : "text-gray-500")}>{trend > 0 ? "↑" : trend < 0 ? "↓" : "—"} {Math.abs(trend)}%</span>}
+          <p className={cls("text-[10px] font-semibold uppercase tracking-[0.12em]", a.text)}>{label}</p>
+          {trend != null && <span className={cls("text-[10px] font-bold", trend > 0 ? "text-brand-600 dark:text-brand-400" : trend < 0 ? "text-red-600 dark:text-red-400" : "text-gray-500")}>{trend > 0 ? "↑" : trend < 0 ? "↓" : "—"} {Math.abs(trend)}%</span>}
         </div>
-        <p className="mt-2 text-3xl font-black tracking-tight text-gray-900 dark:text-gray-50">{value}</p>
-        {hint && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{hint}</p>}
-        {sparkline && <div className="mt-3 -mr-2"><SparkLine data={sparkline} color={a.color} height={36} width={140} /></div>}
+        <p className="mt-1.5 text-2xl font-black tracking-tight text-gray-900 dark:text-gray-50">{value}</p>
+        {hint && <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">{hint}</p>}
+        {sparkline && <div className="mt-2 -mr-2"><SparkLine data={sparkline} color={a.color} height={32} width={140} /></div>}
       </div>
     </div>
   );
@@ -480,14 +527,17 @@ function Empty({ title="Nothing here yet", hint, action }) {
   );
 }
 
-function PageHeader({ title, subtitle, action }) {
+function PageHeader({ title, subtitle, action, breadcrumb }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3 animate-fade-up">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
+    <div className="mb-5 animate-fade-up">
+      {breadcrumb && <div className="mb-1.5 flex items-center gap-1.5 text-[11px] text-gray-500">{breadcrumb}</div>}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-[20px] font-bold tracking-tight text-gray-900 dark:text-gray-50">{title}</h1>
+          {subtitle && <p className="mt-0.5 text-[13px] text-gray-500 dark:text-gray-400">{subtitle}</p>}
+        </div>
+        {action}
       </div>
-      {action}
     </div>
   );
 }
@@ -709,66 +759,142 @@ function computeIntelligence(data) {
 }
 
 // ════════════════════════════════════════════════════════════════════════
+//  ICON SET (Lucide-inspired stroke SVGs)
+// ════════════════════════════════════════════════════════════════════════
+function makeIcon(paths) {
+  return ({ className = "h-4 w-4", strokeWidth = 1.75 }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      {paths}
+    </svg>
+  );
+}
+const Icon = {
+  dashboard:    makeIcon(<><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></>),
+  crm:          makeIcon(<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+  contacts:     makeIcon(<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></>),
+  deals:        makeIcon(<><path d="M3 6h18l-2 13H5L3 6z"/><path d="M3 6L2 3H1"/><path d="M16 10a4 4 0 0 1-8 0"/></>),
+  activity:     makeIcon(<><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></>),
+  partnerships: makeIcon(<><path d="M11 17a5 5 0 0 1-5-5V7a3 3 0 0 1 6 0v5a1 1 0 0 1-2 0V7"/><path d="M11 17l3 4 3-3v-3"/><path d="M9 12h12"/></>),
+  programs:     makeIcon(<><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></>),
+  funding:      makeIcon(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>),
+  hubs:         makeIcon(<><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="12" x2="9" y2="12.01"/><line x1="9" y1="15" x2="9" y2="15.01"/><line x1="9" y1="18" x2="9" y2="18.01"/></>),
+  events:       makeIcon(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>),
+  tasks:        makeIcon(<><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></>),
+  collab:       makeIcon(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>),
+  campaigns:    makeIcon(<><path d="M3 11l18-5v12L3 13z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></>),
+  intel:        makeIcon(<><path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10z"/><path d="M12 8v4l3 3"/><path d="M9 2a10 10 0 0 1 6 0"/></>),
+  procurement:  makeIcon(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>),
+  jobs:         makeIcon(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>),
+  people:       makeIcon(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+  africonnect:  makeIcon(<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>),
+  audit:        makeIcon(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>),
+  depts:        makeIcon(<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></>),
+  settings:     makeIcon(<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>),
+  search:       makeIcon(<><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>),
+  bell:         makeIcon(<><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>),
+  sun:          makeIcon(<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>),
+  moon:         makeIcon(<><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></>),
+  chevronLeft:  makeIcon(<><polyline points="15 18 9 12 15 6"/></>),
+  chevronRight: makeIcon(<><polyline points="9 18 15 12 9 6"/></>),
+  plus:         makeIcon(<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>),
+  trash:        makeIcon(<><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></>),
+  edit:         makeIcon(<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>),
+  external:     makeIcon(<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>),
+  eye:          makeIcon(<><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>),
+  alert:        makeIcon(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>),
+  check:        makeIcon(<><polyline points="20 6 9 17 4 12"/></>),
+  trending:     makeIcon(<><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>),
+  download:     makeIcon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>),
+  upload:       makeIcon(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></>),
+  send:         makeIcon(<><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>),
+  refresh:      makeIcon(<><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></>),
+  bookmark:     makeIcon(<><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></>),
+  star:         makeIcon(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+  filter:       makeIcon(<><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>),
+  layers:       makeIcon(<><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>),
+};
+
+// ════════════════════════════════════════════════════════════════════════
 //  LAYOUT
 // ════════════════════════════════════════════════════════════════════════
 const NAV = [
   { group:"Operate", items: [
-    { href:"/dashboard",    label:"Dashboard",      icon:"▦" },
-    { href:"/partnerships", label:"Partnerships",   icon:"🤝" },
-    { href:"/programs",     label:"Programs",       icon:"🚀" },
-    { href:"/funding",      label:"Funding",        icon:"💰" },
-    { href:"/members",      label:"Member Hubs",    icon:"🏢" },
-    { href:"/events",       label:"Events",         icon:"📅" },
-    { href:"/tasks",        label:"Tasks",          icon:"✓" },
+    { href:"/dashboard",    label:"Dashboard",      sub:"Live ecosystem KPIs",      icon: Icon.dashboard },
+    { href:"/crm",          label:"CRM",            sub:"Contacts · Deals · Tasks", icon: Icon.crm },
+    { href:"/partnerships", label:"Partnerships",   sub:"Pipeline & deals",         icon: Icon.partnerships },
+    { href:"/programs",     label:"Programs",       sub:"Accelerators · Initiatives", icon: Icon.programs },
+    { href:"/funding",      label:"Funding",        sub:"Grants · Investments",     icon: Icon.funding },
+    { href:"/members",      label:"Member Hubs",    sub:"500+ Afrilabs hubs",       icon: Icon.hubs },
+    { href:"/events",       label:"Events",         sub:"AAG · Workshops",          icon: Icon.events },
+    { href:"/tasks",        label:"Tasks",          sub:"Cross-dept tracking",      icon: Icon.tasks },
   ]},
   { group:"Engage", items: [
-    { href:"/collaboration",label:"Collaboration",  icon:"💬" },
-    { href:"/campaigns",    label:"Campaigns",      icon:"📢" },
-    { href:"/intelligence", label:"Intelligence",   icon:"✨" },
+    { href:"/collaboration",label:"Collaboration",  sub:"Activity timeline",        icon: Icon.collab },
+    { href:"/campaigns",    label:"Campaigns",      sub:"Targeted broadcasts",      icon: Icon.campaigns },
+    { href:"/intelligence", label:"Intelligence",   sub:"AI recommendations",       icon: Icon.intel },
   ]},
   { group:"Operations", items: [
-    { href:"/procurement",  label:"Procurement",    icon:"📦" },
-    { href:"/jobs",         label:"Jobs Board",     icon:"💼" },
-    { href:"/people",       label:"People (HR)",    icon:"👥" },
+    { href:"/procurement",  label:"Procurement",    sub:"Bookings · Logistics",     icon: Icon.procurement },
+    { href:"/jobs",         label:"Jobs Board",     sub:"Open roles",               icon: Icon.jobs },
+    { href:"/people",       label:"People (HR)",    sub:"Staff · Roles",            icon: Icon.people },
   ]},
   { group:"System", items: [
-    { href:"/africonnect",  label:"Africonnect",    icon:"🌍" },
-    { href:"/audit",        label:"Audit Log",      icon:"🛡" },
-    { href:"/departments",  label:"Departments",    icon:"⚙" },
-    { href:"/settings",     label:"Settings",       icon:"⚙" },
+    { href:"/africonnect",  label:"Africonnect",    sub:"Sync · Export/Import",     icon: Icon.africonnect },
+    { href:"/audit",        label:"Audit Log",      sub:"Compliance trail",         icon: Icon.audit },
+    { href:"/departments",  label:"Departments",    sub:"All 12 teams",             icon: Icon.depts },
+    { href:"/settings",     label:"Settings",       sub:"Sovereignty controls",     icon: Icon.settings },
   ]},
 ];
 
-function Sidebar({ route }) {
+function Sidebar({ route, collapsed, setCollapsed }) {
+  const widthCls = collapsed ? "w-[72px]" : "w-64";
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-gray-200 bg-white lg:block dark:border-white/5 dark:bg-gray-900">
-      <a href="#/dashboard" className="flex h-16 items-center gap-2 border-b border-gray-200 px-5 hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/5 transition">
-        <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 font-black text-white shadow-md shadow-brand-500/30">A</div>
-        <div>
-          <div className="text-sm font-bold leading-tight">Afrilabs</div>
-          <div className="text-[10px] uppercase tracking-widest text-gray-500">Ecosystem OS</div>
-        </div>
+    <aside className={cls("hidden shrink-0 border-r border-gray-200 bg-white transition-all duration-300 lg:flex lg:flex-col dark:border-white/5 dark:bg-gray-900", widthCls)}>
+      <a href="#/dashboard" className={cls("flex h-16 items-center gap-2.5 border-b border-gray-200 px-4 hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/5 transition", collapsed && "justify-center px-0")}>
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 font-black text-white shadow-md shadow-brand-500/30">A</div>
+        {!collapsed && (
+          <div>
+            <div className="text-[13px] font-bold leading-tight">Afrilabs</div>
+            <div className="text-[9px] uppercase tracking-widest text-gray-500">Ecosystem OS</div>
+          </div>
+        )}
       </a>
-      <nav className="px-3 py-4">
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
         {NAV.map(g => (
-          <div key={g.group} className="mb-4">
-            <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{g.group}</p>
+          <div key={g.group} className="mb-3">
+            {!collapsed && <p className="px-3 pb-1 text-[9px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500">{g.group}</p>}
+            {collapsed && <div className="mx-auto my-1.5 h-px w-6 bg-gray-200 dark:bg-white/5" />}
             {g.items.map(it => {
               const active = route === it.href || route.startsWith(it.href + "/");
+              const IconC = it.icon;
               return (
-                <a key={it.href} href={"#" + it.href}
-                  className={cls("flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition relative",
+                <a key={it.href} href={"#" + it.href} title={collapsed ? `${it.label} — ${it.sub}` : ""}
+                  className={cls("group relative flex items-center gap-3 rounded-lg px-3 py-2 transition",
+                    collapsed && "justify-center px-2",
                     active
-                      ? "nav-item-active bg-brand-50 font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
+                      ? "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-100")}>
-                  <span className="text-base">{it.icon}</span>{it.label}
+                  {active && !collapsed && <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-brand-500"/>}
+                  <IconC className={cls("h-[18px] w-[18px] shrink-0", active ? "stroke-[2]" : "stroke-[1.75]")} />
+                  {!collapsed && (
+                    <div className="flex-1 min-w-0">
+                      <div className={cls("text-[13px] leading-tight truncate", active ? "font-semibold" : "font-medium")}>{it.label}</div>
+                      <div className={cls("text-[10px] truncate", active ? "text-brand-600/70 dark:text-brand-300/70" : "text-gray-400 dark:text-gray-500")}>{it.sub}</div>
+                    </div>
+                  )}
                 </a>
               );
             })}
           </div>
         ))}
-        <a href="index.html" className="block px-3 py-2 text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition">← Marketing site</a>
       </nav>
+      <div className="border-t border-gray-200 dark:border-white/5 p-2">
+        <button onClick={()=>setCollapsed(c=>!c)} className={cls("flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[12px] text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 transition", collapsed && "justify-center")} title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+          {collapsed ? <Icon.chevronRight className="h-4 w-4"/> : <><Icon.chevronLeft className="h-4 w-4"/><span>Collapse</span></>}
+        </button>
+        {!collapsed && <a href="index.html" className="block px-3 py-1.5 text-[10px] text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition">← Back to marketing site</a>}
+      </div>
     </aside>
   );
 }
@@ -787,33 +913,69 @@ function useTheme() {
   return [theme, toggle];
 }
 
-function Topbar({ data, update, search, setSearch, theme, toggleTheme }) {
+function Topbar({ data, update, search, setSearch, theme, toggleTheme, collapsed, setCollapsed }) {
   const [open, setOpen] = useState(false);
+  const [notif, setNotif] = useState(false);
   const user = data.users.find(u => u.id === data.settings.currentUserId);
+  // Compute live notifications from store
+  const overduePayments = data.payments.filter(p => p.status === "OVERDUE").length;
+  const renewalsDue = data.hubs.filter(h => {
+    const last = data.payments.filter(p => p.hubId === h.id && p.status === "PAID").sort((a,b)=>new Date(b.periodEnd)-new Date(a.periodEnd))[0];
+    if (!last) return false;
+    const days = (new Date(last.periodEnd).getTime() - Date.now()) / 86400000;
+    return days >= 0 && days <= 30;
+  }).length;
+  const totalNotif = overduePayments + renewalsDue;
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white/85 px-6 backdrop-blur-md dark:border-white/5 dark:bg-gray-900/85">
+    <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-gray-200 bg-white/85 px-4 backdrop-blur-md dark:border-white/5 dark:bg-gray-900/85">
       <div className="flex flex-1 items-center gap-3">
-        <div className="relative w-full max-w-md">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">⌕</span>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search hubs, partners, programs…"
-                 className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:focus:bg-gray-800" />
+        <button onClick={()=>setCollapsed?.(c=>!c)} aria-label="Toggle sidebar" className="hidden h-8 w-8 place-items-center rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 lg:grid">
+          {collapsed ? <Icon.chevronRight className="h-4 w-4"/> : <Icon.chevronLeft className="h-4 w-4"/>}
+        </button>
+        <div className="relative w-full max-w-sm">
+          <Icon.search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…"
+                 className="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-3 text-[13px] transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:focus:bg-gray-800" />
+          <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400 sm:block">⌘K</kbd>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <span className="hidden items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300 md:flex">
+      <div className="flex items-center gap-1.5">
+        <span className="hidden items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-brand-700 dark:bg-brand-500/10 dark:text-brand-300 md:flex">
           <span className="live-dot"></span> Live
         </span>
-        <button onClick={toggleTheme} aria-label="Toggle theme"
-                className="grid h-9 w-9 place-items-center rounded-lg border border-gray-200 hover:bg-gray-50 transition dark:border-white/10 dark:hover:bg-white/5">
-          <span className="text-base">{theme === "dark" ? "☀" : "🌙"}</span>
-        </button>
         <div className="relative">
-          <button onClick={()=>setOpen(o=>!o)} className="flex items-center gap-3 rounded-lg border border-transparent px-2 py-1 transition hover:border-gray-200 hover:bg-gray-50 dark:hover:border-white/10 dark:hover:bg-white/5">
-            <div className="text-right text-sm leading-tight">
-              <div className="font-semibold">{user?.name ?? "Guest"}</div>
-              <div className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">{user?.role}</div>
+          <button onClick={()=>setNotif(n=>!n)} aria-label="Notifications" className="relative grid h-8 w-8 place-items-center rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5">
+            <Icon.bell className="h-[18px] w-[18px]"/>
+            {totalNotif > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent-500 ring-2 ring-white dark:ring-gray-900"></span>}
+          </button>
+          {notif && (
+            <div className="absolute right-0 top-10 w-80 rounded-xl border border-gray-200 bg-white shadow-xl z-20 dark:border-white/10 dark:bg-gray-800 animate-scale-in">
+              <p className="border-b border-gray-100 px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Notifications · {totalNotif}</p>
+              <div className="max-h-72 overflow-y-auto">
+                {overduePayments > 0 && <a href="#/members" onClick={()=>setNotif(false)} className="flex gap-3 border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/5">
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400"><Icon.alert className="h-4 w-4"/></div>
+                  <div className="text-[13px]"><p className="font-medium">{overduePayments} overdue payment{overduePayments>1?"s":""}</p><p className="text-[11px] text-gray-500">Member services attention required</p></div>
+                </a>}
+                {renewalsDue > 0 && <a href="#/members" onClick={()=>setNotif(false)} className="flex gap-3 border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/5">
+                  <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent-50 text-accent-600 dark:bg-accent-500/10 dark:text-accent-400"><Icon.refresh className="h-4 w-4"/></div>
+                  <div className="text-[13px]"><p className="font-medium">{renewalsDue} renewal{renewalsDue>1?"s":""} this month</p><p className="text-[11px] text-gray-500">Send renewal reminders</p></div>
+                </a>}
+                {totalNotif === 0 && <p className="px-4 py-6 text-center text-[12px] text-gray-500">All caught up.</p>}
+              </div>
             </div>
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-bold text-white shadow-md shadow-brand-500/30">{(user?.name??"?").slice(0,1)}</div>
+          )}
+        </div>
+        <button onClick={toggleTheme} aria-label="Toggle theme"
+                className="grid h-8 w-8 place-items-center rounded-md text-gray-500 hover:bg-gray-100 transition dark:hover:bg-white/5">
+          {theme === "dark" ? <Icon.sun className="h-[18px] w-[18px]"/> : <Icon.moon className="h-[18px] w-[18px]"/>}
+        </button>
+        <div className="relative pl-1.5">
+          <button onClick={()=>setOpen(o=>!o)} className="flex items-center gap-2 rounded-md border border-transparent px-1 py-0.5 transition hover:bg-gray-50 dark:hover:bg-white/5">
+            <div className="hidden text-right text-[12px] leading-tight md:block">
+              <div className="font-semibold">{user?.name ?? "Guest"}</div>
+              <div className="text-[9px] uppercase tracking-wider text-gray-500 dark:text-gray-400">{user?.role}</div>
+            </div>
+            <div className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-[11px] font-bold text-white shadow-md shadow-brand-500/30">{(user?.name??"?").slice(0,1)}</div>
           </button>
           {open && (
             <div className="absolute right-0 top-12 w-64 rounded-xl border border-gray-200 bg-white shadow-xl z-20 dark:border-white/10 dark:bg-gray-800 animate-scale-in">
@@ -836,12 +998,18 @@ function Topbar({ data, update, search, setSearch, theme, toggleTheme }) {
 }
 
 function Shell({ data, update, route, search, setSearch, theme, toggleTheme, children }) {
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem("afrilabs-sidebar") === "collapsed"; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("afrilabs-sidebar", collapsed ? "collapsed" : "expanded"); } catch {}
+  }, [collapsed]);
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
-      <Sidebar route={route} />
+      <Sidebar route={route} collapsed={collapsed} setCollapsed={setCollapsed} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar data={data} update={update} search={search} setSearch={setSearch} theme={theme} toggleTheme={toggleTheme} />
-        <main className="flex-1 px-6 py-6 lg:px-8">
+        <Topbar data={data} update={update} search={search} setSearch={setSearch} theme={theme} toggleTheme={toggleTheme} collapsed={collapsed} setCollapsed={setCollapsed} />
+        <main className="flex-1 px-5 py-5 lg:px-7">
           <div key={route} className="page-enter">{children}</div>
         </main>
       </div>
@@ -978,6 +1146,528 @@ function Dashboard({ data }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════
+//  CRM — Contacts, Deals, Activities
+// ════════════════════════════════════════════════════════════════════════
+function CRMHome({ data, update, search, route }) {
+  // Sub-route: /crm, /crm/contacts, /crm/deals, /crm/activities, /crm/reports
+  const sub = route.replace("/crm", "").replace(/^\//, "") || "overview";
+
+  const tabs = [
+    { id:"overview",   label:"Overview",   icon: Icon.dashboard },
+    { id:"contacts",   label:"Contacts",   icon: Icon.contacts },
+    { id:"deals",      label:"Deals",      icon: Icon.deals },
+    { id:"activities", label:"Activities", icon: Icon.activity },
+    { id:"reports",    label:"Reports",    icon: Icon.trending },
+  ];
+
+  const tabContent = sub === "contacts" ? <ContactsList data={data} update={update} search={search} />
+    : sub === "deals" ? <DealsKanban data={data} update={update} />
+    : sub === "activities" ? <CRMActivities data={data} update={update} />
+    : sub === "reports" ? <CRMReports data={data} />
+    : <CRMOverview data={data} />;
+
+  return (
+    <div>
+      <PageHeader
+        title="CRM"
+        subtitle="Customer relationship management — contacts, deals, activities, reporting."
+      />
+      <div className="mb-5 flex flex-wrap gap-1 border-b border-gray-200 dark:border-white/5">
+        {tabs.map(t => {
+          const active = sub === t.id || (t.id === "overview" && (sub === "" || sub === "overview"));
+          const I = t.icon;
+          return (
+            <a key={t.id} href={t.id === "overview" ? "#/crm" : `#/crm/${t.id}`}
+               className={cls("flex items-center gap-2 border-b-2 px-3 py-2 text-[13px] transition -mb-px",
+                 active ? "border-brand-600 text-brand-700 dark:text-brand-300 font-semibold" : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-gray-100")}>
+              <I className="h-4 w-4"/> {t.label}
+            </a>
+          );
+        })}
+      </div>
+      {tabContent}
+    </div>
+  );
+}
+
+function CRMOverview({ data }) {
+  const winRate = (() => {
+    const closed = data.deals.filter(d => d.stage === "WON" || d.stage === "LOST");
+    if (!closed.length) return 0;
+    return Math.round(closed.filter(d=>d.stage==="WON").length / closed.length * 100);
+  })();
+  const pipelineValue = data.deals.filter(d=>d.stage!=="WON" && d.stage!=="LOST").reduce((s,d)=>s+d.value, 0);
+  const wonValue = data.deals.filter(d=>d.stage==="WON").reduce((s,d)=>s+d.value, 0);
+  const stageData = DEAL_STAGES.map((s,i) => ({label:s, value: data.deals.filter(d=>d.stage===s).length, color: ["#94a3b8","#3b82f6","#a855f7","#eab308","#3d9462","#ef4444"][i]}));
+  const lifecycleData = CONTACT_LIFECYCLE.map((s,i) => ({label:s, value: data.contacts.filter(c=>c.lifecycle===s).length, color: ["#94a3b8","#3b82f6","#fb7d12","#3d9462","#ef4444"][i]}));
+  const recentActivities = [...data.crmActivities].sort((a,b)=>new Date(b.completedAt||b.dueDate||0)-new Date(a.completedAt||a.dueDate||0)).slice(0,6);
+  const contactById = Object.fromEntries(data.contacts.map(c=>[c.id,c]));
+  const dealById = Object.fromEntries(data.deals.map(d=>[d.id,d]));
+
+  return (
+    <div>
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Pipeline value" value={fmtCurrency(pipelineValue)} hint={`${data.deals.filter(d=>d.stage!=="WON"&&d.stage!=="LOST").length} open deals`} accent="blue" trend={8} sparkline={[2,3,3,4,4,5,5]} />
+        <StatCard label="Closed-won YTD" value={fmtCurrency(wonValue)} hint={`${data.deals.filter(d=>d.stage==="WON").length} deals`} accent="green" trend={15} sparkline={[1,1,2,2,3,3,4]} />
+        <StatCard label="Win rate" value={winRate + "%"} hint="Won / closed" accent="orange" trend={2} />
+        <StatCard label="Active contacts" value={data.contacts.length} hint={`${data.contacts.filter(c=>c.lifecycle==="CUSTOMER").length} customers`} accent="purple" sparkline={[5,6,6,7,7,8,8]} />
+      </div>
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-3">
+        <div className="card lg:col-span-2 animate-fade-up">
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Deal pipeline by stage</h3><p className="text-[11px] text-gray-500">Live count per stage</p></div>
+          <div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={stageData.map(s => ({label: s.label, value: s.value, color: s.color}))} height={180} /></div>
+        </div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Contact lifecycle</h3><p className="text-[11px] text-gray-500">Lead → Customer</p></div>
+          <div className="p-4"><DonutChart data={lifecycleData.filter(d=>d.value>0)} size={160} thickness={20} /></div>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        <div className="card animate-fade-up">
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-white/5">
+            <h3 className="text-[14px] font-bold">Top deals</h3>
+            <a href="#/crm/deals" className="text-[12px] font-semibold text-brand-700 dark:text-brand-400 hover:underline">Kanban →</a>
+          </div>
+          <table className="table-base">
+            <thead><tr><th>Title</th><th>Stage</th><th>Value</th><th>Close</th></tr></thead>
+            <tbody>
+              {[...data.deals].sort((a,b)=>b.value-a.value).slice(0,5).map(d => (
+                <tr key={d.id}>
+                  <td><div className="font-semibold text-[13px]">{d.title}</div><div className="text-[11px] text-gray-500">{contactById[d.contactId]?.firstName} {contactById[d.contactId]?.lastName}</div></td>
+                  <td><StageBadge stage={d.stage}/></td>
+                  <td className="font-mono text-[12px]">{fmtCurrency(d.value)}</td>
+                  <td className="text-[11px] text-gray-500">{fmtDate(d.expectedCloseDate)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-white/5">
+            <h3 className="text-[14px] font-bold">Recent activities</h3>
+            <a href="#/crm/activities" className="text-[12px] font-semibold text-brand-700 dark:text-brand-400 hover:underline">All →</a>
+          </div>
+          <div className="space-y-3 p-4">
+            {recentActivities.map(a => {
+              const c = contactById[a.contactId];
+              return (
+                <div key={a.id} className="flex items-start gap-2.5">
+                  <div className={cls("grid h-7 w-7 shrink-0 place-items-center rounded-full text-[10px] font-bold",
+                    a.type === "CALL" ? "bg-blue-100 text-blue-700" : a.type === "MEETING" ? "bg-purple-100 text-purple-700" : a.type === "EMAIL" ? "bg-brand-100 text-brand-700" : "bg-gray-100 text-gray-700")}>
+                    {a.type[0]}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-medium">{a.title}</p>
+                    {c && <p className="text-[11px] text-gray-500">{c.firstName} {c.lastName} · {c.company}</p>}
+                    <p className="text-[10px] text-gray-400">{relTime(a.completedAt || a.dueDate)}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContactsList({ data, update, search }) {
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [viewing, setViewing] = useState(null);
+  const [filterLC, setFilterLC] = useState("");
+  const partnerById = Object.fromEntries(data.partners.map(p=>[p.id,p]));
+
+  const filtered = data.contacts.filter(c => {
+    if (filterLC && c.lifecycle !== filterLC) return false;
+    if (search) { const s=search.toLowerCase(); if (!(c.firstName + " " + c.lastName + " " + c.company + " " + c.email).toLowerCase().includes(s)) return false; }
+    return true;
+  });
+
+  const save = (form) => {
+    update(d => {
+      if (editing) {
+        const idx = d.contacts.findIndex(c => c.id === editing.id);
+        d.contacts[idx] = { ...d.contacts[idx], ...form, leadScore: Number(form.leadScore) || 0 };
+        logAudit(d, "UPDATE", "Contact", editing.id);
+      } else {
+        const id = uid();
+        d.contacts.push({ id, ...form, leadScore: Number(form.leadScore)||50, tags: form.tags ? form.tags.split(",").map(t=>t.trim()).filter(Boolean) : [], createdAt: new Date().toISOString() });
+        logActivity(d, "CONTACT_CREATED", `Contact: ${form.firstName} ${form.lastName}`, form.company);
+        logAudit(d, "CREATE", "Contact", id);
+      }
+      return d;
+    });
+    setCreating(false); setEditing(null);
+  };
+  const remove = (c) => {
+    if (!confirm(`Delete ${c.firstName} ${c.lastName}?`)) return;
+    update(d => { d.contacts = d.contacts.filter(x=>x.id!==c.id); logAudit(d,"DELETE","Contact",c.id); return d; });
+    setViewing(null);
+  };
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          <button onClick={()=>setFilterLC("")} className={cls("rounded-md border px-2.5 py-1 text-[11px] font-medium", !filterLC ? "border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-700 dark:bg-brand-500/10 dark:text-brand-300" : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300")}>All ({data.contacts.length})</button>
+          {CONTACT_LIFECYCLE.map(s => <button key={s} onClick={()=>setFilterLC(s)} className={cls("rounded-md border px-2.5 py-1 text-[11px] font-medium", filterLC===s ? "border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-700 dark:bg-brand-500/10 dark:text-brand-300" : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300")}>{s} ({data.contacts.filter(c=>c.lifecycle===s).length})</button>)}
+        </div>
+        <button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New contact</button>
+      </div>
+
+      <div className="card">
+        <table className="table-base">
+          <thead><tr><th>Contact</th><th>Company</th><th>Lifecycle</th><th>Lead score</th><th>Last contact</th><th>Tags</th><th></th></tr></thead>
+          <tbody>
+            {filtered.map(c => (
+              <tr key={c.id}>
+                <td>
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[11px] font-bold text-white">{c.firstName[0]}{c.lastName[0]}</div>
+                    <div><div className="font-semibold text-[13px]">{c.firstName} {c.lastName}</div><div className="text-[11px] text-gray-500">{c.title}</div></div>
+                  </div>
+                </td>
+                <td className="text-[13px]">{c.company}</td>
+                <td><StageBadge stage={c.lifecycle}/></td>
+                <td><div className="flex items-center gap-2"><div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-200 dark:bg-white/5"><div className={cls("h-full rounded-full", c.leadScore >= 80 ? "bg-brand-500" : c.leadScore >= 50 ? "bg-accent-500" : "bg-gray-400")} style={{width: c.leadScore + "%"}}/></div><span className="text-[11px] font-semibold">{c.leadScore}</span></div></td>
+                <td className="text-[11px] text-gray-500">{relTime(c.lastContactedAt)}</td>
+                <td><div className="flex flex-wrap gap-1">{(c.tags||[]).slice(0,2).map(t => <span key={t} className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] dark:bg-white/5">{t}</span>)}</div></td>
+                <td><button onClick={()=>setViewing(c)} className="text-[12px] font-semibold text-brand-700 dark:text-brand-400 hover:underline">Open</button></td>
+              </tr>
+            ))}
+            {filtered.length === 0 && <tr><td colSpan="7" className="py-8 text-center text-gray-500 text-[13px]">No contacts match.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+
+      <Modal open={creating || !!editing || !!viewing} onClose={()=>{setCreating(false); setEditing(null); setViewing(null);}}
+             title={creating ? "New contact" : editing ? "Edit contact" : viewing ? `${viewing.firstName} ${viewing.lastName}` : ""} size="lg">
+        {(creating || editing) ? (
+          <ContactForm initial={editing} partners={data.partners} onSave={save} onCancel={()=>{setCreating(false); setEditing(null);}} />
+        ) : viewing ? (
+          <div className="p-5">
+            <div className="grid gap-3 md:grid-cols-3 mb-5 text-[13px]">
+              <div><p className="text-[10px] uppercase text-gray-500">Email</p><p className="font-medium">{viewing.email}</p></div>
+              <div><p className="text-[10px] uppercase text-gray-500">Phone</p><p className="font-medium">{viewing.phone ?? "—"}</p></div>
+              <div><p className="text-[10px] uppercase text-gray-500">Title</p><p className="font-medium">{viewing.title ?? "—"}</p></div>
+              <div><p className="text-[10px] uppercase text-gray-500">Company</p><p className="font-medium">{viewing.company}</p></div>
+              <div><p className="text-[10px] uppercase text-gray-500">Lifecycle</p><p><StageBadge stage={viewing.lifecycle}/></p></div>
+              <div><p className="text-[10px] uppercase text-gray-500">Lead score</p><p className="font-medium">{viewing.leadScore}/100</p></div>
+            </div>
+            <div className="mb-5">
+              <h4 className="mb-2 text-[11px] font-bold uppercase tracking-widest text-gray-500">Tags</h4>
+              <div className="flex flex-wrap gap-1.5">{(viewing.tags||[]).map(t => <span key={t} className="rounded bg-gray-100 px-2 py-1 text-[11px] dark:bg-white/5">{t}</span>)}</div>
+            </div>
+            <div className="mb-5">
+              <h4 className="mb-2 text-[11px] font-bold uppercase tracking-widest text-gray-500">Linked deals</h4>
+              <ul className="space-y-1.5 text-[13px]">
+                {data.deals.filter(d => d.contactId === viewing.id).map(d => (
+                  <li key={d.id} className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2 dark:bg-white/5">
+                    <span>{d.title}</span><span className="flex items-center gap-2"><StageBadge stage={d.stage}/><span className="font-mono text-[11px]">{fmtCurrency(d.value)}</span></span>
+                  </li>
+                ))}
+                {data.deals.filter(d => d.contactId === viewing.id).length === 0 && <li className="text-[11px] text-gray-400">No deals linked.</li>}
+              </ul>
+            </div>
+            <div className="mb-5">
+              <h4 className="mb-2 text-[11px] font-bold uppercase tracking-widest text-gray-500">Activity</h4>
+              <div className="space-y-2">
+                {data.crmActivities.filter(a => a.contactId === viewing.id).map(a => (
+                  <div key={a.id} className="rounded-md border border-gray-100 bg-gray-50 p-3 text-[13px] dark:border-white/5 dark:bg-white/5">
+                    <div className="flex justify-between"><span className="font-semibold">{a.type} · {a.title}</span><span className="text-[11px] text-gray-500">{relTime(a.completedAt || a.dueDate)}</span></div>
+                    {a.note && <p className="mt-1 text-[12px] text-gray-600 dark:text-gray-400">{a.note}</p>}
+                  </div>
+                ))}
+                {data.crmActivities.filter(a => a.contactId === viewing.id).length === 0 && <p className="text-[11px] text-gray-400">No activity logged.</p>}
+              </div>
+            </div>
+            <div className="flex justify-between border-t border-gray-100 pt-4 dark:border-white/5">
+              <button onClick={()=>remove(viewing)} className="btn-danger"><Icon.trash className="h-4 w-4"/> Delete</button>
+              <div className="space-x-2"><button onClick={()=>setViewing(null)} className="btn-ghost">Close</button><button onClick={()=>{setEditing(viewing); setViewing(null);}} className="btn-outline"><Icon.edit className="h-4 w-4"/> Edit</button></div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+    </div>
+  );
+}
+
+function ContactForm({ initial, partners, onSave, onCancel }) {
+  const [f, setF] = useState(initial ? {...initial, tags:(initial.tags||[]).join(", ")} : { firstName:"", lastName:"", email:"", phone:"", title:"", company:"", partnerId:"", lifecycle:"LEAD", leadScore:50, tags:"", lastContactedAt:new Date().toISOString() });
+  const submit = (e) => { e.preventDefault(); onSave(f); };
+  return (
+    <form onSubmit={submit} className="p-5 space-y-4">
+      <div className="grid gap-3 md:grid-cols-2">
+        <div><label className="label">First name *</label><input className="input" required value={f.firstName} onChange={e=>setF({...f,firstName:e.target.value})}/></div>
+        <div><label className="label">Last name *</label><input className="input" required value={f.lastName} onChange={e=>setF({...f,lastName:e.target.value})}/></div>
+        <div><label className="label">Email *</label><input type="email" className="input" required value={f.email} onChange={e=>setF({...f,email:e.target.value})}/></div>
+        <div><label className="label">Phone</label><input className="input" value={f.phone ?? ""} onChange={e=>setF({...f,phone:e.target.value})}/></div>
+        <div><label className="label">Title</label><input className="input" value={f.title ?? ""} onChange={e=>setF({...f,title:e.target.value})}/></div>
+        <div><label className="label">Company</label><input className="input" value={f.company ?? ""} onChange={e=>setF({...f,company:e.target.value})}/></div>
+        <div><label className="label">Partner organization</label><select className="input" value={f.partnerId ?? ""} onChange={e=>setF({...f,partnerId:e.target.value})}><option value="">—</option>{partners.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+        <div><label className="label">Lifecycle stage</label><select className="input" value={f.lifecycle} onChange={e=>setF({...f,lifecycle:e.target.value})}>{CONTACT_LIFECYCLE.map(s=><option key={s}>{s}</option>)}</select></div>
+        <div><label className="label">Lead score (0-100)</label><input type="number" min="0" max="100" className="input" value={f.leadScore} onChange={e=>setF({...f,leadScore:e.target.value})}/></div>
+        <div><label className="label">Tags (comma-separated)</label><input className="input" value={f.tags ?? ""} onChange={e=>setF({...f,tags:e.target.value})} placeholder="sponsor, priority, west-africa"/></div>
+      </div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4 dark:border-white/5">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary">Save contact</button>
+      </div>
+    </form>
+  );
+}
+
+function DealsKanban({ data, update }) {
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [draggingId, setDraggingId] = useState(null);
+  const contactById = Object.fromEntries(data.contacts.map(c=>[c.id,c]));
+
+  const moveDeal = (dealId, stage) => {
+    update(d => {
+      const idx = d.deals.findIndex(x => x.id === dealId);
+      if (idx < 0) return d;
+      const old = d.deals[idx].stage;
+      d.deals[idx].stage = stage;
+      d.deals[idx].updatedAt = new Date().toISOString();
+      if (stage === "WON" || stage === "LOST") d.deals[idx].closedAt = new Date().toISOString();
+      logActivity(d, "DEAL_MOVED", `${d.deals[idx].title}: ${old} → ${stage}`, null);
+      logAudit(d, "UPDATE", "Deal", dealId);
+      return d;
+    });
+  };
+
+  const save = (form) => {
+    update(d => {
+      const payload = { ...form, value: Number(form.value)||0, probability: Number(form.probability)||50 };
+      if (editing) {
+        const idx = d.deals.findIndex(x => x.id === editing.id);
+        d.deals[idx] = { ...d.deals[idx], ...payload, updatedAt: new Date().toISOString() };
+        logAudit(d, "UPDATE", "Deal", editing.id);
+      } else {
+        const id = uid();
+        d.deals.push({ id, ...payload, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+        logActivity(d, "DEAL_CREATED", `New deal: ${form.title}`, fmtCurrency(payload.value));
+        logAudit(d, "CREATE", "Deal", id);
+      }
+      return d;
+    });
+    setCreating(false); setEditing(null);
+  };
+  const remove = (deal) => {
+    if (!confirm("Delete deal?")) return;
+    update(d => { d.deals = d.deals.filter(x=>x.id!==deal.id); logAudit(d,"DELETE","Deal",deal.id); return d; });
+    setEditing(null);
+  };
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-[12px] text-gray-500">{data.deals.length} deals · pipeline {fmtCurrency(data.deals.filter(d=>d.stage!=="WON"&&d.stage!=="LOST").reduce((s,d)=>s+d.value,0))}</div>
+        <button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New deal</button>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        {DEAL_STAGES.map((stage, i) => {
+          const deals = data.deals.filter(d => d.stage === stage);
+          const total = deals.reduce((s,d)=>s+d.value, 0);
+          const colors = ["#94a3b8","#3b82f6","#a855f7","#eab308","#3d9462","#ef4444"];
+          return (
+            <div key={stage} className="rounded-xl border border-gray-200 bg-gray-50 dark:border-white/5 dark:bg-white/5"
+                 onDragOver={(e)=>e.preventDefault()}
+                 onDrop={(e)=>{ if (draggingId) moveDeal(draggingId, stage); setDraggingId(null); }}>
+              <div className="border-b border-gray-200 px-3 py-2 dark:border-white/5">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-[12px] font-bold"><span className="h-2 w-2 rounded-full" style={{background:colors[i]}}/>{stage}</span>
+                  <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] font-semibold text-gray-700 dark:bg-gray-800 dark:text-gray-300">{deals.length}</span>
+                </div>
+                <p className="mt-0.5 font-mono text-[10px] text-gray-500">{fmtCurrency(total)}</p>
+              </div>
+              <div className="space-y-2 p-2 min-h-32">
+                {deals.map(d => {
+                  const c = contactById[d.contactId];
+                  return (
+                    <div key={d.id} draggable
+                         onDragStart={()=>setDraggingId(d.id)}
+                         onClick={()=>setEditing(d)}
+                         className="group cursor-pointer rounded-lg border border-gray-200 bg-white p-2.5 shadow-sm hover:shadow-md hover:border-brand-300 transition dark:border-white/10 dark:bg-gray-800 dark:hover:border-brand-500">
+                      <p className="line-clamp-2 text-[12px] font-semibold">{d.title}</p>
+                      <div className="mt-1.5 flex items-center justify-between">
+                        <span className="font-mono text-[11px] font-bold text-brand-700 dark:text-brand-400">{fmtCurrency(d.value)}</span>
+                        <span className="text-[10px] text-gray-500">{d.probability}%</span>
+                      </div>
+                      {c && <div className="mt-1 flex items-center gap-1.5">
+                        <div className="grid h-4 w-4 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[8px] font-bold text-white">{c.firstName[0]}</div>
+                        <span className="text-[10px] text-gray-500 truncate">{c.firstName} {c.lastName}</span>
+                      </div>}
+                    </div>
+                  );
+                })}
+                {deals.length === 0 && <p className="py-2 text-center text-[10px] text-gray-400">Drop here</p>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <Modal open={creating || !!editing} onClose={()=>{setCreating(false); setEditing(null);}} title={creating ? "New deal" : "Edit deal"} size="md">
+        <DealForm initial={editing} contacts={data.contacts} partners={data.partners} onSave={save} onCancel={()=>{setCreating(false); setEditing(null);}} onDelete={editing?()=>remove(editing):null} />
+      </Modal>
+    </div>
+  );
+}
+
+function DealForm({ initial, contacts, partners, onSave, onCancel, onDelete }) {
+  const [f, setF] = useState(initial || { title:"", contactId:contacts[0]?.id??"", partnerId:"", value:50000, stage:"LEAD", probability:30, expectedCloseDate:new Date(Date.now()+1000*60*60*24*60).toISOString().slice(0,10), source:"OUTBOUND" });
+  const submit = (e) => { e.preventDefault(); onSave({...f, expectedCloseDate: typeof f.expectedCloseDate === "string" ? new Date(f.expectedCloseDate).toISOString() : f.expectedCloseDate}); };
+  return (
+    <form onSubmit={submit} className="p-5 space-y-4">
+      <div><label className="label">Title *</label><input className="input" required value={f.title} onChange={e=>setF({...f,title:e.target.value})}/></div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <div><label className="label">Contact</label><select className="input" value={f.contactId} onChange={e=>setF({...f,contactId:e.target.value})}><option value="">—</option>{contacts.map(c=><option key={c.id} value={c.id}>{c.firstName} {c.lastName} · {c.company}</option>)}</select></div>
+        <div><label className="label">Partner</label><select className="input" value={f.partnerId ?? ""} onChange={e=>setF({...f,partnerId:e.target.value})}><option value="">—</option>{partners.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+        <div><label className="label">Value (USD)</label><input type="number" min="0" step="1000" className="input" value={f.value} onChange={e=>setF({...f,value:e.target.value})}/></div>
+        <div><label className="label">Stage</label><select className="input" value={f.stage} onChange={e=>setF({...f,stage:e.target.value})}>{DEAL_STAGES.map(s=><option key={s}>{s}</option>)}</select></div>
+        <div><label className="label">Probability (%)</label><input type="number" min="0" max="100" className="input" value={f.probability} onChange={e=>setF({...f,probability:e.target.value})}/></div>
+        <div><label className="label">Expected close</label><input type="date" className="input" value={typeof f.expectedCloseDate === "string" ? f.expectedCloseDate.slice(0,10) : ""} onChange={e=>setF({...f,expectedCloseDate:e.target.value})}/></div>
+      </div>
+      <div><label className="label">Source</label><select className="input" value={f.source} onChange={e=>setF({...f,source:e.target.value})}><option>OUTBOUND</option><option>INBOUND</option><option>REFERRAL</option><option>EVENT</option></select></div>
+      <div className="flex justify-between border-t border-gray-100 pt-4 dark:border-white/5">
+        {onDelete ? <button type="button" onClick={onDelete} className="btn-danger"><Icon.trash className="h-4 w-4"/> Delete</button> : <span/>}
+        <div className="space-x-2"><button type="button" onClick={onCancel} className="btn-ghost">Cancel</button><button type="submit" className="btn-primary">Save deal</button></div>
+      </div>
+    </form>
+  );
+}
+
+function CRMActivities({ data, update }) {
+  const [creating, setCreating] = useState(false);
+  const [filter, setFilter] = useState("");
+  const contactById = Object.fromEntries(data.contacts.map(c=>[c.id,c]));
+  const sorted = [...data.crmActivities].filter(a => !filter || a.type === filter).sort((a,b)=>new Date(b.completedAt||b.dueDate||0)-new Date(a.completedAt||a.dueDate||0));
+  const counts = ACTIVITY_TYPES.reduce((acc,t)=>({...acc,[t]:data.crmActivities.filter(x=>x.type===t).length}),{});
+
+  const save = (form) => {
+    update(d => {
+      const id = uid();
+      d.crmActivities.unshift({ id, ...form, owner: d.settings.currentUserId,
+        completedAt: form.completed ? new Date().toISOString() : null,
+        dueDate: form.dueDate || null });
+      const c = d.contacts.find(c => c.id === form.contactId);
+      if (c) c.lastContactedAt = new Date().toISOString();
+      logAudit(d, "CREATE", "CRMActivity", id);
+      return d;
+    });
+    setCreating(false);
+  };
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex flex-wrap gap-1.5">
+          <button onClick={()=>setFilter("")} className={cls("rounded-md border px-2.5 py-1 text-[11px] font-medium", !filter ? "border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-700 dark:bg-brand-500/10 dark:text-brand-300" : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300")}>All</button>
+          {ACTIVITY_TYPES.map(t => <button key={t} onClick={()=>setFilter(t)} className={cls("rounded-md border px-2.5 py-1 text-[11px] font-medium", filter===t ? "border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-700 dark:bg-brand-500/10 dark:text-brand-300" : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-800 dark:text-gray-300")}>{t} ({counts[t]||0})</button>)}
+        </div>
+        <button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> Log activity</button>
+      </div>
+
+      <div className="card">
+        <div className="space-y-3 p-4">
+          {sorted.map(a => {
+            const c = contactById[a.contactId];
+            const tone = a.type === "CALL" ? "blue" : a.type === "MEETING" ? "purple" : a.type === "EMAIL" ? "green" : a.type === "NOTE" ? "gray" : "orange";
+            return (
+              <div key={a.id} className="flex items-start gap-3 rounded-lg border border-gray-100 p-3 dark:border-white/5">
+                <Badge tone={tone}>{a.type}</Badge>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold">{a.title}</p>
+                  {c && <p className="text-[11px] text-gray-500">{c.firstName} {c.lastName} · {c.company}</p>}
+                  {a.note && <p className="mt-1 text-[12px] text-gray-600 dark:text-gray-400">{a.note}</p>}
+                  <p className="mt-1 text-[10px] text-gray-400">{a.completedAt ? "Completed " : "Due "}{relTime(a.completedAt || a.dueDate)}{a.durationMin ? ` · ${a.durationMin}min` : ""}</p>
+                </div>
+              </div>
+            );
+          })}
+          {sorted.length === 0 && <p className="py-4 text-center text-[12px] text-gray-500">No activities logged.</p>}
+        </div>
+      </div>
+
+      <Modal open={creating} onClose={()=>setCreating(false)} title="Log activity" size="md">
+        <ActivityForm contacts={data.contacts} deals={data.deals} onSave={save} onCancel={()=>setCreating(false)} />
+      </Modal>
+    </div>
+  );
+}
+
+function ActivityForm({ contacts, deals, onSave, onCancel }) {
+  const [f, setF] = useState({ type:"CALL", title:"", contactId:contacts[0]?.id??"", dealId:"", note:"", durationMin:"", completed:true, dueDate:"" });
+  const submit = (e) => { e.preventDefault(); onSave({...f, durationMin: f.durationMin ? Number(f.durationMin) : null, dueDate: f.dueDate ? new Date(f.dueDate).toISOString() : null}); };
+  return (
+    <form onSubmit={submit} className="p-5 space-y-4">
+      <div className="grid gap-3 md:grid-cols-2">
+        <div><label className="label">Type</label><select className="input" value={f.type} onChange={e=>setF({...f,type:e.target.value})}>{ACTIVITY_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+        <div><label className="label">Status</label><select className="input" value={f.completed ? "done":"due"} onChange={e=>setF({...f,completed: e.target.value === "done"})}><option value="done">Completed now</option><option value="due">Scheduled / Due</option></select></div>
+      </div>
+      <div><label className="label">Title *</label><input required className="input" value={f.title} onChange={e=>setF({...f,title:e.target.value})}/></div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <div><label className="label">Contact</label><select className="input" value={f.contactId} onChange={e=>setF({...f,contactId:e.target.value})}><option value="">—</option>{contacts.map(c=><option key={c.id} value={c.id}>{c.firstName} {c.lastName}</option>)}</select></div>
+        <div><label className="label">Deal</label><select className="input" value={f.dealId} onChange={e=>setF({...f,dealId:e.target.value})}><option value="">—</option>{deals.map(d=><option key={d.id} value={d.id}>{d.title}</option>)}</select></div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <div><label className="label">Duration (min)</label><input type="number" className="input" value={f.durationMin} onChange={e=>setF({...f,durationMin:e.target.value})}/></div>
+        <div><label className="label">Due date (if scheduled)</label><input type="date" className="input" value={f.dueDate} onChange={e=>setF({...f,dueDate:e.target.value})}/></div>
+      </div>
+      <div><label className="label">Notes</label><textarea className="input min-h-[80px]" value={f.note} onChange={e=>setF({...f,note:e.target.value})}/></div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4 dark:border-white/5">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary">Log activity</button>
+      </div>
+    </form>
+  );
+}
+
+function CRMReports({ data }) {
+  const ownerStats = {};
+  data.deals.forEach(d => {
+    const u = data.users.find(u => u.id === d.owner);
+    const name = u?.name ?? "Unassigned";
+    if (!ownerStats[name]) ownerStats[name] = { open:0, won:0, value:0, wonValue:0 };
+    if (d.stage === "WON") { ownerStats[name].won++; ownerStats[name].wonValue += d.value; }
+    else if (d.stage !== "LOST") { ownerStats[name].open++; ownerStats[name].value += d.value; }
+  });
+  const sourceData = ["INBOUND","OUTBOUND","REFERRAL","EVENT"].map((s,i)=>({label:s, value:data.deals.filter(d=>d.source===s).length, color:["#3d9462","#3b82f6","#a855f7","#fb7d12"][i]})).filter(d=>d.value>0);
+  const monthlyTrend = Array.from({length:6}, (_,i) => {
+    const d = new Date(); d.setMonth(d.getMonth() - (5-i)); d.setDate(1);
+    const start = d.getTime();
+    const end = new Date(d); end.setMonth(end.getMonth()+1);
+    return data.deals.filter(x => { const t = new Date(x.createdAt).getTime(); return t >= start && t < end.getTime(); }).length;
+  });
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-2">
+      <div className="card">
+        <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Deals by source</h3></div>
+        <div className="p-4"><DonutChart data={sourceData} size={180} thickness={22}/></div>
+      </div>
+      <div className="card">
+        <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">New deals over time</h3><p className="text-[11px] text-gray-500">Last 6 months</p></div>
+        <div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={monthlyTrend.map((v,i)=>{const d=new Date(); d.setMonth(d.getMonth()-(5-i)); return {label:d.toLocaleDateString("en",{month:"short"}), value:v}})} height={180}/></div>
+      </div>
+      <div className="card lg:col-span-2">
+        <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Owner leaderboard</h3></div>
+        <table className="table-base">
+          <thead><tr><th>Owner</th><th>Open deals</th><th>Open value</th><th>Won deals</th><th>Won value</th></tr></thead>
+          <tbody>{Object.entries(ownerStats).sort((a,b)=>b[1].wonValue-a[1].wonValue).map(([name, s])=>(
+            <tr key={name}><td className="font-semibold text-[13px]">{name}</td><td>{s.open}</td><td className="font-mono text-[12px]">{fmtCurrency(s.value)}</td><td>{s.won}</td><td className="font-mono text-[12px] text-brand-700 dark:text-brand-400">{fmtCurrency(s.wonValue)}</td></tr>
+          ))}</tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
 //  HUBS (member services)
 // ════════════════════════════════════════════════════════════════════════
 function HubForm({ initial, onSave, onCancel }) {
@@ -1035,6 +1725,7 @@ function PaymentForm({ hubId, onSave, onCancel }) {
 }
 
 function HubsList({ data, update, search }) {
+  const [tab, setTab] = useState("all"); // all, paid, pending, expired, renewals
   const [filterRegion, setFilterRegion] = useState("");
   const [filterTier, setFilterTier] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
@@ -1042,8 +1733,29 @@ function HubsList({ data, update, search }) {
   const [creating, setCreating] = useState(false);
   const [paymentFor, setPaymentFor] = useState(null);
   const [viewing, setViewing] = useState(null);
+  const [messaging, setMessaging] = useState(null); // {audience, count}
+  const [reminderModal, setReminderModal] = useState(null); // hub for reminder
 
-  const filtered = data.hubs.filter(h => {
+  // Compute renewal info for each hub
+  const renewalInfo = (hub) => {
+    const last = data.payments.filter(p => p.hubId === hub.id && p.status === "PAID").sort((a,b)=>new Date(b.periodEnd)-new Date(a.periodEnd))[0];
+    if (!last) return { status: "no-payment", days: null, lastPaid: null };
+    const days = Math.floor((new Date(last.periodEnd).getTime() - Date.now()) / 86400000);
+    if (days < 0) return { status: "expired", days, lastPaid: last };
+    if (days <= 30) return { status: "renewal-soon", days, lastPaid: last };
+    if (days <= 60) return { status: "renewal-upcoming", days, lastPaid: last };
+    return { status: "current", days, lastPaid: last };
+  };
+  const isPriorityHub = (h) => h.membershipTier === "STRATEGIC" || (h.membershipTier === "PREMIUM" && hubPaymentStatus(h, data.payments) === "paid");
+
+  // Apply tab filter first
+  let tabFiltered = data.hubs;
+  if (tab === "paid")     tabFiltered = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "paid");
+  if (tab === "pending")  tabFiltered = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "pending");
+  if (tab === "expired")  tabFiltered = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "expired");
+  if (tab === "renewals") tabFiltered = data.hubs.filter(h => { const r = renewalInfo(h); return r.status === "renewal-soon" || r.status === "renewal-upcoming"; });
+
+  const filtered = tabFiltered.filter(h => {
     if (filterRegion && h.region !== filterRegion) return false;
     if (filterTier && h.membershipTier !== filterTier) return false;
     if (filterStatus && h.status !== filterStatus) return false;
@@ -1054,6 +1766,77 @@ function HubsList({ data, update, search }) {
   const paid    = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "paid").length;
   const pending = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "pending").length;
   const expired = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "expired").length;
+  const renewalsSoon = data.hubs.filter(h => { const r = renewalInfo(h); return r.status === "renewal-soon"; }).length;
+
+  // Auto-reminders panel: who needs payment reminder, who needs renewal notice
+  const remindersList = data.hubs.map(h => {
+    const r = renewalInfo(h);
+    if (r.status === "renewal-soon") return { hub: h, kind: "renewal", message: `Renewal in ${r.days}d`, severity: "warn" };
+    const overdue = data.payments.find(p => p.hubId === h.id && p.status === "OVERDUE");
+    if (overdue) return { hub: h, kind: "overdue", message: "Payment overdue", severity: "danger" };
+    if (r.status === "expired") return { hub: h, kind: "expired", message: `Expired ${Math.abs(r.days)}d ago`, severity: "danger" };
+    return null;
+  }).filter(Boolean).slice(0, 8);
+
+  // Priority hubs (auto-tagged: STRATEGIC + paid PREMIUM)
+  const priorityHubs = data.hubs.filter(isPriorityHub);
+
+  // Region + tier breakdown for charts
+  const hubsByRegion = REGIONS.map(r => ({ label: r.split(" ")[0], value: data.hubs.filter(h=>h.region===r).length }));
+  const tierBreakdown = TIERS.map((t,i) => ({ label: t, value: data.hubs.filter(h=>h.membershipTier===t).length, color: ["#94a3b8","#3b82f6","#a855f7"][i] }));
+  const subscriptionBreakdown = [
+    { label:"Paid",    value: paid,    color:"#3d9462" },
+    { label:"Pending", value: pending, color:"#fb7d12" },
+    { label:"Expired", value: expired, color:"#ef4444" },
+  ].filter(d => d.value > 0);
+
+  // MRR (monthly recurring revenue) calculation
+  const mrr = data.hubs.reduce((sum, h) => {
+    const ps = data.payments.filter(p => p.hubId === h.id && p.status === "PAID");
+    const last = ps.sort((a,b)=>new Date(b.periodEnd)-new Date(a.periodEnd))[0];
+    if (!last) return sum;
+    const periodMonths = Math.max(1, Math.round((new Date(last.periodEnd) - new Date(last.periodStart)) / (86400000 * 30)));
+    return sum + (last.amount / periodMonths);
+  }, 0);
+
+  const tabs = [
+    { id:"all",      label:"All hubs",       count: data.hubs.length },
+    { id:"paid",     label:"Paid",           count: paid },
+    { id:"pending",  label:"Pending",        count: pending },
+    { id:"expired",  label:"Expired",        count: expired },
+    { id:"renewals", label:"Renewals due",   count: renewalsSoon },
+  ];
+
+  const sendReminder = (hub, kind) => {
+    update(d => {
+      logActivity(d, "REMINDER_SENT", `${kind} reminder sent: ${hub.name}`, `Auto-reminder via Member Services`, { hubId: hub.id });
+      logAudit(d, "CREATE", "Reminder", hub.id);
+      return d;
+    });
+    alert(`Reminder logged for ${hub.name} (${kind}).`);
+  };
+
+  const sendCampaign = (audience) => {
+    const hubsInAudience = audience === "PAID_HUBS" ? data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "paid")
+      : audience.startsWith("REGION:") ? data.hubs.filter(h => h.region === audience.slice(7))
+      : audience.startsWith("TIER:") ? data.hubs.filter(h => h.membershipTier === audience.slice(5))
+      : audience === "PRIORITY" ? priorityHubs
+      : data.hubs;
+    setMessaging({ audience, count: hubsInAudience.length });
+  };
+  const submitCampaign = (form) => {
+    update(d => {
+      const id = uid();
+      d.campaigns.push({ id, ...form, channel:"EMAIL", recipients: messaging.count, opens:0, clicks:0,
+        createdById: d.settings.currentUserId, createdAt: new Date().toISOString(),
+        sentAt: form.status === "SENT" ? new Date().toISOString() : null });
+      if (form.status === "SENT") logActivity(d, "CAMPAIGN_SENT", `Member campaign sent: ${form.name}`, `${messaging.count} recipients`);
+      logAudit(d, "CREATE", "Campaign", id);
+      return d;
+    });
+    setMessaging(null);
+    alert("Campaign sent.");
+  };
 
   const saveHub = (form) => {
     update(d => {
@@ -1096,56 +1879,175 @@ function HubsList({ data, update, search }) {
 
   return (
     <div>
-      <PageHeader title="Member Hubs" subtitle="Manage 500+ Afrilabs hubs as paying ecosystem members."
-        action={<><button className="btn-outline mr-2" onClick={()=>navigate("/campaigns")}>Send campaign</button><button className="btn-primary" onClick={()=>setCreating(true)}>+ Onboard hub</button></>} />
+      <PageHeader title="Member Services" subtitle="Manage 500+ Afrilabs hubs across the continent — onboarding, payments, segmentation, communications."
+        action={<>
+          <button className="btn-outline mr-2" onClick={()=>sendCampaign("ALL_HUBS")}><Icon.send className="h-4 w-4"/> Targeted message</button>
+          <button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> Onboard hub</button>
+        </>} />
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Total hubs" value={data.hubs.length} accent="green" trend={12} />
-        <StatCard label="Paid" value={paid} hint="Active subscriptions" accent="green" trend={5} />
-        <StatCard label="Pending" value={pending} hint="Awaiting payment" accent="orange" />
-        <StatCard label="Expired" value={expired} hint="Need renewal" accent="red" trend={-3} />
+      {/* TOP STATS */}
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+        <StatCard label="Total hubs"     value={data.hubs.length} hint="All members" accent="green"  trend={12} sparkline={[24,26,27,28,29,30,30]} />
+        <StatCard label="Paid"           value={paid}     hint="Active subscriptions" accent="green"  trend={5}  sparkline={[18,19,20,21,21,22,22]} />
+        <StatCard label="Pending"        value={pending}  hint="Awaiting payment"     accent="orange" />
+        <StatCard label="Expired"        value={expired}  hint="Need renewal"         accent="red"    trend={-3} />
+        <StatCard label="MRR (est)"      value={fmtCurrency(mrr)} hint="Monthly recurring" accent="purple" trend={8} sparkline={[8,9,9,10,11,11,12]} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+      {/* CHARTS ROW */}
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <div className="card lg:col-span-2 animate-fade-up">
-          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-bold">Regional distribution</h3><p className="text-sm text-gray-500 dark:text-gray-400">Hubs across all 5 African regions</p></div>
-          <div className="p-5 text-gray-700 dark:text-gray-300"><BarChart data={REGIONS.map(r => ({label: r.split(" ")[0], value: data.hubs.filter(h=>h.region===r).length}))} height={200} /></div>
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5">
+            <h3 className="text-[14px] font-bold">Regional distribution</h3>
+            <p className="text-[11px] text-gray-500">Hubs across all 5 African regions · live</p>
+          </div>
+          <div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={hubsByRegion} height={180} /></div>
         </div>
         <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
-          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-bold">Tier mix</h3><p className="text-sm text-gray-500 dark:text-gray-400">Membership tier breakdown</p></div>
-          <div className="p-5"><DonutChart data={TIERS.map((t,i)=>({label:t, value: data.hubs.filter(h=>h.membershipTier===t).length, color:["#94a3b8","#3b82f6","#a855f7"][i]})).filter(d=>d.value>0)} size={170} thickness={22} /></div>
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5">
+            <h3 className="text-[14px] font-bold">Subscription health</h3>
+            <p className="text-[11px] text-gray-500">Paid vs pending vs expired</p>
+          </div>
+          <div className="p-4"><DonutChart data={subscriptionBreakdown} size={160} thickness={20} /></div>
         </div>
       </div>
 
-      <div className="mt-6 card">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4 dark:border-white/5">
-          <h3 className="text-base font-semibold">Hubs ({filtered.length})</h3>
-          <div className="flex gap-2 text-xs">
-            <select className="input !py-1.5" value={filterRegion} onChange={e=>setFilterRegion(e.target.value)}><option value="">All regions</option>{REGIONS.map(r=><option key={r}>{r}</option>)}</select>
-            <select className="input !py-1.5" value={filterTier} onChange={e=>setFilterTier(e.target.value)}><option value="">All tiers</option>{TIERS.map(t=><option key={t}>{t}</option>)}</select>
-            <select className="input !py-1.5" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="">Any status</option>{HUB_STATUS.map(s=><option key={s}>{s}</option>)}</select>
+      {/* SEGMENTATION SHORTCUTS — targeted communications */}
+      <div className="mt-5 card animate-fade-up">
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-white/5">
+          <div><h3 className="text-[14px] font-bold">Targeted communications</h3><p className="text-[11px] text-gray-500">Send messages to specific segments instantly</p></div>
+          <Icon.send className="h-4 w-4 text-gray-400"/>
+        </div>
+        <div className="grid gap-2 p-4 md:grid-cols-2 lg:grid-cols-4">
+          <button onClick={()=>sendCampaign("PAID_HUBS")} className="group flex items-center justify-between rounded-lg border border-gray-200 bg-gradient-to-br from-brand-50 to-white p-3 text-left transition hover:border-brand-300 hover:shadow-md dark:border-white/10 dark:from-brand-900/20 dark:to-gray-800">
+            <div><p className="text-[11px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300">Paid members</p><p className="text-[18px] font-black mt-0.5">{paid}</p><p className="text-[10px] text-gray-500">Active subscriptions only</p></div>
+            <Icon.send className="h-4 w-4 text-brand-600 opacity-0 group-hover:opacity-100 transition"/>
+          </button>
+          <button onClick={()=>sendCampaign("PRIORITY")} className="group flex items-center justify-between rounded-lg border border-gray-200 bg-gradient-to-br from-purple-50 to-white p-3 text-left transition hover:border-purple-300 hover:shadow-md dark:border-white/10 dark:from-purple-900/20 dark:to-gray-800">
+            <div><p className="text-[11px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">Priority hubs</p><p className="text-[18px] font-black mt-0.5">{priorityHubs.length}</p><p className="text-[10px] text-gray-500">Strategic + paid premium</p></div>
+            <Icon.star className="h-4 w-4 text-purple-600 opacity-0 group-hover:opacity-100 transition"/>
+          </button>
+          <button onClick={()=>{ const r = prompt("Region (e.g. West Africa):", "West Africa"); if (r) sendCampaign("REGION:"+r); }} className="group flex items-center justify-between rounded-lg border border-gray-200 bg-gradient-to-br from-blue-50 to-white p-3 text-left transition hover:border-blue-300 hover:shadow-md dark:border-white/10 dark:from-blue-900/20 dark:to-gray-800">
+            <div><p className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">By region</p><p className="text-[18px] font-black mt-0.5">{REGIONS.length}</p><p className="text-[10px] text-gray-500">Region-specific outreach</p></div>
+            <Icon.layers className="h-4 w-4 text-blue-600 opacity-0 group-hover:opacity-100 transition"/>
+          </button>
+          <button onClick={()=>{ const s = prompt("Tier (STANDARD / PREMIUM / STRATEGIC):", "PREMIUM"); if (s) sendCampaign("TIER:"+s.toUpperCase()); }} className="group flex items-center justify-between rounded-lg border border-gray-200 bg-gradient-to-br from-accent-50 to-white p-3 text-left transition hover:border-accent-300 hover:shadow-md dark:border-white/10 dark:from-accent-900/20 dark:to-gray-800">
+            <div><p className="text-[11px] font-bold uppercase tracking-wider text-accent-700 dark:text-accent-300">By tier</p><p className="text-[18px] font-black mt-0.5">{TIERS.length}</p><p className="text-[10px] text-gray-500">Tier-based outreach</p></div>
+            <Icon.bookmark className="h-4 w-4 text-accent-600 opacity-0 group-hover:opacity-100 transition"/>
+          </button>
+        </div>
+      </div>
+
+      {/* AUTO REMINDERS + PRIORITY HUBS */}
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="card lg:col-span-2 animate-fade-up">
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-white/5">
+            <div className="flex items-center gap-2"><Icon.alert className="h-4 w-4 text-accent-600"/><h3 className="text-[14px] font-bold">Auto-reminders</h3><span className="rounded-full bg-accent-50 px-2 py-0.5 text-[10px] font-bold text-accent-700 dark:bg-accent-500/10 dark:text-accent-300">{remindersList.length}</span></div>
+            <p className="text-[11px] text-gray-500">Auto-detected actions needed</p>
+          </div>
+          <div className="divide-y divide-gray-100 dark:divide-white/5">
+            {remindersList.length === 0 && <p className="px-4 py-6 text-center text-[12px] text-gray-500">All caught up — no reminders needed.</p>}
+            {remindersList.map(r => (
+              <div key={r.hub.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={cls("grid h-8 w-8 shrink-0 place-items-center rounded-full", r.severity === "danger" ? "bg-red-50 text-red-600 dark:bg-red-500/10" : "bg-accent-50 text-accent-600 dark:bg-accent-500/10")}>
+                    {r.kind === "renewal" ? <Icon.refresh className="h-4 w-4"/> : <Icon.alert className="h-4 w-4"/>}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold truncate">{r.hub.name}</p>
+                    <p className="text-[11px] text-gray-500">{r.message} · {r.hub.region} · {r.hub.membershipTier}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={()=>setReminderModal(r.hub)} className="rounded-md border border-gray-200 px-2 py-1 text-[11px] font-medium hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5">View</button>
+                  <button onClick={()=>sendReminder(r.hub, r.kind)} className="rounded-md bg-accent-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-accent-700">Send reminder</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-white/5">
+            <div className="flex items-center gap-2"><Icon.star className="h-4 w-4 text-purple-600"/><h3 className="text-[14px] font-bold">Priority hubs</h3></div>
+            <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-500/10 dark:text-purple-300">{priorityHubs.length}</span>
+          </div>
+          <div className="space-y-1 p-2 max-h-72 overflow-y-auto">
+            {priorityHubs.slice(0, 12).map(h => (
+              <button key={h.id} onClick={()=>setViewing(h)} className="flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left transition hover:bg-gray-50 dark:hover:bg-white/5">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Icon.star className="h-3 w-3 shrink-0 text-purple-500"/>
+                  <span className="text-[12px] font-medium truncate">{h.name}</span>
+                </div>
+                <StageBadge stage={h.membershipTier}/>
+              </button>
+            ))}
+            {priorityHubs.length === 0 && <p className="py-4 text-center text-[11px] text-gray-500">No priority hubs.</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* TIER MIX */}
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="card animate-fade-up">
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Tier breakdown</h3></div>
+          <div className="p-4"><DonutChart data={tierBreakdown.filter(d=>d.value>0)} size={160} thickness={20} /></div>
+        </div>
+        <div className="card lg:col-span-2 animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Engagement scores</h3><p className="text-[11px] text-gray-500">Top 8 hubs by engagement</p></div>
+          <div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={[...data.hubs].sort((a,b)=>b.engagementScore-a.engagementScore).slice(0,8).map(h=>({label: h.name.slice(0,12), value: h.engagementScore}))} height={180} /></div>
+        </div>
+      </div>
+
+      {/* HUB LIST WITH TABS */}
+      <div className="mt-5 card animate-fade-up">
+        <div className="flex flex-wrap gap-1 border-b border-gray-200 px-2 py-1 dark:border-white/5">
+          {tabs.map(t => (
+            <button key={t.id} onClick={()=>setTab(t.id)}
+              className={cls("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12px] font-medium transition",
+                tab===t.id ? "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300" : "text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5")}>
+              {t.label} <span className={cls("rounded-full px-1.5 py-0.5 text-[10px] font-bold", tab===t.id ? "bg-brand-600 text-white" : "bg-gray-200 text-gray-700 dark:bg-white/10 dark:text-gray-300")}>{t.count}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-4 py-2.5 dark:border-white/5">
+          <span className="text-[12px] text-gray-500">Showing <strong>{filtered.length}</strong> hub{filtered.length===1?"":"s"}</span>
+          <div className="flex gap-1.5 text-[11px]">
+            <select className="rounded-md border border-gray-300 bg-white px-2 py-1 dark:border-white/10 dark:bg-gray-800" value={filterRegion} onChange={e=>setFilterRegion(e.target.value)}><option value="">All regions</option>{REGIONS.map(r=><option key={r}>{r}</option>)}</select>
+            <select className="rounded-md border border-gray-300 bg-white px-2 py-1 dark:border-white/10 dark:bg-gray-800" value={filterTier} onChange={e=>setFilterTier(e.target.value)}><option value="">All tiers</option>{TIERS.map(t=><option key={t}>{t}</option>)}</select>
+            <select className="rounded-md border border-gray-300 bg-white px-2 py-1 dark:border-white/10 dark:bg-gray-800" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="">Any status</option>{HUB_STATUS.map(s=><option key={s}>{s}</option>)}</select>
           </div>
         </div>
         <table className="table-base">
-          <thead><tr><th>Hub</th><th>Country</th><th>Region</th><th>Tier</th><th>Status</th><th>Payment</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Hub</th><th>Country · Region</th><th>Tier</th><th>Status</th><th>Engage</th><th>Payment</th><th>Renewal</th><th></th></tr></thead>
           <tbody>
             {filtered.map(h => {
               const last = data.payments.filter(p=>p.hubId===h.id).sort((a,b)=>new Date(b.periodEnd)-new Date(a.periodEnd))[0];
+              const r = renewalInfo(h);
               return (
                 <tr key={h.id}>
-                  <td><div className="font-medium">{h.name}</div><div className="text-xs text-gray-500">{h.sector ?? "—"}</div></td>
-                  <td>{h.country}</td>
-                  <td className="text-gray-500">{h.region}</td>
+                  <td className="!w-6">{isPriorityHub(h) && <Icon.star className="h-3.5 w-3.5 text-purple-500" title="Priority hub"/>}</td>
+                  <td><div className="font-semibold text-[13px]">{h.name}</div><div className="text-[11px] text-gray-500">{h.sector ?? "—"}{h.africonnectId ? ` · ${h.africonnectId}` : ""}</div></td>
+                  <td className="text-[12px]"><div>{h.country}</div><div className="text-[11px] text-gray-500">{h.region}</div></td>
                   <td><StageBadge stage={h.membershipTier}/></td>
                   <td><StageBadge stage={h.status}/></td>
-                  <td className="text-xs">{last ? <><StageBadge stage={last.status}/> {fmtCurrency(last.amount)}</> : <span className="text-gray-400">—</span>}</td>
+                  <td><div className="flex items-center gap-1.5"><div className="h-1.5 w-12 overflow-hidden rounded-full bg-gray-200 dark:bg-white/5"><div className={cls("h-full rounded-full", h.engagementScore >= 70 ? "bg-brand-500" : h.engagementScore >= 40 ? "bg-accent-500" : "bg-red-400")} style={{width: h.engagementScore + "%"}}/></div><span className="text-[11px] font-semibold">{h.engagementScore}</span></div></td>
+                  <td className="text-[11px]">{last ? <><StageBadge stage={last.status}/> <span className="ml-1 font-mono">{fmtCurrency(last.amount)}</span></> : <span className="text-gray-400">—</span>}</td>
+                  <td className="text-[11px]">
+                    {r.status === "no-payment" ? <span className="text-gray-400">—</span>
+                      : r.status === "expired" ? <span className="text-red-600 dark:text-red-400">Expired {Math.abs(r.days)}d ago</span>
+                      : r.status === "renewal-soon" ? <span className="text-accent-700 dark:text-accent-300 font-medium">In {r.days}d</span>
+                      : r.status === "renewal-upcoming" ? <span className="text-blue-600 dark:text-blue-400">In {r.days}d</span>
+                      : <span className="text-gray-500">{r.days}d</span>}
+                  </td>
                   <td className="space-x-2 whitespace-nowrap text-right">
-                    <button onClick={()=>setViewing(h)} className="text-sm text-brand-700 hover:underline">Open</button>
+                    <button onClick={()=>setPaymentFor(h)} className="text-[11px] font-semibold text-accent-700 dark:text-accent-400 hover:underline">+Pay</button>
+                    <button onClick={()=>setViewing(h)} className="text-[12px] font-semibold text-brand-700 dark:text-brand-400 hover:underline">Open</button>
                   </td>
                 </tr>
               );
             })}
-            {filtered.length === 0 && <tr><td colSpan="7" className="py-10 text-center text-gray-500">No hubs match filters.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan="9" className="py-10 text-center text-gray-500 text-[13px]">No hubs match filters.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -1191,7 +2093,61 @@ function HubsList({ data, update, search }) {
       <Modal open={!!paymentFor} onClose={()=>setPaymentFor(null)} title={`Record payment — ${paymentFor?.name ?? ""}`} size="md">
         {paymentFor && <PaymentForm hubId={paymentFor.id} onSave={recordPayment} onCancel={()=>setPaymentFor(null)} />}
       </Modal>
+
+      {/* Targeted-messaging modal */}
+      <Modal open={!!messaging} onClose={()=>setMessaging(null)} title="Send targeted message" size="md">
+        {messaging && <TargetedMessageForm audience={messaging.audience} count={messaging.count} onSave={submitCampaign} onCancel={()=>setMessaging(null)} />}
+      </Modal>
+
+      {/* Reminder detail modal */}
+      <Modal open={!!reminderModal} onClose={()=>setReminderModal(null)} title={`Reminder details — ${reminderModal?.name ?? ""}`} size="md">
+        {reminderModal && (
+          <div className="p-5">
+            <div className="grid gap-3 md:grid-cols-2 mb-4 text-[13px]">
+              <div><p className="text-[10px] uppercase text-gray-500">Region</p><p className="font-medium">{reminderModal.region}</p></div>
+              <div><p className="text-[10px] uppercase text-gray-500">Tier</p><p><StageBadge stage={reminderModal.membershipTier}/></p></div>
+              <div><p className="text-[10px] uppercase text-gray-500">Email</p><p className="font-medium text-[12px]">{reminderModal.email ?? "—"}</p></div>
+              <div><p className="text-[10px] uppercase text-gray-500">Engagement</p><p className="font-medium">{reminderModal.engagementScore}/100</p></div>
+            </div>
+            <div className="rounded-md bg-gray-50 p-3 text-[12px] dark:bg-white/5">
+              <p className="font-semibold mb-1">Suggested message</p>
+              <p className="text-gray-700 dark:text-gray-300">Hi {reminderModal.name} team — your subscription period is approaching renewal. Please reach out to confirm renewal terms or contact us if you have questions.</p>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button onClick={()=>setReminderModal(null)} className="btn-ghost">Close</button>
+              <button onClick={()=>{sendReminder(reminderModal,"renewal"); setReminderModal(null);}} className="btn-primary"><Icon.send className="h-4 w-4"/>Send reminder</button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
+  );
+}
+
+function TargetedMessageForm({ audience, count, onSave, onCancel }) {
+  const audienceLabel = audience === "ALL_HUBS" ? "All hubs" : audience === "PAID_HUBS" ? "Paid hubs only" : audience === "PRIORITY" ? "Priority hubs (strategic + paid premium)" : audience.startsWith("REGION:") ? `Region: ${audience.slice(7)}` : audience.startsWith("TIER:") ? `Tier: ${audience.slice(5)}` : audience;
+  const [f, setF] = useState({ name:"", subject:"", body:"", status:"DRAFT", audience });
+  const submit = (e) => { e.preventDefault(); onSave(f); };
+  return (
+    <form onSubmit={submit} className="p-5 space-y-4">
+      <div className="rounded-md border border-brand-200 bg-brand-50 p-3 dark:border-brand-700 dark:bg-brand-500/10">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-brand-700 dark:text-brand-300">Audience</p>
+        <p className="mt-1 text-[14px] font-bold">{audienceLabel}</p>
+        <p className="text-[11px] text-brand-700 dark:text-brand-300">{count} recipient{count===1?"":"s"}</p>
+      </div>
+      <div><label className="label">Campaign name *</label><input className="input" required value={f.name} onChange={e=>setF({...f,name:e.target.value})} placeholder="e.g. Q1 newsletter"/></div>
+      <div><label className="label">Subject</label><input className="input" value={f.subject} onChange={e=>setF({...f,subject:e.target.value})} placeholder="Subject line"/></div>
+      <div><label className="label">Body *</label><textarea className="input min-h-[140px]" required value={f.body} onChange={e=>setF({...f,body:e.target.value})} placeholder="Hi {{hub_name}}, …"/></div>
+      <div><label className="label">Status</label>
+        <select className="input" value={f.status} onChange={e=>setF({...f,status:e.target.value})}>
+          <option value="DRAFT">Save as draft</option><option value="SCHEDULED">Schedule</option><option value="SENT">Send now (simulated)</option>
+        </select>
+      </div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4 dark:border-white/5">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary"><Icon.send className="h-4 w-4"/> Save campaign</button>
+      </div>
+    </form>
   );
 }
 
@@ -1490,12 +2446,43 @@ function ProgramsList({ data, update, search }) {
     setViewing(null);
   };
 
+  // Charts
+  const statusBreakdown = PROGRAM_STATUS.map((s,i)=>({label:s, value: data.programs.filter(p=>p.status===s).length, color:["#94a3b8","#3d9462","#eab308","#a855f7"][i]})).filter(d=>d.value>0);
+  const typeBreakdown = PROGRAM_TYPES.map((t,i)=>({label:t.replace("_"," "), value: data.programs.filter(p=>p.type===t).length, color:["#3b82f6","#fb7d12","#a855f7","#3d9462"][i]})).filter(d=>d.value>0);
+  const fundingPerProgram = data.programs.map(p => ({
+    label: p.code,
+    value: data.fundingSources.filter(f => f.programId === p.id).reduce((s,f) => s+f.amount, 0),
+  })).filter(d => d.value > 0).sort((a,b) => b.value - a.value).slice(0, 6);
+
   return (
     <div>
       <PageHeader title="Programs" subtitle="Accelerators, initiatives, research and ecosystem projects."
-        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ New program</button>} />
+        action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New program</button>} />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Total programs" value={data.programs.length} accent="green" />
+        <StatCard label="Active" value={data.programs.filter(p=>p.status==="ACTIVE").length} accent="green" trend={5} />
+        <StatCard label="Total budget" value={fmtCurrency(data.programs.reduce((s,p)=>s+(p.budget||0), 0))} accent="blue" />
+        <StatCard label="Programs with funding" value={data.programs.filter(p => data.fundingSources.some(f => f.programId === p.id)).length} accent="purple" />
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="card animate-fade-up">
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Status</h3></div>
+          <div className="p-4"><DonutChart data={statusBreakdown} size={160} thickness={20}/></div>
+        </div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}>
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By type</h3></div>
+          <div className="p-4"><DonutChart data={typeBreakdown} size={160} thickness={20}/></div>
+        </div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Funding per program</h3><p className="text-[11px] text-gray-500">Top 6 by total funding</p></div>
+          <div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={fundingPerProgram.map(d=>({label:d.label, value: Math.round(d.value/1000)}))} height={180}/></div>
+        </div>
+      </div>
+
+      <h3 className="mt-6 mb-3 text-[14px] font-bold">All programs</h3>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {filtered.map(p => {
           const partners = data.partnershipPrograms.filter(pp => pp.programId === p.id).length;
           const hubs = data.programHubs.filter(ph => ph.programId === p.id).length;
@@ -1803,13 +2790,38 @@ function EventsList({ data, update }) {
     setViewing(null);
   };
 
+  const lifecycleData = EVENT_STATUS.map((s,i)=>({label:s.replace("_"," "), value: counts[s], color:["#94a3b8","#3b82f6","#fb7d12","#a855f7","#3d9462"][i]})).filter(d=>d.value>0);
+  const taskByDept = DEPARTMENTS.map(d => ({label: d.code, value: data.tasks.filter(t=>t.department===d.code).length})).filter(d=>d.value>0).sort((a,b)=>b.value-a.value).slice(0,6);
+  const totalRegistered = data.events.reduce((s,e)=>s+(e.registered||0), 0);
+  const totalAttended = data.events.reduce((s,e)=>s+(e.attended||0), 0);
+  const attRate = totalRegistered ? Math.round((totalAttended/totalRegistered)*100) : 0;
+
   return (
     <div>
       <PageHeader title="Events & Activation" subtitle="AAG and program events from planning through post-event analysis."
-        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ New event</button>} />
+        action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New event</button>} />
 
-      <div className="grid gap-4 md:grid-cols-5">
-        {EVENT_STATUS.map(s => <StatCard key={s} label={s.replace(/_/g," ")} value={counts[s]} />)}
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Total events" value={data.events.length} accent="green" />
+        <StatCard label="Registered" value={totalRegistered} accent="blue" trend={8} />
+        <StatCard label="Attended" value={totalAttended} hint={`${attRate}% attendance`} accent="orange" />
+        <StatCard label="Open tasks" value={data.tasks.filter(t=>t.status!=="DONE").length} accent="purple" />
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="card animate-fade-up">
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Event lifecycle</h3></div>
+          <div className="p-4"><DonutChart data={lifecycleData} size={160} thickness={20}/></div>
+        </div>
+        <div className="card lg:col-span-2 animate-fade-up" style={{animationDelay:"0.05s"}}>
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Tasks by department</h3><p className="text-[11px] text-gray-500">Where the work is</p></div>
+          <div className="p-4 text-gray-700 dark:text-gray-300">{taskByDept.length ? <BarChart data={taskByDept} height={180}/> : <p className="py-8 text-center text-[12px] text-gray-500">No tasks yet</p>}</div>
+        </div>
+      </div>
+
+      <h3 className="mt-6 mb-2 text-[12px] font-bold uppercase tracking-widest text-gray-500">Lifecycle stages</h3>
+      <div className="grid gap-3 md:grid-cols-5">
+        {EVENT_STATUS.map(s => <StatCard key={s} label={s.replace(/_/g," ")} value={counts[s]} accent={s==="COMPLETED"?"purple":s==="EXECUTION"?"orange":s==="PROMOTION"?"blue":s==="POST_EVENT"?"purple":"gray"} />)}
       </div>
 
       <div className="mt-6 card">
@@ -1907,11 +2919,23 @@ function TasksList({ data, update }) {
   });
   const remove = (t) => update(d => { d.tasks = d.tasks.filter(x=>x.id!==t.id); logAudit(d, "DELETE", "Task", t.id); return d; });
 
+  const statusData = TASK_STATUS.map((s,i)=>({label:s.replace("_"," "), value:counts[s], color:["#94a3b8","#3b82f6","#ef4444","#3d9462"][i]})).filter(d=>d.value>0);
+  const deptData = DEPARTMENTS.map(d => ({label:d.code, value:data.tasks.filter(t=>t.department===d.code).length})).filter(d=>d.value>0).sort((a,b)=>b.value-a.value);
+  const priorityData = PRIORITIES.map((p,i)=>({label:p, value:data.tasks.filter(t=>t.priority===p).length, color:["#94a3b8","#3b82f6","#fb7d12","#ef4444"][i]})).filter(d=>d.value>0);
+
   return (
     <div>
       <PageHeader title="Tasks" subtitle="Cross-departmental delivery items across events and programs." />
-      <div className="grid gap-4 md:grid-cols-4">
-        {TASK_STATUS.map(s => <StatCard key={s} label={s.replace(/_/g," ")} value={counts[s]} />)}
+      <div className="grid gap-3 md:grid-cols-4">
+        <StatCard label="TODO"        value={counts.TODO}        accent="gray"   />
+        <StatCard label="In progress" value={counts.IN_PROGRESS} accent="blue"   />
+        <StatCard label="Blocked"     value={counts.BLOCKED}     accent="red"    />
+        <StatCard label="Done"        value={counts.DONE}        accent="green"  />
+      </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By status</h3></div><div className="p-4"><DonutChart data={statusData} size={160} thickness={20}/></div></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By priority</h3></div><div className="p-4"><DonutChart data={priorityData} size={160} thickness={20}/></div></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By department</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{deptData.length ? <BarChart data={deptData.slice(0,8)} height={180}/> : <p className="py-8 text-center text-[12px] text-gray-500">No tasks</p>}</div></div>
       </div>
       <div className="mt-6 card">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4 dark:border-white/5">
@@ -2056,10 +3080,29 @@ function CampaignsList({ data, update }) {
     update(d => { d.campaigns = d.campaigns.filter(x => x.id !== c.id); logAudit(d, "DELETE", "Campaign", c.id); return d; });
   };
 
+  const sent = data.campaigns.filter(c => c.status === "SENT");
+  const reach = sent.reduce((s,c)=>s+(c.recipients||0), 0);
+  const opens = sent.reduce((s,c)=>s+(c.opens||0), 0);
+  const clicks = sent.reduce((s,c)=>s+(c.clicks||0), 0);
+  const openRate = reach ? Math.round((opens/reach)*100) : 0;
+  const clickRate = reach ? Math.round((clicks/reach)*100) : 0;
+  const channelData = CAMPAIGN_CHANNELS.map((c,i)=>({label:c, value: data.campaigns.filter(x=>x.channel===c).length, color:["#3b82f6","#a855f7","#3d9462"][i]})).filter(d=>d.value>0);
+  const statusData = CAMPAIGN_STATUS.map((s,i)=>({label:s, value: data.campaigns.filter(x=>x.status===s).length, color:["#94a3b8","#fb7d12","#3d9462"][i]})).filter(d=>d.value>0);
   return (
     <div>
       <PageHeader title="Campaigns & Ad Engine" subtitle="Broadcast opportunities to all hubs, paid members, regions or sectors."
-        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ New campaign</button>} />
+        action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New campaign</button>} />
+      <div className="grid gap-3 md:grid-cols-4">
+        <StatCard label="Total reach" value={reach} hint={`${sent.length} sent`} accent="blue" trend={12} />
+        <StatCard label="Open rate" value={openRate + "%"} hint={`${opens} opens`} accent="green" />
+        <StatCard label="Click rate" value={clickRate + "%"} hint={`${clicks} clicks`} accent="orange" />
+        <StatCard label="Total campaigns" value={data.campaigns.length} accent="purple" />
+      </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By channel</h3></div><div className="p-4"><DonutChart data={channelData} size={160} thickness={20}/></div></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By status</h3></div><div className="p-4"><DonutChart data={statusData} size={160} thickness={20}/></div></div>
+      </div>
+      <h3 className="mt-6 mb-3 text-[14px] font-bold">All campaigns</h3>
       <div className="card">
         <table className="table-base">
           <thead><tr><th>Name</th><th>Channel</th><th>Audience</th><th>Status</th><th>Recipients</th><th>Engagement</th><th>Created</th><th></th></tr></thead>
@@ -2171,14 +3214,23 @@ function ProcurementList({ data, update }) {
   };
   const remove = (b) => update(d => { d.bookings = d.bookings.filter(x=>x.id!==b.id); logAudit(d, "DELETE", "Booking", b.id); return d; });
 
+  const typeData = BOOKING_TYPES.map((t,i)=>({label:t, value: data.bookings.filter(b=>b.type===t).length, color:["#3b82f6","#fb7d12","#a855f7","#3d9462"][i]})).filter(d=>d.value>0);
+  const statusData = BOOKING_STATUS.map((s,i)=>({label:s, value: data.bookings.filter(b=>b.status===s).length, color:["#fb7d12","#3d9462","#ef4444"][i]})).filter(d=>d.value>0);
+  const spendByType = BOOKING_TYPES.map(t=>({label:t, value: data.bookings.filter(b=>b.type===t).reduce((s,b)=>s+(b.cost||0),0)})).filter(d=>d.value>0).sort((a,b)=>b.value-a.value);
   return (
     <div>
       <PageHeader title="Procurement & Operations" subtitle="Bookings, vendors and logistics."
-        action={<button onClick={()=>setCreating(true)} className="btn-primary">+ New booking</button>} />
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatCard label="Total spend" value={fmtCurrency(totals.spend)} />
-        <StatCard label="Confirmed" value={totals.confirmed} />
-        <StatCard label="Requested" value={totals.requested} />
+        action={<button onClick={()=>setCreating(true)} className="btn-primary"><Icon.plus className="h-4 w-4"/> New booking</button>} />
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Total spend" value={fmtCurrency(totals.spend)} accent="blue" trend={5} />
+        <StatCard label="Confirmed" value={totals.confirmed} accent="green" />
+        <StatCard label="Requested" value={totals.requested} accent="orange" />
+        <StatCard label="Bookings" value={data.bookings.length} accent="purple" />
+      </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By type</h3></div><div className="p-4"><DonutChart data={typeData} size={160} thickness={20}/></div></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Status</h3></div><div className="p-4"><DonutChart data={statusData} size={160} thickness={20}/></div></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Spend by type</h3><p className="text-[11px] text-gray-500">USD</p></div><div className="p-4 text-gray-700 dark:text-gray-300">{spendByType.length ? <BarChart data={spendByType.map(d=>({label:d.label, value: Math.round(d.value/100)}))} height={180}/> : <p className="py-8 text-center text-[12px] text-gray-500">No spend yet</p>}</div></div>
       </div>
       <div className="mt-6 card">
         <table className="table-base">
@@ -2237,10 +3289,24 @@ function JobsList({ data, update }) {
     setCreating(false);
   };
   const remove = (j) => update(d => { d.jobs = d.jobs.filter(x=>x.id!==j.id); logAudit(d, "DELETE", "Job", j.id); return d; });
+  const typeData = JOB_TYPES.map((t,i)=>({label:t.replace("_"," "), value:data.jobs.filter(j=>j.type===t).length, color:["#3d9462","#3b82f6","#fb7d12","#a855f7"][i]})).filter(d=>d.value>0);
+  const orgData = {};
+  data.jobs.forEach(j => orgData[j.organization] = (orgData[j.organization] || 0) + 1);
+  const orgList = Object.entries(orgData).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([label,value])=>({label, value}));
   return (
     <div>
       <PageHeader title="Jobs board" subtitle="Roles across the ecosystem — hubs, startups, partners."
-        action={<button onClick={()=>setCreating(true)} className="btn-primary">+ Post job</button>} />
+        action={<button onClick={()=>setCreating(true)} className="btn-primary"><Icon.plus className="h-4 w-4"/> Post job</button>} />
+      <div className="grid gap-3 md:grid-cols-3">
+        <StatCard label="Open roles" value={data.jobs.length} accent="green" trend={5} />
+        <StatCard label="Hiring orgs" value={Object.keys(orgData).length} accent="blue" />
+        <StatCard label="Job types" value={typeData.length} accent="purple" />
+      </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">By type</h3></div><div className="p-4">{typeData.length ? <DonutChart data={typeData} size={160} thickness={20}/> : <p className="py-8 text-center text-[12px] text-gray-500">No jobs</p>}</div></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Top hiring</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{orgList.length ? <BarChart data={orgList} height={180}/> : <p className="py-8 text-center text-[12px] text-gray-500">No data</p>}</div></div>
+      </div>
+      <h3 className="mt-6 mb-3 text-[14px] font-bold">All openings</h3>
       <div className="card">
         <table className="table-base">
           <thead><tr><th>Title</th><th>Organization</th><th>Type</th><th>Location</th><th>Sector</th><th>Posted</th><th></th></tr></thead>
@@ -2306,14 +3372,20 @@ function PeopleList({ data, update }) {
     update(d => { d.users = d.users.filter(x => x.id !== u.id); logAudit(d, "DELETE", "User", u.id); return d; });
   };
 
+  const headcountByDept = DEPARTMENTS.map(d => ({label:d.code, value:data.users.filter(u=>u.department===d.code).length})).filter(d=>d.value>0).sort((a,b)=>b.value-a.value);
+  const roleData = ROLES.map((r,i)=>({label:r.replace("_"," "), value:data.users.filter(u=>u.role===r).length, color:CHART_COLORS[i]})).filter(d=>d.value>0);
   return (
     <div>
       <PageHeader title="People (HR)" subtitle="Staff and role assignments."
-        action={<button onClick={()=>setCreating(true)} className="btn-primary">+ Add person</button>} />
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatCard label="Total people" value={data.users.length} />
-        <StatCard label="Departments" value={Object.keys(byDept).length} />
-        <StatCard label="Roles in use" value={new Set(data.users.map(u=>u.role)).size} />
+        action={<button onClick={()=>setCreating(true)} className="btn-primary"><Icon.plus className="h-4 w-4"/> Add person</button>} />
+      <div className="grid gap-3 md:grid-cols-3">
+        <StatCard label="Total people" value={data.users.length} accent="green" />
+        <StatCard label="Departments" value={DEPARTMENTS.length} accent="blue" />
+        <StatCard label="Roles in use" value={new Set(data.users.map(u=>u.role)).size} accent="purple" />
+      </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="card lg:col-span-2 animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Headcount by department</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{headcountByDept.length ? <BarChart data={headcountByDept} height={200}/> : <p className="py-8 text-center text-[12px] text-gray-500">No staff assigned</p>}</div></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Role mix</h3></div><div className="p-4"><DonutChart data={roleData} size={160} thickness={20}/></div></div>
       </div>
       <div className="mt-6 card">
         <table className="table-base">
@@ -2353,6 +3425,8 @@ function PeopleList({ data, update }) {
 //  DEPARTMENTS
 // ════════════════════════════════════════════════════════════════════════
 function DepartmentsView({ data }) {
+  const headcountByDept = DEPARTMENTS.map(d => ({label:d.code, value:data.users.filter(u=>u.department===d.code).length}));
+  const tasksByDept = DEPARTMENTS.map(d => ({label:d.code, value:data.tasks.filter(t=>t.department===d.code).length})).filter(d=>d.value>0).sort((a,b)=>b.value-a.value);
   const SUMMARIES = {
     COO:"Global system overview and performance dashboards.",
     ED:"Strategic insights and ecosystem growth analytics.",
@@ -2370,7 +3444,11 @@ function DepartmentsView({ data }) {
   return (
     <div>
       <PageHeader title="Departments" subtitle="Role-based dashboards across the organization." />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mb-5 grid gap-4 lg:grid-cols-2">
+        <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Headcount</h3></div><div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={headcountByDept.filter(d=>d.value>0)} height={200}/></div></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Tasks owned</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{tasksByDept.length ? <BarChart data={tasksByDept.slice(0,8)} height={200}/> : <p className="py-8 text-center text-[12px] text-gray-500">No tasks</p>}</div></div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {DEPARTMENTS.map(d => {
           const headcount = data.users.filter(u => u.department === d.code).length;
           return (
@@ -2422,14 +3500,26 @@ function Africonnect({ data, update }) {
     e.target.value = "";
   };
 
+  const directionData = [
+    { label:"OUT", value: data.syncLog.filter(l=>l.direction==="OUT").length, color:"#a855f7" },
+    { label:"IN",  value: data.syncLog.filter(l=>l.direction==="IN").length,  color:"#3b82f6" },
+  ].filter(d=>d.value>0);
+  const recordsByEndpoint = ["/sync/hubs","/sync/programs","/sync/activities"].map(ep => ({label: ep.replace("/sync/",""), value: data.syncLog.filter(l=>l.endpoint===ep).reduce((s,l)=>s+l.recordCount, 0)})).filter(d=>d.value>0);
   return (
     <div>
-      <PageHeader title="Africonnect Integration" subtitle="Shared profiles, SSO and activity sync." />
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatCard label="Hubs synced" value={`${synced}/${data.hubs.length}`} hint={`${data.hubs.length ? Math.round(synced/data.hubs.length*100):0}% coverage`} />
-        <StatCard label="Endpoints" value="3" hint="/sync/hubs · /sync/programs · /sync/activities" />
-        <StatCard label="Last sync" value={data.syncLog[0] ? relTime(data.syncLog[0].createdAt) : "Never"} />
+      <PageHeader title="Africonnect Integration" subtitle="Shared profiles, SSO and activity sync between Ecosystem OS and Africonnect." />
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Hubs synced"  value={`${synced}/${data.hubs.length}`} hint={`${data.hubs.length ? Math.round(synced/data.hubs.length*100):0}% coverage`} accent="green" />
+        <StatCard label="Sync events"  value={data.syncLog.length} accent="blue" />
+        <StatCard label="Endpoints"    value="3" hint="hubs · programs · activities" accent="orange" />
+        <StatCard label="Last sync"    value={data.syncLog[0] ? relTime(data.syncLog[0].createdAt) : "Never"} accent="purple" />
       </div>
+      {(directionData.length > 0 || recordsByEndpoint.length > 0) && (
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          {directionData.length > 0 && <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Sync direction</h3></div><div className="p-4"><DonutChart data={directionData} size={160} thickness={20}/></div></div>}
+          {recordsByEndpoint.length > 0 && <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Records by endpoint</h3></div><div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={recordsByEndpoint} height={180}/></div></div>}
+        </div>
+      )}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="card">
           <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Sync actions</h3></div>
@@ -2461,9 +3551,31 @@ function Africonnect({ data, update }) {
 //  AUDIT
 // ════════════════════════════════════════════════════════════════════════
 function AuditLog({ data }) {
+  const actionData = ["CREATE","UPDATE","DELETE","LOGIN","SYNC","EXPORT"].map((a,i)=>({label:a, value: data.auditLog.filter(l=>l.action===a).length, color:["#3d9462","#3b82f6","#ef4444","#a855f7","#fb7d12","#94a3b8"][i]})).filter(d=>d.value>0);
+  const entityData = {};
+  data.auditLog.forEach(l => { entityData[l.entity] = (entityData[l.entity] || 0) + 1; });
+  const entityList = Object.entries(entityData).sort((a,b)=>b[1]-a[1]).slice(0, 8).map(([label, value]) => ({label, value}));
+  // Activity over last 14 days
+  const days = Array.from({length: 14}, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (13-i)); d.setHours(0,0,0,0); return d.getTime(); });
+  const auditTrend = days.map((day, i) => {
+    const next = i < days.length-1 ? days[i+1] : day + 86400000;
+    return data.auditLog.filter(l => { const t = new Date(l.createdAt).getTime(); return t >= day && t < next; }).length;
+  });
+
   return (
     <div>
-      <PageHeader title="Audit & Compliance" subtitle="Immutable record of system events." />
+      <PageHeader title="Audit & Compliance" subtitle="Immutable record of system events, financial actions and integrations." />
+      <div className="grid gap-3 md:grid-cols-4">
+        <StatCard label="Total events" value={data.auditLog.length} accent="green" sparkline={auditTrend} />
+        <StatCard label="Last 24h" value={data.auditLog.filter(l => Date.now() - new Date(l.createdAt).getTime() < 86400000).length} accent="blue" />
+        <StatCard label="Unique actors" value={new Set(data.auditLog.map(l=>l.actorEmail)).size} accent="purple" />
+        <StatCard label="Entity types" value={Object.keys(entityData).length} accent="orange" />
+      </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Action mix</h3></div><div className="p-4"><DonutChart data={actionData} size={160} thickness={20}/></div></div>
+        <div className="card lg:col-span-2 animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Top affected entities</h3><p className="text-[11px] text-gray-500">Most-touched models</p></div><div className="p-4 text-gray-700 dark:text-gray-300">{entityList.length ? <BarChart data={entityList} height={200}/> : <p className="py-8 text-center text-[12px] text-gray-500">No events</p>}</div></div>
+      </div>
+      <h3 className="mt-6 mb-3 text-[14px] font-bold">Recent activity ({Math.min(200, data.auditLog.length)})</h3>
       <div className="card">
         <table className="table-base">
           <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Reference</th></tr></thead>
@@ -2575,6 +3687,7 @@ function App() {
 
   let body;
   if (route === "/dashboard") body = <Dashboard data={data} />;
+  else if (route === "/crm" || route.startsWith("/crm/")) body = <CRMHome data={data} update={update} search={search} route={route} />;
   else if (route === "/members" || route === "/hubs") body = <HubsList data={data} update={update} search={search} />;
   else if (route === "/partnerships") body = <PartnershipsList data={data} update={update} search={search} />;
   else if (route === "/programs") body = <ProgramsList data={data} update={update} search={search} />;
