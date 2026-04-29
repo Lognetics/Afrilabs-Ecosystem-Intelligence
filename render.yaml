@@ -19,7 +19,7 @@ services:
     buildCommand: |
       npm install --legacy-peer-deps &&
       npx prisma generate &&
-      npx prisma db push --accept-data-loss &&
+      (npx prisma db push --accept-data-loss || echo "⚠️  prisma db push failed, will retry via /api/setup") &&
       npx next build
     startCommand: npx next start -p $PORT
     healthCheckPath: /
