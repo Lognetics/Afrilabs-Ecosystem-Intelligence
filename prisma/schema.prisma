@@ -1,0 +1,455 @@
+// Afrilabs Ecosystem OS — full data model
+// SQLite for dev; swap provider to "postgresql" for prod (no schema changes needed,
+// except @db.Text where you want unbounded text on Postgres).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Identity & RBAC ─────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         String   // SUPER_ADMIN | COO | ED | DEPT_HEAD | STAFF | PARTNER | HUB_ADMIN
+  department   String?  // see Department.code
+  avatarUrl    String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ownedPartnerships Partnership[]   @relation("PartnershipOwner")
+  ownedPrograms     Program[]       @relation("ProgramLead")
+  activities        Activity[]
+  messages          Message[]
+  taskAssignments   Task[]          @relation("TaskAssignee")
+  campaignsCreated  Campaign[]      @relation("CampaignCreator")
+}
+
+model Department {
+  id        String  @id @default(cuid())
+  code      String  @unique // COO, ED, TECH, PROGRAMS, PARTNERSHIPS, EVENTS, MEMBERS, PROCUREMENT, COMMS, FINANCE, AUDIT, HR
+  name      String
+  headEmail String?
+  createdAt DateTime @default(now())
+}
+
+// ───────────────────────────── Partnerships ─────────────────────────────────
+
+model Partner {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // INVESTOR | DONOR | CORPORATE | GOVERNMENT | NGO | FOUNDATION
+  website     String?
+  email       String?
+  phone       String?
+  country     String?
+  region      String?  // North | West | East | Central | Southern Africa
+  sector      String?
+  description String?
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  partnerships Partnership[]
+  contacts     PartnerContact[]
+  fundingSources FundingSource[]
+}
+
+model PartnerContact {
+  id        String  @id @default(cuid())
+  partnerId String
+  partner   Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  fullName  String
+  title     String?
+  email     String?
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Partnership {
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  ownerId     String?
+  owner       User?    @relation("PartnershipOwner", fields: [ownerId], references: [id])
+  title       String
+  stage       String   // PROSPECT | ENGAGED | NEGOTIATION | ACTIVE | DORMANT
+  value       Float?   // estimated deal value (USD)
+  currency    String   @default("USD")
+  source      String?  // INBOUND | OUTBOUND | REFERRAL | EVENT
+  notes       String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  programLinks  PartnershipProgram[]
+  fundingLinks  PartnershipFunding[]
+  events        EventPartner[]
+  activities    Activity[]
+  messages      Message[]
+}
+
+model PartnershipProgram {
+  id            String  @id @default(cuid())
+  partnershipId String
+  programId     String
+  role          String? // SPONSOR | DELIVERY_PARTNER | FUNDER | KNOWLEDGE_PARTNER
+  partnership   Partnership @relation(fields: [partnershipId], references: [id], onDelete: Cascade)
+  program       Program     @relation(fields: [programId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@unique([partnershipId, programId])
+}
+
+model PartnershipFunding {
+  id              String @id @default(cuid())
+  partnershipId   String
+  fundingSourceId String
+  partnership     Partnership   @relation(fields: [partnershipId], references: [id], onDelete: Cascade)
+  fundingSource   FundingSource @relation(fields: [fundingSourceId], references: [id], onDelete: Cascade)
+
+  @@unique([partnershipId, fundingSourceId])
+}
+
+// ───────────────────────────── Programs ─────────────────────────────────────
+
+model Program {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  type        String   // ACCELERATOR | INITIATIVE | RESEARCH | ECOSYSTEM_PROJECT
+  status      String   // DRAFT | ACTIVE | PAUSED | COMPLETED
+  startDate   DateTime?
+  endDate     DateTime?
+  description String?
+  region      String?
+  budget      Float?
+  leadId      String?
+  lead        User?    @relation("ProgramLead", fields: [leadId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  partners        PartnershipProgram[]
+  fundingSources  FundingSource[]
+  events          Event[]
+  startups        ProgramStartup[]
+  hubs            ProgramHub[]
+  activities      Activity[]
+  messages        Message[]
+  metrics         ProgramMetric[]
+}
+
+model ProgramMetric {
+  id        String   @id @default(cuid())
+  programId String
+  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  label     String   // "Startups Onboarded", "Jobs Created"
+  value     Float
+  unit      String?
+  recordedAt DateTime @default(now())
+}
+
+// ───────────────────────────── Funding ──────────────────────────────────────
+
+model FundingSource {
+  id           String   @id @default(cuid())
+  name         String
+  type         String   // GRANT | INVESTMENT | SPONSORSHIP
+  amount       Float
+  currency     String   @default("USD")
+  status       String   // PLEDGED | APPROVED | DISBURSED | COMPLETED
+  partnerId    String?
+  partner      Partner? @relation(fields: [partnerId], references: [id])
+  programId    String?
+  program      Program? @relation(fields: [programId], references: [id])
+  pledgeDate   DateTime?
+  disbursedAt  DateTime?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  partnershipLinks PartnershipFunding[]
+  disbursements    FundingDisbursement[]
+}
+
+model FundingDisbursement {
+  id              String   @id @default(cuid())
+  fundingSourceId String
+  fundingSource   FundingSource @relation(fields: [fundingSourceId], references: [id], onDelete: Cascade)
+  amount          Float
+  date            DateTime
+  reference       String?
+  notes           String?
+}
+
+// ───────────────────────────── Member Hubs ──────────────────────────────────
+
+model Hub {
+  id            String   @id @default(cuid())
+  name          String
+  country       String
+  region        String   // Africa region
+  city          String?
+  sector        String?  // Tech, Agritech, Fintech, etc.
+  websiteUrl    String?
+  email         String?
+  phone         String?
+  foundedYear   Int?
+  membershipTier String  @default("STANDARD") // STANDARD | PREMIUM | STRATEGIC
+  status        String   @default("ACTIVE")    // ACTIVE | PENDING | SUSPENDED | CHURNED
+  africonnectId String?  @unique               // shared profile ID
+  engagementScore Int    @default(50)          // 0-100, drives churn risk + priority
+  joinedAt      DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  payments     HubPayment[]
+  programs     ProgramHub[]
+  events       EventHub[]
+  activities   Activity[]
+}
+
+model HubPayment {
+  id            String   @id @default(cuid())
+  hubId         String
+  hub           Hub      @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  amount        Float
+  currency      String   @default("USD")
+  status        String   // PAID | PENDING | OVERDUE | EXPIRED | REFUNDED
+  periodStart   DateTime
+  periodEnd     DateTime
+  paidAt        DateTime?
+  reference     String?
+  createdAt     DateTime @default(now())
+}
+
+model ProgramHub {
+  id        String  @id @default(cuid())
+  programId String
+  hubId     String
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  hub       Hub     @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  role      String? // HOST | SUPPORT | COHORT_HUB
+
+  @@unique([programId, hubId])
+}
+
+// ───────────────────────────── Startups & Investors ─────────────────────────
+
+model Startup {
+  id          String  @id @default(cuid())
+  name        String
+  country     String?
+  sector      String?
+  stage       String? // IDEA | MVP | EARLY | GROWTH
+  founderName String?
+  founderEmail String?
+  websiteUrl  String?
+  raised      Float?
+  jobsCreated Int @default(0)
+  hubId       String?
+  createdAt   DateTime @default(now())
+
+  programs ProgramStartup[]
+}
+
+model ProgramStartup {
+  id        String  @id @default(cuid())
+  programId String
+  startupId String
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  cohort    String?
+
+  @@unique([programId, startupId])
+}
+
+// ───────────────────────────── Events ───────────────────────────────────────
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // AAG | PROGRAM_EVENT | WEBINAR | WORKSHOP
+  status      String   // PLANNING | PROMOTION | EXECUTION | POST_EVENT | COMPLETED
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  city        String?
+  country     String?
+  capacity    Int?
+  registered  Int @default(0)
+  attended    Int @default(0)
+  programId   String?
+  program     Program? @relation(fields: [programId], references: [id])
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tasks    Task[]
+  partners EventPartner[]
+  hubs     EventHub[]
+  activities Activity[]
+  messages   Message[]
+}
+
+model EventPartner {
+  id            String  @id @default(cuid())
+  eventId       String
+  partnershipId String
+  role          String? // SPONSOR | SPEAKER | EXHIBITOR
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  partnership   Partnership @relation(fields: [partnershipId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, partnershipId])
+}
+
+model EventHub {
+  id      String @id @default(cuid())
+  eventId String
+  hubId   String
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  hub     Hub   @relation(fields: [hubId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, hubId])
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   // TODO | IN_PROGRESS | BLOCKED | DONE
+  priority    String   @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  department  String?
+  assigneeId  String?
+  assignee    User?    @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  eventId     String?
+  event       Event?   @relation(fields: [eventId], references: [id])
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ───────────────────────────── Collaboration ────────────────────────────────
+
+model Activity {
+  id            String   @id @default(cuid())
+  type          String   // PARTNERSHIP_CREATED | PROGRAM_LAUNCHED | FUNDING_PLEDGED | HUB_PAID | EVENT_UPDATED | NOTE
+  title         String
+  body          String?
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  partnershipId String?
+  partnership   Partnership? @relation(fields: [partnershipId], references: [id], onDelete: Cascade)
+  programId     String?
+  program       Program?     @relation(fields: [programId], references: [id], onDelete: Cascade)
+  eventId       String?
+  event         Event?       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  hubId         String?
+  hub           Hub?         @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+
+  @@index([createdAt])
+}
+
+model Message {
+  id            String  @id @default(cuid())
+  authorId      String
+  author        User    @relation(fields: [authorId], references: [id])
+  body          String
+  partnershipId String?
+  partnership   Partnership? @relation(fields: [partnershipId], references: [id], onDelete: Cascade)
+  programId     String?
+  program       Program?     @relation(fields: [programId], references: [id], onDelete: Cascade)
+  eventId       String?
+  event         Event?       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+}
+
+// ───────────────────────────── Communications ──────────────────────────────
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  channel     String   // EMAIL | IN_APP | AFRICONNECT
+  audience    String   // ALL_HUBS | PAID_HUBS | REGION:West | TIER:PREMIUM | CUSTOM
+  audienceFilter String? // JSON for CUSTOM
+  subject     String?
+  body        String
+  status      String   // DRAFT | SCHEDULED | SENT
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  createdById String?
+  createdBy   User?    @relation("CampaignCreator", fields: [createdById], references: [id])
+  recipients  Int @default(0)
+  opens       Int @default(0)
+  clicks      Int @default(0)
+  createdAt   DateTime @default(now())
+}
+
+// ───────────────────────────── Procurement & Jobs ──────────────────────────
+
+model Booking {
+  id          String   @id @default(cuid())
+  type        String   // HOTEL | FLIGHT | VENUE | TRANSPORT
+  reference   String?
+  vendor      String?
+  cost        Float?
+  currency    String   @default("USD")
+  status      String   // REQUESTED | CONFIRMED | CANCELLED
+  eventId     String?
+  startDate   DateTime?
+  endDate     DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model Job {
+  id           String   @id @default(cuid())
+  title        String
+  organization String
+  location     String?
+  type         String   // FULL_TIME | PART_TIME | CONTRACT | INTERNSHIP
+  sector       String?
+  link         String?
+  postedAt     DateTime @default(now())
+  expiresAt    DateTime?
+  postedById   String?
+}
+
+// ───────────────────────────── Audit ────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actorEmail String?
+  action    String   // CREATE | UPDATE | DELETE | LOGIN | EXPORT | SYNC
+  entity    String   // Partner, Program, Hub, ...
+  entityId  String?
+  metadata  String?  // JSON
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+// ───────────────────────────── Africonnect Sync ────────────────────────────
+
+model AfriconnectSyncLog {
+  id        String   @id @default(cuid())
+  endpoint  String   // /sync/hubs etc
+  direction String   // IN | OUT
+  status    String   // OK | ERROR
+  recordCount Int @default(0)
+  errorMsg  String?
+  createdAt DateTime @default(now())
+}
