@@ -1,0 +1,2321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Afrilabs Ecosystem OS — Operating System for Africa's Innovation Ecosystem</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: { colors: {
+    brand: { 50:'#f0f9f4',100:'#dcefe2',200:'#bce0c8',300:'#8ec9a3',400:'#5fae7d',500:'#3d9462',600:'#2c764e',700:'#245d40',800:'#1f4a35',900:'#1b3d2d',950:'#0d2218' },
+    accent:{ 50:'#fff8ed',100:'#ffefd4',200:'#ffdba8',300:'#ffbf71',400:'#ff9a38',500:'#fb7d12',600:'#ec6308',700:'#c44a09',800:'#9c3b10',900:'#7e3211' }
+  }}}}
+</script>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .input { @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500; }
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-md bg-brand-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50; }
+  .btn-outline { @apply inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50; }
+  .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100; }
+  .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-red-700; }
+  .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset; }
+  .label { @apply block text-sm font-medium text-gray-700 mb-1; }
+  .table-base { @apply w-full text-sm; }
+  .table-base thead th { @apply text-left text-xs font-semibold uppercase tracking-wider text-gray-500 px-4 py-3 border-b border-gray-200 bg-gray-50; }
+  .table-base tbody td { @apply px-4 py-3 border-b border-gray-100 text-gray-700; }
+  .table-base tbody tr:hover { @apply bg-gray-50/60; }
+  .modal-bg { background: rgba(15,23,42,.5); backdrop-filter: blur(2px); }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased">
+<div id="root"><div class="grid place-items-center min-h-screen text-gray-500">Loading Afrilabs Ecosystem OS…</div></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useState, useEffect, useMemo, useReducer, useRef, useCallback } = React;
+
+// ════════════════════════════════════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════════════════════════════════════
+const REGIONS = ["North Africa","West Africa","East Africa","Central Africa","Southern Africa"];
+const TIERS = ["STANDARD","PREMIUM","STRATEGIC"];
+const HUB_STATUS = ["ACTIVE","PENDING","SUSPENDED","CHURNED"];
+const PARTNER_TYPES = ["INVESTOR","DONOR","CORPORATE","GOVERNMENT","NGO","FOUNDATION"];
+const PARTNERSHIP_STAGES = ["PROSPECT","ENGAGED","NEGOTIATION","ACTIVE","DORMANT"];
+const PROGRAM_TYPES = ["ACCELERATOR","INITIATIVE","RESEARCH","ECOSYSTEM_PROJECT"];
+const PROGRAM_STATUS = ["DRAFT","ACTIVE","PAUSED","COMPLETED"];
+const FUNDING_TYPES = ["GRANT","INVESTMENT","SPONSORSHIP"];
+const FUNDING_STATUS = ["PLEDGED","APPROVED","DISBURSED","COMPLETED"];
+const EVENT_TYPES = ["AAG","PROGRAM_EVENT","WEBINAR","WORKSHOP"];
+const EVENT_STATUS = ["PLANNING","PROMOTION","EXECUTION","POST_EVENT","COMPLETED"];
+const TASK_STATUS = ["TODO","IN_PROGRESS","BLOCKED","DONE"];
+const PRIORITIES = ["LOW","MEDIUM","HIGH","CRITICAL"];
+const PAYMENT_STATUS = ["PAID","PENDING","OVERDUE","EXPIRED","REFUNDED"];
+const CAMPAIGN_CHANNELS = ["EMAIL","IN_APP","AFRICONNECT"];
+const CAMPAIGN_STATUS = ["DRAFT","SCHEDULED","SENT"];
+const ROLES = ["SUPER_ADMIN","COO","ED","DEPT_HEAD","STAFF","PARTNER","HUB_ADMIN"];
+const DEPARTMENTS = [
+  {code:"COO",name:"Office of COO"},{code:"ED",name:"Office of ED"},{code:"TECH",name:"Tech"},
+  {code:"PROGRAMS",name:"Programs"},{code:"PARTNERSHIPS",name:"Partnerships"},{code:"EVENTS",name:"Events (AAG)"},
+  {code:"MEMBERS",name:"Member Services"},{code:"PROCUREMENT",name:"Procurement & Operations"},
+  {code:"COMMS",name:"Communications / PR"},{code:"FINANCE",name:"Finance"},{code:"AUDIT",name:"Audit & Compliance"},{code:"HR",name:"HR"},
+];
+const JOB_TYPES = ["FULL_TIME","PART_TIME","CONTRACT","INTERNSHIP"];
+const BOOKING_TYPES = ["HOTEL","FLIGHT","VENUE","TRANSPORT"];
+const BOOKING_STATUS = ["REQUESTED","CONFIRMED","CANCELLED"];
+
+// ════════════════════════════════════════════════════════════════════════
+//  UTILITIES
+// ════════════════════════════════════════════════════════════════════════
+const uid = () => 'id_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const fmtCurrency = (n, c="USD") => new Intl.NumberFormat("en-US", {style:"currency", currency:c, maximumFractionDigits:0}).format(n||0);
+const fmtNum = n => n>=1e6 ? (n/1e6).toFixed(1)+"M" : n>=1e3 ? (n/1e3).toFixed(1)+"K" : (n||0).toString();
+const fmtDate = d => !d ? "—" : new Date(d).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"});
+const relTime = d => {
+  if (!d) return "—";
+  const diff = Date.now() - new Date(d).getTime();
+  const s = Math.floor(diff/1000);
+  if (s<60) return s+"s ago";
+  const m = Math.floor(s/60); if (m<60) return m+"m ago";
+  const h = Math.floor(m/60); if (h<24) return h+"h ago";
+  const dy = Math.floor(h/24); if (dy<30) return dy+"d ago";
+  return new Date(d).toLocaleDateString();
+};
+const cls = (...x) => x.filter(Boolean).join(" ");
+const download = (filename, text) => {
+  const a = document.createElement("a");
+  a.href = "data:application/json;charset=utf-8,"+encodeURIComponent(text);
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+};
+
+// ════════════════════════════════════════════════════════════════════════
+//  SEED DATA
+// ════════════════════════════════════════════════════════════════════════
+function buildSeed() {
+  const now = Date.now();
+  const days = (n) => new Date(now - n*86400000).toISOString();
+  const future = (n) => new Date(now + n*86400000).toISOString();
+
+  const users = [
+    {id:"u_admin", email:"admin@afrilabs.test", name:"Ada Admin", role:"SUPER_ADMIN", department:null},
+    {id:"u_coo",   email:"coo@afrilabs.test",   name:"Chioma Okafor", role:"COO", department:"COO"},
+    {id:"u_ed",    email:"ed@afrilabs.test",    name:"Ekow Mensah",   role:"ED", department:"ED"},
+    {id:"u_p",     email:"partnerships@afrilabs.test", name:"Aisha Bello", role:"DEPT_HEAD", department:"PARTNERSHIPS"},
+    {id:"u_pr",    email:"programs@afrilabs.test",     name:"Tunde Adebayo", role:"DEPT_HEAD", department:"PROGRAMS"},
+    {id:"u_m",     email:"members@afrilabs.test",      name:"Linda Mwangi", role:"DEPT_HEAD", department:"MEMBERS"},
+    {id:"u_e",     email:"events@afrilabs.test",       name:"Karim Hassan", role:"DEPT_HEAD", department:"EVENTS"},
+    {id:"u_f",     email:"finance@afrilabs.test",      name:"Fatima Diallo", role:"DEPT_HEAD", department:"FINANCE"},
+  ];
+
+  const HUB_DATA = [
+    ["CcHub","Nigeria","West Africa","Lagos","Tech","STRATEGIC",90],
+    ["iSpace","Ghana","West Africa","Accra","Tech","STANDARD",65],
+    ["MEST Africa","Ghana","West Africa","Accra","Software","PREMIUM",78],
+    ["Impact Hub Lagos","Nigeria","West Africa","Lagos","Multi-sector","STANDARD",45],
+    ["Sahel Innovation Lab","Senegal","West Africa","Dakar","Agritech","STANDARD",52],
+    ["Innovation Village","Côte d'Ivoire","West Africa","Abidjan","Fintech","PREMIUM",70],
+    ["iHub","Kenya","East Africa","Nairobi","Tech","STRATEGIC",95],
+    ["Nailab","Kenya","East Africa","Nairobi","Software","STANDARD",60],
+    ["Hive Colab","Uganda","East Africa","Kampala","Multi-sector","STANDARD",55],
+    ["KINU","Tanzania","East Africa","Dar es Salaam","Tech","PREMIUM",68],
+    ["RLabs Rwanda","Rwanda","East Africa","Kigali","Social","STANDARD",62],
+    ["iceaddis","Ethiopia","East Africa","Addis Ababa","Software","STANDARD",58],
+    ["Workshop17","South Africa","Southern Africa","Cape Town","Multi-sector","PREMIUM",72],
+    ["mLab Southern Africa","South Africa","Southern Africa","Pretoria","Mobile","STANDARD",55],
+    ["BongoHive","Zambia","Southern Africa","Lusaka","Tech","STANDARD",30],
+    ["Hypercube Hub","Zimbabwe","Southern Africa","Harare","Tech","STANDARD",35],
+    ["Innovate Namibia","Namibia","Southern Africa","Windhoek","Multi-sector","STANDARD",50],
+    ["SmartXchange","South Africa","Southern Africa","Durban","ICT","PREMIUM",65],
+    ["Flat6Labs","Egypt","North Africa","Cairo","Multi-sector","STRATEGIC",88],
+    ["AlexHub","Egypt","North Africa","Alexandria","Tech","STANDARD",55],
+    ["Maroc Numeric Cluster","Morocco","North Africa","Casablanca","ICT","PREMIUM",70],
+    ["Tunisia Startups","Tunisia","North Africa","Tunis","Multi-sector","STANDARD",48],
+    ["Algeria Venture","Algeria","North Africa","Algiers","Tech","STANDARD",42],
+    ["ActivSpaces","Cameroon","Central Africa","Buea","Tech","STANDARD",58],
+    ["Ongola Fab Lab","Cameroon","Central Africa","Yaoundé","Hardware","STANDARD",50],
+    ["Kinshasa Digital","DR Congo","Central Africa","Kinshasa","Multi-sector","STANDARD",40],
+    ["Brazzaville Tech","Republic of Congo","Central Africa","Brazzaville","Tech","STANDARD",38],
+    ["Gabon Innov","Gabon","Central Africa","Libreville","Multi-sector","STANDARD",45],
+    ["CAR Hub","Central African Republic","Central Africa","Bangui","Multi-sector","STANDARD",25],
+    ["Chad Innovation","Chad","Central Africa","N'Djamena","Multi-sector","STANDARD",30],
+  ];
+
+  const hubs = HUB_DATA.map((h,i) => ({
+    id: "h_"+i,
+    name: h[0], country: h[1], region: h[2], city: h[3], sector: h[4],
+    membershipTier: h[5], engagementScore: h[6],
+    status: i%11===0 ? "PENDING" : i%13===0 ? "SUSPENDED" : "ACTIVE",
+    africonnectId: "AC-"+(1000+i),
+    foundedYear: 2010 + (i%12),
+    websiteUrl: `https://${h[0].toLowerCase().replace(/[^a-z]/g,"")}.org`,
+    email: `info@${h[0].toLowerCase().replace(/[^a-z]/g,"")}.org`,
+    joinedAt: days(365 - i*5),
+  }));
+
+  const payments = [];
+  hubs.forEach((h,i) => {
+    const amt = h.membershipTier==="STRATEGIC" ? 5000 : h.membershipTier==="PREMIUM" ? 1500 : 500;
+    if (i%4 !== 0) {
+      payments.push({id:"pm_"+i+"a", hubId:h.id, amount:amt, currency:"USD",
+        status:"PAID", periodStart: days(180), periodEnd: future(180), paidAt: days(180), reference:"INV-"+(2400+i)});
+    } else if (i%8===0) {
+      payments.push({id:"pm_"+i+"b", hubId:h.id, amount:amt, currency:"USD",
+        status:"EXPIRED", periodStart: days(420), periodEnd: days(60), paidAt: days(420), reference:"INV-"+(2300+i)});
+    } else {
+      payments.push({id:"pm_"+i+"c", hubId:h.id, amount:amt, currency:"USD",
+        status: i%2 ? "OVERDUE" : "PENDING", periodStart: days(0), periodEnd: future(180)});
+    }
+  });
+
+  const partners = [
+    {id:"pn_mc", name:"Mastercard Foundation", type:"FOUNDATION", country:"Canada", region:"North America", sector:"Inclusive growth", email:"partnerships@mcfoundation.org", website:"https://mastercardfdn.org"},
+    {id:"pn_afdb", name:"African Development Bank", type:"GOVERNMENT", country:"Côte d'Ivoire", region:"West Africa", sector:"Development finance", email:"partnerships@afdb.org"},
+    {id:"pn_google", name:"Google for Startups", type:"CORPORATE", country:"United States", region:"North America", sector:"Tech", email:"partnerships@google.com"},
+    {id:"pn_giz", name:"GIZ", type:"GOVERNMENT", country:"Germany", region:"Europe", sector:"Development cooperation", email:"partnerships@giz.de"},
+    {id:"pn_ifc", name:"IFC", type:"INVESTOR", country:"United States", region:"North America", sector:"Investment", email:"partnerships@ifc.org"},
+    {id:"pn_ms", name:"Microsoft Africa", type:"CORPORATE", country:"South Africa", region:"Southern Africa", sector:"Tech", email:"partnerships@microsoft.com"},
+    {id:"pn_mtn", name:"MTN Foundation", type:"FOUNDATION", country:"South Africa", region:"Southern Africa", sector:"Telecom", email:"partnerships@mtn.com"},
+    {id:"pn_undp", name:"UNDP", type:"NGO", country:"United States", region:"Global", sector:"Development", email:"partnerships@undp.org"},
+  ];
+
+  const programs = [
+    {id:"pg_cat", name:"Catalytic Africa", code:"CATALYTIC", type:"ECOSYSTEM_PROJECT", status:"ACTIVE", description:"Pan-African match-funding for early-stage startups.", budget:5000000, region:null, leadId:"u_pr", startDate:days(60), endDate:future(540)},
+    {id:"pg_acc", name:"Afrilabs Accelerator", code:"AFRI-ACC-26", type:"ACCELERATOR", status:"ACTIVE", description:"Continental cohort for growth-stage African startups.", budget:2500000, region:null, leadId:"u_pr", startDate:days(30), endDate:future(330)},
+    {id:"pg_hcb", name:"Hub Capacity Building", code:"HCB-2026", type:"INITIATIVE", status:"ACTIVE", description:"Operational capacity programme for member hubs.", budget:800000, region:"East Africa", leadId:"u_pr", startDate:days(90), endDate:future(270)},
+    {id:"pg_aag", name:"AAG 2026 Programme", code:"AAG-2026", type:"INITIATIVE", status:"ACTIVE", description:"The Africa Annual Gathering programme strand.", budget:1200000, region:"West Africa", leadId:"u_pr", startDate:days(15), endDate:future(180)},
+    {id:"pg_ins", name:"Ecosystem Insights", code:"INSIGHTS", type:"RESEARCH", status:"DRAFT", description:"Continent-wide research and reporting.", budget:350000, region:null, leadId:"u_pr"},
+  ];
+
+  const programHubs = hubs.slice(0,18).map((h,i) => ({id:"ph_"+i, programId: programs[i%programs.length].id, hubId: h.id, role: i%3===0 ? "HOST" : "COHORT_HUB"}));
+
+  const partnerships = partners.map((p,i) => ({
+    id: "pp_"+i, partnerId: p.id, ownerId:"u_p",
+    title: `${p.name} — engagement`,
+    stage: PARTNERSHIP_STAGES[i % PARTNERSHIP_STAGES.length],
+    value: 50000 + i*75000, currency:"USD",
+    source: i%2 ? "INBOUND" : "OUTBOUND",
+    notes: `Initial conversation around ${p.sector ?? "ecosystem support"}.`,
+    createdAt: days(30-i*2), updatedAt: days(i),
+  }));
+
+  const partnershipPrograms = partnerships.map((pp,i) => ({
+    id: "ppr_"+i, partnershipId: pp.id, programId: programs[i % programs.length].id,
+    role: i%2 ? "SPONSOR" : "FUNDER",
+  }));
+
+  const fundingSources = [];
+  for (let i=0; i<10; i++) {
+    const partner = partners[i % partners.length];
+    const program = programs[i % programs.length];
+    fundingSources.push({
+      id:"f_"+i,
+      name: `${partner.name} — ${FUNDING_TYPES[i%3]} ${i+1}`,
+      type: FUNDING_TYPES[i%3],
+      amount: 100000 + i*150000, currency:"USD",
+      status: FUNDING_STATUS[i % FUNDING_STATUS.length],
+      partnerId: partner.id, programId: program.id,
+      pledgeDate: days(60 - i*5),
+    });
+  }
+
+  const events = [
+    {id:"e_aag", name:"Africa Annual Gathering 2026", type:"AAG", status:"PROMOTION",
+     startDate: future(180), endDate: future(182),
+     location:"Eko Hotel", city:"Lagos", country:"Nigeria",
+     capacity:1500, registered:820, attended:0, programId:"pg_aag",
+     description:"The flagship annual ecosystem gathering."},
+    {id:"e_demo", name:"Catalytic Africa Demo Day", type:"PROGRAM_EVENT", status:"PLANNING",
+     startDate: future(60), location:"Online", registered:200, attended:0, programId:"pg_cat",
+     description:"Showcasing matched-funded startups."},
+    {id:"e_hcb", name:"Hub Capacity Workshop — Nairobi", type:"WORKSHOP", status:"EXECUTION",
+     startDate: future(15), location:"iHub", city:"Nairobi", country:"Kenya",
+     registered:80, attended:65, programId:"pg_hcb"},
+  ];
+
+  const tasks = [
+    {id:"t_1", title:"Confirm venue contract",         eventId:"e_aag", department:"EVENTS",       priority:"HIGH",     status:"DONE",        completedAt: days(2)},
+    {id:"t_2", title:"Send sponsor decks",             eventId:"e_aag", department:"PARTNERSHIPS", priority:"HIGH",     status:"IN_PROGRESS"},
+    {id:"t_3", title:"Open registration page",         eventId:"e_aag", department:"TECH",         priority:"HIGH",     status:"DONE",        completedAt: days(5)},
+    {id:"t_4", title:"Press release draft",            eventId:"e_aag", department:"COMMS",        priority:"MEDIUM",   status:"TODO"},
+    {id:"t_5", title:"Travel bookings for speakers",   eventId:"e_aag", department:"PROCUREMENT",  priority:"HIGH",     status:"TODO"},
+    {id:"t_6", title:"Finance reconciliation",         eventId:"e_aag", department:"FINANCE",      priority:"CRITICAL", status:"BLOCKED"},
+  ];
+
+  const eventPartners = [
+    {id:"ep_1", eventId:"e_aag", partnershipId:"pp_0", role:"SPONSOR"},
+    {id:"ep_2", eventId:"e_aag", partnershipId:"pp_2", role:"EXHIBITOR"},
+    {id:"ep_3", eventId:"e_aag", partnershipId:"pp_5", role:"SPONSOR"},
+  ];
+
+  const campaigns = [
+    {id:"c_1", name:"AAG 2026 — registration open", channel:"EMAIL", audience:"ALL_HUBS", status:"SENT",
+     subject:"Registration is now open for AAG 2026", body:"Dear hub leader, registration for the Africa Annual Gathering 2026 is now open…",
+     recipients:30, opens:13, clicks:5, sentAt: days(2), createdAt: days(3), createdById:"u_m"},
+    {id:"c_2", name:"Premium hub roundtable invite", channel:"EMAIL", audience:"TIER:PREMIUM", status:"SCHEDULED",
+     subject:"You're invited: Premium roundtable", body:"An exclusive invitation…",
+     recipients:5, scheduledAt: future(2), createdAt: days(1), createdById:"u_m"},
+    {id:"c_3", name:"West Africa funding bulletin", channel:"AFRICONNECT", audience:"REGION:West Africa", status:"DRAFT",
+     body:"New funding windows for West African hubs…", recipients:0, createdAt: days(1), createdById:"u_m"},
+  ];
+
+  const activities = [
+    {id:"a_1", type:"PROGRAM_LAUNCHED", title:"Catalytic Africa launched", body:"Match-funding programme is live.", programId:"pg_cat", userId:"u_pr", createdAt: days(0.2)},
+    {id:"a_2", type:"PARTNERSHIP_CREATED", title:"Mastercard Foundation in negotiation", body:"Round 2 conversations scheduled.", partnershipId:"pp_0", userId:"u_p", createdAt: days(0.3)},
+    {id:"a_3", type:"FUNDING_PLEDGED", title:"$1.5M pledged by IFC", programId:"pg_acc", userId:"u_ed", createdAt: days(0.5)},
+    {id:"a_4", type:"EVENT_UPDATED", title:"AAG 2026 registrations exceed 800", eventId:"e_aag", userId:"u_e", createdAt: days(0.7)},
+    {id:"a_5", type:"HUB_PAID", title:"CcHub renewed STRATEGIC tier", hubId:"h_0", userId:"u_m", createdAt: days(1)},
+  ];
+
+  const bookings = [
+    {id:"b_1", type:"VENUE", vendor:"Eko Hotel", reference:"EKO-2026-001", cost:45000, currency:"USD", status:"CONFIRMED", startDate: future(180), eventId:"e_aag"},
+    {id:"b_2", type:"FLIGHT", vendor:"Ethiopian Airlines", reference:"PNR-AB12CD", cost:1200, currency:"USD", status:"CONFIRMED"},
+    {id:"b_3", type:"HOTEL", vendor:"Radisson Blu Lagos", cost:8000, currency:"USD", status:"REQUESTED"},
+  ];
+
+  const jobs = [
+    {id:"j_1", title:"Programs Manager", organization:"Afrilabs", location:"Lagos", type:"FULL_TIME", sector:"Operations", postedAt: days(5)},
+    {id:"j_2", title:"Frontend Engineer", organization:"iHub", location:"Nairobi", type:"FULL_TIME", sector:"Tech", postedAt: days(8)},
+    {id:"j_3", title:"Community Lead", organization:"CcHub", location:"Lagos", type:"CONTRACT", sector:"Community", postedAt: days(12)},
+  ];
+
+  const auditLog = [
+    {id:"al_1", action:"LOGIN", entity:"User", entityId:"u_admin", actorEmail:"admin@afrilabs.test", createdAt: days(0.1)},
+    {id:"al_2", action:"CREATE", entity:"Program", entityId:"pg_cat", actorEmail:"programs@afrilabs.test", createdAt: days(0.2)},
+    {id:"al_3", action:"SYNC",   entity:"Hub", entityId:null, actorEmail:"africonnect@system", createdAt: days(0.3)},
+  ];
+
+  return {
+    users, hubs, payments, partners, partnerships, partnershipPrograms,
+    programs, programHubs, fundingSources, events, eventPartners, tasks,
+    campaigns, activities, bookings, jobs, auditLog,
+    syncLog: [],
+    settings: { currentUserId:"u_admin", africonnectKey: "demo-key-replace-in-prod" },
+    version: 1,
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  STORE (localStorage)
+// ════════════════════════════════════════════════════════════════════════
+const STORE_KEY = "afrilabs-ecosystem-os-v1";
+
+function loadStore() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return buildSeed();
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.version === 1) return parsed;
+    return buildSeed();
+  } catch (e) { return buildSeed(); }
+}
+function saveStore(s) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch(e) { console.error("Save failed", e); }
+}
+
+// Hook: subscribe to and update the store
+function useStore() {
+  const [data, setData] = useState(loadStore);
+  const update = useCallback((mutator) => {
+    setData(prev => {
+      const next = typeof mutator === "function" ? mutator(structuredClone(prev)) : { ...prev, ...mutator };
+      saveStore(next);
+      return next;
+    });
+  }, []);
+  return [data, update];
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  ROUTING (hash-based)
+// ════════════════════════════════════════════════════════════════════════
+function useRoute() {
+  const [route, setRoute] = useState(() => window.location.hash.slice(1) || "/dashboard");
+  useEffect(() => {
+    const onHash = () => setRoute(window.location.hash.slice(1) || "/dashboard");
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  return route;
+}
+const navigate = (p) => { window.location.hash = p; };
+
+// ════════════════════════════════════════════════════════════════════════
+//  UI PRIMITIVES
+// ════════════════════════════════════════════════════════════════════════
+const TONES = {
+  green:"bg-brand-50 text-brand-700 ring-brand-200",
+  orange:"bg-accent-50 text-accent-700 ring-accent-200",
+  blue:"bg-blue-50 text-blue-700 ring-blue-200",
+  red:"bg-red-50 text-red-700 ring-red-200",
+  yellow:"bg-yellow-50 text-yellow-800 ring-yellow-200",
+  gray:"bg-gray-100 text-gray-700 ring-gray-200",
+  purple:"bg-purple-50 text-purple-700 ring-purple-200",
+};
+function Badge({ children, tone="gray" }) {
+  return <span className={cls("badge", TONES[tone])}>{children}</span>;
+}
+const STAGE_TONES = {
+  PROSPECT:"gray", ENGAGED:"blue", NEGOTIATION:"yellow", ACTIVE:"green", DORMANT:"gray",
+  DRAFT:"gray", PAUSED:"yellow", COMPLETED:"purple",
+  PLEDGED:"yellow", APPROVED:"blue", DISBURSED:"green",
+  PAID:"green", PENDING:"yellow", OVERDUE:"red", EXPIRED:"red", REFUNDED:"gray",
+  PLANNING:"gray", PROMOTION:"blue", EXECUTION:"orange", POST_EVENT:"purple",
+  TODO:"gray", IN_PROGRESS:"blue", BLOCKED:"red", DONE:"green",
+  STANDARD:"gray", PREMIUM:"blue", STRATEGIC:"purple",
+  SUSPENDED:"red", CHURNED:"red",
+  LOW:"gray", MEDIUM:"blue", HIGH:"orange", CRITICAL:"red",
+  SENT:"green", SCHEDULED:"yellow",
+  REQUESTED:"yellow", CONFIRMED:"green", CANCELLED:"red",
+};
+function StageBadge({ stage }) {
+  return <Badge tone={STAGE_TONES[stage] ?? "gray"}>{(stage||"").replace(/_/g," ")}</Badge>;
+}
+
+function Modal({ open, onClose, title, children, size="md" }) {
+  if (!open) return null;
+  const sizeCls = { sm:"max-w-md", md:"max-w-2xl", lg:"max-w-4xl", xl:"max-w-6xl" }[size];
+  return (
+    <div className="modal-bg fixed inset-0 z-50 grid place-items-center p-4">
+      <div className={cls("w-full rounded-2xl bg-white shadow-2xl", sizeCls)} onClick={e=>e.stopPropagation()}>
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <h2 className="text-lg font-semibold">{title}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
+        </div>
+        <div className="max-h-[75vh] overflow-y-auto">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, hint, accent="green" }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</p>
+      <p className="mt-1 text-3xl font-bold text-gray-900">{value}</p>
+      {hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
+    </div>
+  );
+}
+
+function Empty({ title="Nothing here yet", hint, action }) {
+  return (
+    <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-10 text-center">
+      <p className="text-sm font-semibold text-gray-700">{title}</p>
+      {hint && <p className="mt-1 text-sm text-gray-500">{hint}</p>}
+      {action && <div className="mt-4">{action}</div>}
+    </div>
+  );
+}
+
+function PageHeader({ title, subtitle, action }) {
+  return (
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  HELPERS for the data layer
+// ════════════════════════════════════════════════════════════════════════
+function logActivity(data, type, title, body, links={}) {
+  data.activities.unshift({
+    id: uid(), type, title, body: body||null,
+    userId: data.settings.currentUserId,
+    ...links,
+    createdAt: new Date().toISOString(),
+  });
+}
+function logAudit(data, action, entity, entityId) {
+  const u = data.users.find(x=>x.id === data.settings.currentUserId);
+  data.auditLog.unshift({
+    id: uid(), action, entity, entityId,
+    actorEmail: u?.email ?? "system",
+    createdAt: new Date().toISOString(),
+  });
+}
+
+function hubPaymentStatus(hub, payments) {
+  const ps = payments.filter(p => p.hubId === hub.id);
+  const now = new Date();
+  if (ps.some(p => p.status === "PAID" && new Date(p.periodEnd) > now)) return "paid";
+  if (ps.some(p => p.status === "PENDING")) return "pending";
+  return "expired";
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  INTELLIGENCE (rule-based)
+// ════════════════════════════════════════════════════════════════════════
+function computeIntelligence(data) {
+  const now = Date.now();
+  // Hub priorities
+  const priorities = data.hubs.map(h => {
+    let score = h.engagementScore;
+    const signals = [];
+    const ps = data.payments.filter(p => p.hubId === h.id);
+    const paid = ps.filter(p => p.status === "PAID");
+    const overdue = ps.filter(p => p.status === "OVERDUE" || p.status === "EXPIRED");
+    if (paid.length > 0) { score += 15; signals.push("active subscription"); }
+    if (h.membershipTier === "PREMIUM") { score += 10; signals.push("premium tier"); }
+    if (h.membershipTier === "STRATEGIC") { score += 20; signals.push("strategic tier"); }
+    if (overdue.length > 0) { score -= 25; signals.push(`${overdue.length} overdue`); }
+    return { hubId: h.id, hubName: h.name, score: Math.max(0, Math.min(100, score)), signals };
+  }).sort((a,b)=>b.score-a.score).slice(0,10);
+
+  // Churn risk
+  const churn = data.hubs.map(h => {
+    let risk = 0;
+    const reasons = [];
+    if (h.engagementScore < 40) { risk += 30; reasons.push("low engagement"); }
+    const ps = data.payments.filter(p => p.hubId === h.id);
+    const overdue = ps.filter(p => p.status === "OVERDUE" || p.status === "EXPIRED");
+    if (overdue.length > 0) { risk += 25 * Math.min(2, overdue.length); reasons.push(`${overdue.length} overdue`); }
+    if (h.status === "SUSPENDED") { risk += 15; reasons.push("suspended"); }
+    if (ps.length === 0) { risk += 20; reasons.push("no payments"); }
+    return { hubId: h.id, hubName: h.name, risk: Math.min(100, risk), reasons };
+  }).filter(x => x.risk >= 40).sort((a,b)=>b.risk-a.risk);
+
+  // Partner-program matches
+  const matches = [];
+  const activePrograms = data.programs.filter(p => p.status === "ACTIVE");
+  data.partners.forEach(p => {
+    activePrograms.forEach(prog => {
+      let fit = 30; const r = [];
+      if (p.region && prog.region && p.region === prog.region) { fit += 30; r.push("region match"); }
+      if (p.sector && prog.name.toLowerCase().includes((p.sector||"").toLowerCase())) { fit += 20; r.push("sector match"); }
+      if (p.type === "INVESTOR" && prog.type === "ACCELERATOR") { fit += 25; r.push("investor↔accelerator"); }
+      if (p.type === "DONOR" && prog.type === "INITIATIVE") { fit += 20; r.push("donor↔initiative"); }
+      if (p.type === "CORPORATE" && prog.type === "ECOSYSTEM_PROJECT") { fit += 15; r.push("corporate↔project"); }
+      if (fit >= 55) matches.push({ partnerId:p.id, partnerName:p.name, programId:prog.id, programName:prog.name, fitScore:Math.min(100, fit), rationale:r });
+    });
+  });
+  matches.sort((a,b)=>b.fitScore-a.fitScore);
+
+  // Funding success
+  const funding = data.fundingSources.filter(f => f.status === "PLEDGED" || f.status === "APPROVED").map(f => {
+    let l = 50; const drivers = [];
+    if (f.status === "APPROVED") { l += 30; drivers.push("approved"); }
+    const partner = data.partners.find(p => p.id === f.partnerId);
+    if (partner?.type === "INVESTOR") { l += 10; drivers.push("investor"); }
+    if (f.amount > 1000000) { l -= 10; drivers.push("large amount"); }
+    if (f.amount < 100000) { l += 10; drivers.push("small ticket"); }
+    const program = data.programs.find(p => p.id === f.programId);
+    if (program?.status === "ACTIVE") { l += 5; drivers.push("active program"); }
+    return { fundingId: f.id, name: f.name, successLikelihood: Math.max(0, Math.min(100, l)), drivers };
+  }).sort((a,b)=>b.successLikelihood-a.successLikelihood);
+
+  return { priorities, churn, matches: matches.slice(0,15), funding };
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  LAYOUT
+// ════════════════════════════════════════════════════════════════════════
+const NAV = [
+  { group:"Operate", items: [
+    { href:"/dashboard",    label:"Dashboard",      icon:"▦" },
+    { href:"/partnerships", label:"Partnerships",   icon:"🤝" },
+    { href:"/programs",     label:"Programs",       icon:"🚀" },
+    { href:"/funding",      label:"Funding",        icon:"💰" },
+    { href:"/members",      label:"Member Hubs",    icon:"🏢" },
+    { href:"/events",       label:"Events",         icon:"📅" },
+    { href:"/tasks",        label:"Tasks",          icon:"✓" },
+  ]},
+  { group:"Engage", items: [
+    { href:"/collaboration",label:"Collaboration",  icon:"💬" },
+    { href:"/campaigns",    label:"Campaigns",      icon:"📢" },
+    { href:"/intelligence", label:"Intelligence",   icon:"✨" },
+  ]},
+  { group:"Operations", items: [
+    { href:"/procurement",  label:"Procurement",    icon:"📦" },
+    { href:"/jobs",         label:"Jobs Board",     icon:"💼" },
+    { href:"/people",       label:"People (HR)",    icon:"👥" },
+  ]},
+  { group:"System", items: [
+    { href:"/africonnect",  label:"Africonnect",    icon:"🌍" },
+    { href:"/audit",        label:"Audit Log",      icon:"🛡" },
+    { href:"/departments",  label:"Departments",    icon:"⚙" },
+    { href:"/settings",     label:"Settings",       icon:"⚙" },
+  ]},
+];
+
+function Sidebar({ route }) {
+  return (
+    <aside className="hidden w-64 shrink-0 border-r border-gray-200 bg-white lg:block">
+      <a href="#/dashboard" className="flex h-16 items-center gap-2 border-b border-gray-200 px-5 hover:bg-gray-50">
+        <div className="grid h-9 w-9 place-items-center rounded-lg bg-brand-600 font-black text-white">A</div>
+        <div>
+          <div className="text-sm font-semibold leading-tight">Afrilabs</div>
+          <div className="text-xs text-gray-500">Ecosystem OS</div>
+        </div>
+      </a>
+      <nav className="px-3 py-4">
+        {NAV.map(g => (
+          <div key={g.group} className="mb-4">
+            <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">{g.group}</p>
+            {g.items.map(it => {
+              const active = route === it.href || route.startsWith(it.href + "/");
+              return (
+                <a key={it.href} href={"#" + it.href}
+                  className={cls("flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition",
+                    active ? "bg-brand-50 font-medium text-brand-700" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900")}>
+                  <span className="text-base">{it.icon}</span>{it.label}
+                </a>
+              );
+            })}
+          </div>
+        ))}
+        <a href="index.html" className="block px-3 py-2 text-xs text-gray-400 hover:text-gray-700">← Marketing site</a>
+      </nav>
+    </aside>
+  );
+}
+
+function Topbar({ data, update, search, setSearch }) {
+  const [open, setOpen] = useState(false);
+  const user = data.users.find(u => u.id === data.settings.currentUserId);
+  return (
+    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white/85 px-6 backdrop-blur">
+      <div className="flex flex-1 items-center gap-3">
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search hubs, partners, programs…"
+               className="w-full max-w-md rounded-md border border-gray-200 bg-gray-50 py-2 px-3 text-sm focus:bg-white focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500" />
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <button onClick={()=>setOpen(o=>!o)} className="flex items-center gap-3 rounded-md border-l border-gray-200 pl-3 pr-1 hover:bg-gray-50">
+            <div className="text-right text-sm leading-tight">
+              <div className="font-medium">{user?.name ?? "Guest"}</div>
+              <div className="text-xs text-gray-500">{user?.role}</div>
+            </div>
+            <div className="grid h-8 w-8 place-items-center rounded-full bg-brand-600 text-xs font-semibold text-white">{(user?.name??"?").slice(0,1)}</div>
+          </button>
+          {open && (
+            <div className="absolute right-0 top-12 w-64 rounded-md border border-gray-200 bg-white shadow-lg z-20">
+              <p className="border-b border-gray-100 px-4 py-2 text-xs font-semibold uppercase text-gray-400">Switch user (demo)</p>
+              {data.users.map(u => (
+                <button key={u.id} onClick={()=>{update(d=>{d.settings.currentUserId=u.id; logAudit(d,"LOGIN","User",u.id); return d;}); setOpen(false);}}
+                  className={cls("flex w-full items-center justify-between px-4 py-2 text-sm hover:bg-gray-50",
+                    u.id===user?.id ? "bg-brand-50 text-brand-700" : "")}>
+                  <span><span className="font-medium">{u.name}</span><span className="ml-2 text-xs text-gray-500">{u.role}</span></span>
+                  {u.id===user?.id && <span className="text-brand-600">✓</span>}
+                </button>
+              ))}
+              <a href="#/settings" onClick={()=>setOpen(false)} className="block border-t border-gray-100 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">⚙ Settings & data</a>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function Shell({ data, update, route, search, setSearch, children }) {
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar route={route} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Topbar data={data} update={update} search={search} setSearch={setSearch} />
+        <main className="flex-1 px-6 py-6 lg:px-8">{children}</main>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════════════════════════════
+function Dashboard({ data }) {
+  const totalFunding = data.fundingSources.reduce((s,f) => s+f.amount, 0);
+  const paidHubs = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "paid").length;
+  const activePartnerships = data.partnerships.filter(p => p.stage === "ACTIVE").length;
+  const recentP = [...data.partnerships].sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt)).slice(0,5);
+  const partnerById = Object.fromEntries(data.partners.map(p=>[p.id,p]));
+  const recent = [...data.activities].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,8);
+  const userById = Object.fromEntries(data.users.map(u=>[u.id,u]));
+  const topPrograms = data.programs.slice(0,5);
+  const topEvents = [...data.events].sort((a,b)=>new Date(b.startDate)-new Date(a.startDate)).slice(0,5);
+
+  return (
+    <div>
+      <PageHeader title="Ecosystem overview" subtitle="A live snapshot of partnerships, programs, funding and member activity." />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Member hubs"   value={fmtNum(data.hubs.length)} hint={`${paidHubs} paid · ${data.hubs.length-paidHubs} other`} />
+        <StatCard label="Active programs" value={data.programs.filter(p=>p.status==="ACTIVE").length} hint={`${data.programs.length} total`} />
+        <StatCard label="Total funding" value={fmtCurrency(totalFunding)} hint="Pledged → disbursed" />
+        <StatCard label="Live partnerships" value={activePartnerships} hint={`${data.partnerships.length} pipeline`} />
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-2">
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <div><h3 className="text-base font-semibold">Recent partnerships</h3><p className="text-sm text-gray-500">Latest pipeline activity</p></div>
+            <a href="#/partnerships" className="text-sm text-brand-700 hover:underline">View all →</a>
+          </div>
+          <table className="table-base">
+            <thead><tr><th>Partner</th><th>Title</th><th>Stage</th><th>Value</th></tr></thead>
+            <tbody>
+              {recentP.map(p => (
+                <tr key={p.id}>
+                  <td className="font-medium">{partnerById[p.partnerId]?.name ?? "—"}</td>
+                  <td>{p.title}</td>
+                  <td><StageBadge stage={p.stage}/></td>
+                  <td>{p.value ? fmtCurrency(p.value, p.currency) : "—"}</td>
+                </tr>
+              ))}
+              {recentP.length === 0 && <tr><td colSpan="4" className="py-6 text-center text-gray-500">No partnerships yet.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Activity feed</h3><p className="text-sm text-gray-500">Cross-department signals</p></div>
+          <div className="space-y-4 p-5">
+            {recent.map(a => (
+              <div key={a.id} className="flex gap-3">
+                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">{(userById[a.userId]?.name ?? "S").slice(0,1)}</div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{a.title}</p>
+                  {a.body && <p className="line-clamp-2 text-xs text-gray-500">{a.body}</p>}
+                  <p className="text-[11px] text-gray-400">{relTime(a.createdAt)} · {(a.type||"").replace(/_/g," ").toLowerCase()}</p>
+                </div>
+              </div>
+            ))}
+            {recent.length === 0 && <p className="text-sm text-gray-500">No activity yet.</p>}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Programs</h3><a href="#/programs" className="text-sm text-brand-700 hover:underline">All →</a></div>
+          <table className="table-base">
+            <thead><tr><th>Code</th><th>Name</th><th>Status</th><th>Region</th></tr></thead>
+            <tbody>{topPrograms.map(p => (<tr key={p.id}><td className="font-mono text-xs">{p.code}</td><td className="font-medium">{p.name}</td><td><StageBadge stage={p.status}/></td><td className="text-gray-500">{p.region ?? "Pan-African"}</td></tr>))}</tbody>
+          </table>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Events</h3><a href="#/events" className="text-sm text-brand-700 hover:underline">All →</a></div>
+          <table className="table-base">
+            <thead><tr><th>Event</th><th>Status</th><th>Location</th><th>Date</th></tr></thead>
+            <tbody>{topEvents.map(e => (<tr key={e.id}><td className="font-medium">{e.name}</td><td><StageBadge stage={e.status}/></td><td className="text-gray-500">{e.city ? `${e.city}, ${e.country}` : e.location ?? e.country ?? "—"}</td><td className="text-gray-500">{fmtDate(e.startDate)}</td></tr>))}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  HUBS (member services)
+// ════════════════════════════════════════════════════════════════════════
+function HubForm({ initial, onSave, onCancel }) {
+  const [f, setF] = useState(initial || { name:"", country:"", region:"West Africa", city:"", sector:"", membershipTier:"STANDARD", status:"ACTIVE", engagementScore:50, websiteUrl:"", email:"" });
+  const submit = (e) => { e.preventDefault(); onSave(f); };
+  return (
+    <form onSubmit={submit} className="p-6 space-y-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div><label className="label">Name *</label><input className="input" required value={f.name} onChange={e=>setF({...f,name:e.target.value})} /></div>
+        <div><label className="label">Country *</label><input className="input" required value={f.country} onChange={e=>setF({...f,country:e.target.value})} /></div>
+        <div><label className="label">Region</label><select className="input" value={f.region} onChange={e=>setF({...f,region:e.target.value})}>{REGIONS.map(r=><option key={r}>{r}</option>)}</select></div>
+        <div><label className="label">City</label><input className="input" value={f.city ?? ""} onChange={e=>setF({...f,city:e.target.value})} /></div>
+        <div><label className="label">Sector</label><input className="input" value={f.sector ?? ""} onChange={e=>setF({...f,sector:e.target.value})} placeholder="Tech / Agritech / Fintech" /></div>
+        <div><label className="label">Tier</label><select className="input" value={f.membershipTier} onChange={e=>setF({...f,membershipTier:e.target.value})}>{TIERS.map(t=><option key={t}>{t}</option>)}</select></div>
+        <div><label className="label">Status</label><select className="input" value={f.status} onChange={e=>setF({...f,status:e.target.value})}>{HUB_STATUS.map(s=><option key={s}>{s}</option>)}</select></div>
+        <div><label className="label">Engagement (0-100)</label><input type="number" min="0" max="100" className="input" value={f.engagementScore} onChange={e=>setF({...f,engagementScore:Number(e.target.value)})} /></div>
+        <div><label className="label">Website</label><input className="input" value={f.websiteUrl ?? ""} onChange={e=>setF({...f,websiteUrl:e.target.value})} /></div>
+        <div><label className="label">Email</label><input type="email" className="input" value={f.email ?? ""} onChange={e=>setF({...f,email:e.target.value})} /></div>
+      </div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary">Save hub</button>
+      </div>
+    </form>
+  );
+}
+
+function PaymentForm({ hubId, onSave, onCancel }) {
+  const [f, setF] = useState({ amount:500, status:"PAID", months:12, reference:"" });
+  const submit = (e) => {
+    e.preventDefault();
+    const start = new Date(); const end = new Date(start);
+    end.setMonth(end.getMonth() + Number(f.months));
+    onSave({
+      hubId, amount: Number(f.amount), currency:"USD",
+      status: f.status, periodStart: start.toISOString(), periodEnd: end.toISOString(),
+      paidAt: f.status === "PAID" ? new Date().toISOString() : null,
+      reference: f.reference || null,
+    });
+  };
+  return (
+    <form onSubmit={submit} className="p-6 space-y-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div><label className="label">Amount (USD) *</label><input type="number" min="0" step="50" className="input" required value={f.amount} onChange={e=>setF({...f,amount:e.target.value})} /></div>
+        <div><label className="label">Status</label><select className="input" value={f.status} onChange={e=>setF({...f,status:e.target.value})}>{PAYMENT_STATUS.map(s=><option key={s}>{s}</option>)}</select></div>
+        <div><label className="label">Period (months)</label><select className="input" value={f.months} onChange={e=>setF({...f,months:e.target.value})}>{[1,3,6,12,24].map(m=><option key={m}>{m}</option>)}</select></div>
+        <div><label className="label">Reference</label><input className="input" value={f.reference} onChange={e=>setF({...f,reference:e.target.value})} placeholder="INV-2024-001" /></div>
+      </div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary">Save payment</button>
+      </div>
+    </form>
+  );
+}
+
+function HubsList({ data, update, search }) {
+  const [filterRegion, setFilterRegion] = useState("");
+  const [filterTier, setFilterTier] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [editing, setEditing] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [paymentFor, setPaymentFor] = useState(null);
+  const [viewing, setViewing] = useState(null);
+
+  const filtered = data.hubs.filter(h => {
+    if (filterRegion && h.region !== filterRegion) return false;
+    if (filterTier && h.membershipTier !== filterTier) return false;
+    if (filterStatus && h.status !== filterStatus) return false;
+    if (search && !(h.name + h.country + (h.sector||"")).toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const paid    = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "paid").length;
+  const pending = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "pending").length;
+  const expired = data.hubs.filter(h => hubPaymentStatus(h, data.payments) === "expired").length;
+
+  const saveHub = (form) => {
+    update(d => {
+      if (editing) {
+        const idx = d.hubs.findIndex(h => h.id === editing.id);
+        d.hubs[idx] = { ...d.hubs[idx], ...form };
+        logActivity(d, "HUB_UPDATED", `Hub updated: ${form.name}`, null, {hubId:editing.id});
+        logAudit(d, "UPDATE", "Hub", editing.id);
+      } else {
+        const id = uid();
+        d.hubs.push({ id, ...form, joinedAt: new Date().toISOString(), africonnectId: "AC-" + Math.floor(Math.random()*9000+1000) });
+        logActivity(d, "HUB_CREATED", `Hub onboarded: ${form.name}`, `Region: ${form.region}, Tier: ${form.membershipTier}`, {hubId:id});
+        logAudit(d, "CREATE", "Hub", id);
+      }
+      return d;
+    });
+    setEditing(null); setCreating(false);
+  };
+  const deleteHub = (h) => {
+    if (!confirm(`Delete hub "${h.name}"? This is permanent.`)) return;
+    update(d => {
+      d.hubs = d.hubs.filter(x => x.id !== h.id);
+      d.payments = d.payments.filter(p => p.hubId !== h.id);
+      d.programHubs = d.programHubs.filter(p => p.hubId !== h.id);
+      logAudit(d, "DELETE", "Hub", h.id);
+      return d;
+    });
+    setViewing(null);
+  };
+  const recordPayment = (form) => {
+    update(d => {
+      d.payments.push({ id: uid(), ...form });
+      const hub = d.hubs.find(h => h.id === form.hubId);
+      logActivity(d, "HUB_PAID", `Payment ${form.status}: ${fmtCurrency(form.amount)}`, hub?.name, {hubId: form.hubId});
+      logAudit(d, "CREATE", "HubPayment", form.hubId);
+      return d;
+    });
+    setPaymentFor(null);
+  };
+
+  return (
+    <div>
+      <PageHeader title="Member Hubs" subtitle="Manage 500+ Afrilabs hubs as paying ecosystem members."
+        action={<><button className="btn-outline mr-2" onClick={()=>navigate("/campaigns")}>Send campaign</button><button className="btn-primary" onClick={()=>setCreating(true)}>+ Onboard hub</button></>} />
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <StatCard label="Total hubs" value={data.hubs.length} />
+        <StatCard label="Paid" value={paid} hint="Active subscriptions" />
+        <StatCard label="Pending" value={pending} hint="Awaiting payment" />
+        <StatCard label="Expired" value={expired} hint="Need renewal" />
+      </div>
+
+      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+          <h3 className="text-base font-semibold">Hubs ({filtered.length})</h3>
+          <div className="flex gap-2 text-xs">
+            <select className="input !py-1.5" value={filterRegion} onChange={e=>setFilterRegion(e.target.value)}><option value="">All regions</option>{REGIONS.map(r=><option key={r}>{r}</option>)}</select>
+            <select className="input !py-1.5" value={filterTier} onChange={e=>setFilterTier(e.target.value)}><option value="">All tiers</option>{TIERS.map(t=><option key={t}>{t}</option>)}</select>
+            <select className="input !py-1.5" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="">Any status</option>{HUB_STATUS.map(s=><option key={s}>{s}</option>)}</select>
+          </div>
+        </div>
+        <table className="table-base">
+          <thead><tr><th>Hub</th><th>Country</th><th>Region</th><th>Tier</th><th>Status</th><th>Payment</th><th></th></tr></thead>
+          <tbody>
+            {filtered.map(h => {
+              const last = data.payments.filter(p=>p.hubId===h.id).sort((a,b)=>new Date(b.periodEnd)-new Date(a.periodEnd))[0];
+              return (
+                <tr key={h.id}>
+                  <td><div className="font-medium">{h.name}</div><div className="text-xs text-gray-500">{h.sector ?? "—"}</div></td>
+                  <td>{h.country}</td>
+                  <td className="text-gray-500">{h.region}</td>
+                  <td><StageBadge stage={h.membershipTier}/></td>
+                  <td><StageBadge stage={h.status}/></td>
+                  <td className="text-xs">{last ? <><StageBadge stage={last.status}/> {fmtCurrency(last.amount)}</> : <span className="text-gray-400">—</span>}</td>
+                  <td className="space-x-2 whitespace-nowrap text-right">
+                    <button onClick={()=>setViewing(h)} className="text-sm text-brand-700 hover:underline">Open</button>
+                  </td>
+                </tr>
+              );
+            })}
+            {filtered.length === 0 && <tr><td colSpan="7" className="py-10 text-center text-gray-500">No hubs match filters.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+
+      <Modal open={!!viewing || creating || !!editing} onClose={()=>{setViewing(null); setCreating(false); setEditing(null);}}
+             title={creating ? "Onboard hub" : editing ? "Edit hub" : viewing?.name} size="lg">
+        {(creating || editing) ? (
+          <HubForm initial={editing} onSave={saveHub} onCancel={()=>{setCreating(false); setEditing(null);}} />
+        ) : viewing ? (
+          <div className="p-6">
+            <div className="grid gap-3 md:grid-cols-3 mb-6">
+              <div><p className="text-xs uppercase text-gray-500">Country</p><p className="font-medium">{viewing.city ? `${viewing.city}, ` : ""}{viewing.country}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Region</p><p className="font-medium">{viewing.region}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Sector</p><p className="font-medium">{viewing.sector ?? "—"}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Tier</p><p><StageBadge stage={viewing.membershipTier}/></p></div>
+              <div><p className="text-xs uppercase text-gray-500">Status</p><p><StageBadge stage={viewing.status}/></p></div>
+              <div><p className="text-xs uppercase text-gray-500">Engagement</p><p className="font-medium">{viewing.engagementScore}/100</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Website</p><p className="text-blue-600 text-sm">{viewing.websiteUrl ?? "—"}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Email</p><p className="text-sm">{viewing.email ?? "—"}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">AfriconnectID</p><p className="font-mono text-xs">{viewing.africonnectId ?? "—"}</p></div>
+            </div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold">Payment history</h3>
+              <button onClick={()=>setPaymentFor(viewing)} className="btn-primary !py-1.5 text-xs">+ Record payment</button>
+            </div>
+            <table className="table-base">
+              <thead><tr><th>Period</th><th>Amount</th><th>Status</th><th>Paid</th><th>Reference</th></tr></thead>
+              <tbody>
+                {data.payments.filter(p=>p.hubId===viewing.id).map(p=>(
+                  <tr key={p.id}><td>{fmtDate(p.periodStart)} → {fmtDate(p.periodEnd)}</td><td className="font-mono">{fmtCurrency(p.amount)}</td><td><StageBadge stage={p.status}/></td><td>{fmtDate(p.paidAt)}</td><td className="text-xs text-gray-500">{p.reference ?? "—"}</td></tr>
+                ))}
+                {data.payments.filter(p=>p.hubId===viewing.id).length === 0 && <tr><td colSpan="5" className="py-4 text-center text-gray-500">No payments.</td></tr>}
+              </tbody>
+            </table>
+            <div className="mt-6 flex justify-between border-t border-gray-100 pt-4">
+              <button onClick={()=>deleteHub(viewing)} className="btn-danger">Delete hub</button>
+              <div className="space-x-2"><button onClick={()=>setViewing(null)} className="btn-ghost">Close</button><button onClick={()=>{setEditing(viewing); setViewing(null);}} className="btn-outline">Edit</button></div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+
+      <Modal open={!!paymentFor} onClose={()=>setPaymentFor(null)} title={`Record payment — ${paymentFor?.name ?? ""}`} size="md">
+        {paymentFor && <PaymentForm hubId={paymentFor.id} onSave={recordPayment} onCancel={()=>setPaymentFor(null)} />}
+      </Modal>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  PARTNERSHIPS
+// ════════════════════════════════════════════════════════════════════════
+function PartnershipForm({ initial, partners, programs, onSave, onCancel }) {
+  const [f, setF] = useState(initial || {
+    title:"", partnerId: partners[0]?.id ?? "", stage:"PROSPECT", value:"",
+    source:"OUTBOUND", notes:"", programId:"",
+    newPartnerName:"", newPartnerType:"CORPORATE",
+  });
+  const submit = (e) => { e.preventDefault(); onSave(f); };
+  return (
+    <form onSubmit={submit} className="p-6 space-y-4">
+      <div><label className="label">Title *</label><input className="input" required value={f.title} onChange={e=>setF({...f,title:e.target.value})} placeholder="e.g. AAG 2026 Lead Sponsorship" /></div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="label">Partner *</label>
+          <select className="input" required={!f.newPartnerName} value={f.partnerId} onChange={e=>setF({...f,partnerId:e.target.value})}>
+            <option value="">— Create new partner —</option>
+            {partners.map(p=><option key={p.id} value={p.id}>{p.name} ({p.type})</option>)}
+          </select>
+        </div>
+        <div><label className="label">Stage</label><select className="input" value={f.stage} onChange={e=>setF({...f,stage:e.target.value})}>{PARTNERSHIP_STAGES.map(s=><option key={s}>{s}</option>)}</select></div>
+      </div>
+      {!f.partnerId && (
+        <div className="grid gap-4 md:grid-cols-2 rounded-md bg-gray-50 p-3">
+          <div><label className="label">New partner name</label><input className="input" value={f.newPartnerName} onChange={e=>setF({...f,newPartnerName:e.target.value})} /></div>
+          <div><label className="label">Type</label><select className="input" value={f.newPartnerType} onChange={e=>setF({...f,newPartnerType:e.target.value})}>{PARTNER_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+        </div>
+      )}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div><label className="label">Estimated value (USD)</label><input type="number" min="0" step="1000" className="input" value={f.value} onChange={e=>setF({...f,value:e.target.value})} /></div>
+        <div><label className="label">Link to program</label><select className="input" value={f.programId} onChange={e=>setF({...f,programId:e.target.value})}><option value="">— None —</option>{programs.map(p=><option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}</select></div>
+      </div>
+      <div>
+        <label className="label">Source</label>
+        <select className="input" value={f.source} onChange={e=>setF({...f,source:e.target.value})}><option>OUTBOUND</option><option>INBOUND</option><option>REFERRAL</option><option>EVENT</option></select>
+      </div>
+      <div><label className="label">Notes</label><textarea className="input min-h-[100px]" value={f.notes} onChange={e=>setF({...f,notes:e.target.value})} /></div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary">Save partnership</button>
+      </div>
+    </form>
+  );
+}
+
+function PartnershipsList({ data, update, search }) {
+  const [filterStage, setFilterStage] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [viewing, setViewing] = useState(null);
+  const [newMessage, setNewMessage] = useState("");
+
+  const partnerById = Object.fromEntries(data.partners.map(p=>[p.id,p]));
+  const programById = Object.fromEntries(data.programs.map(p=>[p.id,p]));
+  const userById = Object.fromEntries(data.users.map(u=>[u.id,u]));
+
+  const filtered = data.partnerships.filter(p => {
+    if (filterStage && p.stage !== filterStage) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      const partner = partnerById[p.partnerId];
+      if (!(p.title + " " + (partner?.name||"")).toLowerCase().includes(s)) return false;
+    }
+    return true;
+  }).sort((a,b)=>new Date(b.updatedAt) - new Date(a.updatedAt));
+
+  const stageCounts = PARTNERSHIP_STAGES.reduce((acc, s) => ({...acc, [s]: data.partnerships.filter(p=>p.stage===s).length}), {});
+
+  const save = (form) => {
+    update(d => {
+      let partnerId = form.partnerId;
+      if (!partnerId && form.newPartnerName) {
+        partnerId = uid();
+        d.partners.push({ id: partnerId, name: form.newPartnerName, type: form.newPartnerType });
+        logActivity(d, "PARTNER_CREATED", `Partner created: ${form.newPartnerName}`);
+      }
+      if (!partnerId) return d;
+
+      if (editing) {
+        const idx = d.partnerships.findIndex(p => p.id === editing.id);
+        d.partnerships[idx] = { ...d.partnerships[idx], partnerId, title: form.title, stage: form.stage,
+          value: form.value ? Number(form.value) : null, source: form.source, notes: form.notes,
+          updatedAt: new Date().toISOString() };
+        if (form.programId) {
+          const exists = d.partnershipPrograms.some(pp => pp.partnershipId === editing.id && pp.programId === form.programId);
+          if (!exists) d.partnershipPrograms.push({ id: uid(), partnershipId: editing.id, programId: form.programId, role:"DELIVERY_PARTNER" });
+        }
+        logActivity(d, "PARTNERSHIP_UPDATED", `Partnership updated: ${form.title}`, `Stage → ${form.stage}`, { partnershipId: editing.id });
+        logAudit(d, "UPDATE", "Partnership", editing.id);
+      } else {
+        const id = uid();
+        const now = new Date().toISOString();
+        d.partnerships.push({ id, partnerId, ownerId: d.settings.currentUserId, title: form.title,
+          stage: form.stage, value: form.value ? Number(form.value) : null, currency:"USD",
+          source: form.source, notes: form.notes, createdAt: now, updatedAt: now });
+        if (form.programId) d.partnershipPrograms.push({ id: uid(), partnershipId: id, programId: form.programId, role:"DELIVERY_PARTNER" });
+        logActivity(d, "PARTNERSHIP_CREATED", `Partnership created: ${form.title}`, `Stage: ${form.stage}`, { partnershipId: id });
+        logAudit(d, "CREATE", "Partnership", id);
+      }
+      return d;
+    });
+    setCreating(false); setEditing(null);
+  };
+  const changeStage = (p, newStage) => {
+    update(d => {
+      const idx = d.partnerships.findIndex(x => x.id === p.id);
+      d.partnerships[idx].stage = newStage;
+      d.partnerships[idx].updatedAt = new Date().toISOString();
+      logActivity(d, "PARTNERSHIP_UPDATED", `${partnerById[p.partnerId]?.name}: stage → ${newStage}`, null, { partnershipId: p.id });
+      logAudit(d, "UPDATE", "Partnership", p.id);
+      return d;
+    });
+    if (viewing?.id === p.id) setViewing({...p, stage: newStage});
+  };
+  const remove = (p) => {
+    if (!confirm("Delete this partnership permanently?")) return;
+    update(d => {
+      d.partnerships = d.partnerships.filter(x => x.id !== p.id);
+      d.partnershipPrograms = d.partnershipPrograms.filter(pp => pp.partnershipId !== p.id);
+      logAudit(d, "DELETE", "Partnership", p.id);
+      return d;
+    });
+    setViewing(null);
+  };
+  const sendMessage = () => {
+    if (!newMessage.trim() || !viewing) return;
+    update(d => {
+      logActivity(d, "PARTNERSHIP_NOTE", `Note on ${partnerById[viewing.partnerId]?.name}`, newMessage.trim(), { partnershipId: viewing.id });
+      return d;
+    });
+    setNewMessage("");
+  };
+
+  return (
+    <div>
+      <PageHeader title="Partnerships" subtitle="Pipeline of investors, donors, corporates and government partners."
+        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ New partnership</button>} />
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        <button onClick={()=>setFilterStage("")} className={cls("rounded-md border px-2 py-1 text-xs", !filterStage ? "border-brand-300 bg-brand-50 text-brand-700" : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100")}>All ({data.partnerships.length})</button>
+        {PARTNERSHIP_STAGES.map(s => (
+          <button key={s} onClick={()=>setFilterStage(s)} className={cls("rounded-md border px-2 py-1 text-xs", filterStage===s ? "border-brand-300 bg-brand-50 text-brand-700" : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100")}>
+            {s.replace(/_/g," ")} ({stageCounts[s]})
+          </button>
+        ))}
+      </div>
+
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="table-base">
+          <thead><tr><th>Partner</th><th>Title</th><th>Stage</th><th>Value</th><th>Programs</th><th>Owner</th><th>Updated</th><th></th></tr></thead>
+          <tbody>
+            {filtered.map(p => {
+              const partner = partnerById[p.partnerId];
+              const linked = data.partnershipPrograms.filter(pp => pp.partnershipId === p.id).map(pp=>programById[pp.programId]?.code).filter(Boolean);
+              return (
+                <tr key={p.id}>
+                  <td><div className="font-medium">{partner?.name ?? "—"}</div><div className="text-xs text-gray-500">{partner?.type} · {partner?.country ?? "—"}</div></td>
+                  <td>{p.title}</td>
+                  <td>
+                    <select value={p.stage} onChange={e=>changeStage(p, e.target.value)} className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-xs">
+                      {PARTNERSHIP_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </td>
+                  <td>{p.value ? fmtCurrency(p.value, p.currency) : "—"}</td>
+                  <td className="text-xs">{linked.length ? linked.join(", ") : <span className="text-gray-400">—</span>}</td>
+                  <td className="text-gray-600">{userById[p.ownerId]?.name ?? "—"}</td>
+                  <td className="text-xs text-gray-500">{relTime(p.updatedAt)}</td>
+                  <td><button onClick={()=>setViewing(p)} className="text-sm text-brand-700 hover:underline">Open</button></td>
+                </tr>
+              );
+            })}
+            {filtered.length === 0 && <tr><td colSpan="8" className="py-10 text-center text-gray-500">No partnerships match.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+
+      <Modal open={creating || !!editing || !!viewing} onClose={()=>{setCreating(false); setEditing(null); setViewing(null);}}
+             title={creating ? "New partnership" : editing ? "Edit partnership" : viewing?.title ?? ""} size="lg">
+        {(creating || editing) ? (
+          <PartnershipForm initial={editing} partners={data.partners} programs={data.programs} onSave={save} onCancel={()=>{setCreating(false); setEditing(null);}} />
+        ) : viewing ? (
+          <div className="p-6">
+            <div className="grid gap-3 md:grid-cols-4 mb-6 text-sm">
+              <div><p className="text-xs uppercase text-gray-500">Partner</p><p className="font-medium">{partnerById[viewing.partnerId]?.name}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Stage</p><p><StageBadge stage={viewing.stage}/></p></div>
+              <div><p className="text-xs uppercase text-gray-500">Value</p><p className="font-medium">{viewing.value ? fmtCurrency(viewing.value) : "—"}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Owner</p><p className="font-medium">{userById[viewing.ownerId]?.name ?? "—"}</p></div>
+            </div>
+            <div className="mb-6"><p className="text-xs uppercase text-gray-500 mb-1">Notes</p><p className="whitespace-pre-wrap rounded-md bg-gray-50 p-3 text-sm">{viewing.notes || <span className="text-gray-400">No notes yet.</span>}</p></div>
+
+            <div className="mb-6">
+              <h4 className="mb-2 text-sm font-semibold uppercase text-gray-500">Linked programs</h4>
+              <ul className="space-y-1 text-sm">
+                {data.partnershipPrograms.filter(pp => pp.partnershipId === viewing.id).map(pp => {
+                  const prog = programById[pp.programId];
+                  return prog && <li key={pp.id} className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2"><span><span className="font-mono text-xs text-gray-500">{prog.code}</span> {prog.name}</span><span className="text-xs text-gray-500">{pp.role}</span></li>;
+                })}
+                {data.partnershipPrograms.filter(pp => pp.partnershipId === viewing.id).length === 0 && <li className="text-xs text-gray-400">No programs linked.</li>}
+              </ul>
+            </div>
+
+            <div className="mb-6">
+              <h4 className="mb-2 text-sm font-semibold uppercase text-gray-500">Internal thread</h4>
+              <div className="flex gap-2 mb-3">
+                <textarea value={newMessage} onChange={e=>setNewMessage(e.target.value)} className="input flex-1 min-h-[60px]" placeholder="Drop an update for the team…" />
+                <button onClick={sendMessage} className="btn-primary self-start">Post</button>
+              </div>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {data.activities.filter(a => a.partnershipId === viewing.id).slice(0,15).map(a => (
+                  <div key={a.id} className="rounded-md border border-gray-100 bg-gray-50 p-3 text-sm">
+                    <p className="text-gray-800">{a.body || a.title}</p>
+                    <p className="mt-1 text-xs text-gray-500">{userById[a.userId]?.name ?? "system"} · {relTime(a.createdAt)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-between border-t border-gray-100 pt-4">
+              <button onClick={()=>remove(viewing)} className="btn-danger">Delete</button>
+              <div className="space-x-2"><button onClick={()=>setViewing(null)} className="btn-ghost">Close</button><button onClick={()=>{setEditing(viewing); setViewing(null);}} className="btn-outline">Edit</button></div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  PROGRAMS
+// ════════════════════════════════════════════════════════════════════════
+function ProgramForm({ initial, users, onSave, onCancel }) {
+  const [f, setF] = useState(initial || { name:"", code:"", type:"INITIATIVE", status:"DRAFT", description:"", region:"", budget:"", leadId: users[0]?.id ?? "" });
+  const submit = (e) => { e.preventDefault(); onSave({...f, code: f.code.toUpperCase()}); };
+  return (
+    <form onSubmit={submit} className="p-6 space-y-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div><label className="label">Name *</label><input className="input" required value={f.name} onChange={e=>setF({...f,name:e.target.value})} /></div>
+        <div><label className="label">Code *</label><input className="input" required value={f.code} onChange={e=>setF({...f,code:e.target.value})} placeholder="e.g. CATALYTIC" /></div>
+        <div><label className="label">Type</label><select className="input" value={f.type} onChange={e=>setF({...f,type:e.target.value})}>{PROGRAM_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+        <div><label className="label">Status</label><select className="input" value={f.status} onChange={e=>setF({...f,status:e.target.value})}>{PROGRAM_STATUS.map(t=><option key={t}>{t}</option>)}</select></div>
+        <div><label className="label">Region</label><select className="input" value={f.region} onChange={e=>setF({...f,region:e.target.value})}><option value="">Pan-African</option>{REGIONS.map(r=><option key={r}>{r}</option>)}</select></div>
+        <div><label className="label">Budget (USD)</label><input type="number" min="0" step="1000" className="input" value={f.budget} onChange={e=>setF({...f,budget:e.target.value})} /></div>
+        <div className="md:col-span-2"><label className="label">Lead</label><select className="input" value={f.leadId} onChange={e=>setF({...f,leadId:e.target.value})}>{users.map(u=><option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
+      </div>
+      <div><label className="label">Description</label><textarea className="input min-h-[100px]" value={f.description} onChange={e=>setF({...f,description:e.target.value})} /></div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary">Save program</button>
+      </div>
+    </form>
+  );
+}
+
+function ProgramsList({ data, update, search }) {
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [viewing, setViewing] = useState(null);
+
+  const filtered = data.programs.filter(p => !search || (p.name+p.code+p.description).toLowerCase().includes(search.toLowerCase()));
+  const partnerById = Object.fromEntries(data.partners.map(p=>[p.id,p]));
+  const userById = Object.fromEntries(data.users.map(u=>[u.id,u]));
+  const hubById = Object.fromEntries(data.hubs.map(h=>[h.id,h]));
+
+  const save = (form) => {
+    update(d => {
+      const payload = { ...form, budget: form.budget ? Number(form.budget) : null, region: form.region || null };
+      if (editing) {
+        const idx = d.programs.findIndex(p => p.id === editing.id);
+        d.programs[idx] = { ...d.programs[idx], ...payload };
+        logActivity(d, "PROGRAM_UPDATED", `Program updated: ${form.name}`, null, { programId: editing.id });
+        logAudit(d, "UPDATE", "Program", editing.id);
+      } else {
+        const id = uid();
+        d.programs.push({ id, ...payload });
+        logActivity(d, "PROGRAM_LAUNCHED", `Program created: ${form.name}`, `Code: ${payload.code}`, { programId: id });
+        logAudit(d, "CREATE", "Program", id);
+      }
+      return d;
+    });
+    setCreating(false); setEditing(null);
+  };
+  const remove = (p) => {
+    if (!confirm("Delete this program permanently?")) return;
+    update(d => {
+      d.programs = d.programs.filter(x => x.id !== p.id);
+      d.partnershipPrograms = d.partnershipPrograms.filter(pp => pp.programId !== p.id);
+      d.programHubs = d.programHubs.filter(ph => ph.programId !== p.id);
+      logAudit(d, "DELETE", "Program", p.id);
+      return d;
+    });
+    setViewing(null);
+  };
+
+  return (
+    <div>
+      <PageHeader title="Programs" subtitle="Accelerators, initiatives, research and ecosystem projects."
+        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ New program</button>} />
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {filtered.map(p => {
+          const partners = data.partnershipPrograms.filter(pp => pp.programId === p.id).length;
+          const hubs = data.programHubs.filter(ph => ph.programId === p.id).length;
+          const funding = data.fundingSources.filter(f => f.programId === p.id).reduce((s,f)=>s+f.amount, 0);
+          return (
+            <div key={p.id} onClick={()=>setViewing(p)} className="cursor-pointer rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+              <div className="mb-2 flex items-start justify-between gap-2"><span className="font-mono text-xs text-gray-500">{p.code}</span><StageBadge stage={p.status}/></div>
+              <h3 className="text-base font-semibold">{p.name}</h3>
+              <p className="mt-1 line-clamp-2 text-sm text-gray-500">{p.description ?? "—"}</p>
+              <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                <div><div className="text-lg font-bold">{partners}</div><div className="text-[10px] uppercase text-gray-500">Partners</div></div>
+                <div><div className="text-lg font-bold">{hubs}</div><div className="text-[10px] uppercase text-gray-500">Hubs</div></div>
+                <div><div className="text-lg font-bold">{fmtNum(funding)}</div><div className="text-[10px] uppercase text-gray-500">Funding</div></div>
+              </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-gray-500"><span>{p.region ?? "Pan-African"}</span><span>{p.budget ? fmtCurrency(p.budget) : "—"}</span></div>
+              <div className="mt-2 flex items-center justify-between text-xs text-gray-400"><span>Lead: {userById[p.leadId]?.name ?? "Unassigned"}</span></div>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && <div className="col-span-full"><Empty title="No programs yet" hint="Create your first one." action={<button onClick={()=>setCreating(true)} className="btn-primary">+ New program</button>} /></div>}
+      </div>
+
+      <Modal open={creating || !!editing || !!viewing} onClose={()=>{setCreating(false); setEditing(null); setViewing(null);}}
+             title={creating ? "New program" : editing ? "Edit program" : viewing?.name} size="lg">
+        {(creating || editing) ? (
+          <ProgramForm initial={editing} users={data.users} onSave={save} onCancel={()=>{setCreating(false); setEditing(null);}} />
+        ) : viewing ? (
+          <div className="p-6">
+            <div className="grid gap-3 md:grid-cols-4 mb-6 text-sm">
+              <div><p className="text-xs uppercase text-gray-500">Code</p><p className="font-mono">{viewing.code}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Type</p><p>{viewing.type}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Status</p><p><StageBadge stage={viewing.status}/></p></div>
+              <div><p className="text-xs uppercase text-gray-500">Region</p><p>{viewing.region ?? "Pan-African"}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Budget</p><p>{viewing.budget ? fmtCurrency(viewing.budget) : "—"}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Lead</p><p>{userById[viewing.leadId]?.name ?? "—"}</p></div>
+            </div>
+            {viewing.description && <div className="mb-6"><p className="text-xs uppercase text-gray-500 mb-1">Description</p><p className="text-sm">{viewing.description}</p></div>}
+
+            <div className="grid gap-4 md:grid-cols-2 mb-6">
+              <div>
+                <h4 className="mb-2 text-sm font-semibold uppercase text-gray-500">Partnerships ({data.partnershipPrograms.filter(pp=>pp.programId===viewing.id).length})</h4>
+                <ul className="space-y-1 text-sm">
+                  {data.partnershipPrograms.filter(pp=>pp.programId===viewing.id).map(pp => {
+                    const ps = data.partnerships.find(x=>x.id===pp.partnershipId); if (!ps) return null;
+                    return <li key={pp.id} className="rounded-md bg-gray-50 px-3 py-2">{partnerById[ps.partnerId]?.name} <StageBadge stage={ps.stage}/></li>;
+                  })}
+                </ul>
+              </div>
+              <div>
+                <h4 className="mb-2 text-sm font-semibold uppercase text-gray-500">Funding ({fmtCurrency(data.fundingSources.filter(f=>f.programId===viewing.id).reduce((s,f)=>s+f.amount,0))})</h4>
+                <ul className="space-y-1 text-sm">
+                  {data.fundingSources.filter(f=>f.programId===viewing.id).map(f => (
+                    <li key={f.id} className="rounded-md bg-gray-50 px-3 py-2 flex justify-between"><span>{f.name}</span><span><StageBadge stage={f.status}/> {fmtCurrency(f.amount)}</span></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex justify-between border-t border-gray-100 pt-4">
+              <button onClick={()=>remove(viewing)} className="btn-danger">Delete</button>
+              <div className="space-x-2"><button onClick={()=>setViewing(null)} className="btn-ghost">Close</button><button onClick={()=>{setEditing(viewing); setViewing(null);}} className="btn-outline">Edit</button></div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  FUNDING
+// ════════════════════════════════════════════════════════════════════════
+function FundingForm({ initial, partners, programs, onSave, onCancel }) {
+  const [f, setF] = useState(initial || { name:"", type:"GRANT", amount:"", status:"PLEDGED", partnerId:"", programId:"" });
+  const submit = (e) => { e.preventDefault(); onSave(f); };
+  return (
+    <form onSubmit={submit} className="p-6 space-y-4">
+      <div><label className="label">Name *</label><input className="input" required value={f.name} onChange={e=>setF({...f,name:e.target.value})} placeholder="e.g. Mastercard Foundation grant" /></div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div><label className="label">Type</label><select className="input" value={f.type} onChange={e=>setF({...f,type:e.target.value})}>{FUNDING_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+        <div><label className="label">Status</label><select className="input" value={f.status} onChange={e=>setF({...f,status:e.target.value})}>{FUNDING_STATUS.map(t=><option key={t}>{t}</option>)}</select></div>
+        <div><label className="label">Amount (USD) *</label><input type="number" min="0" step="1000" required className="input" value={f.amount} onChange={e=>setF({...f,amount:e.target.value})} /></div>
+        <div><label className="label">Partner</label><select className="input" value={f.partnerId} onChange={e=>setF({...f,partnerId:e.target.value})}><option value="">—</option>{partners.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+        <div className="md:col-span-2"><label className="label">Program</label><select className="input" value={f.programId} onChange={e=>setF({...f,programId:e.target.value})}><option value="">—</option>{programs.map(p=><option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}</select></div>
+      </div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary">Save funding</button>
+      </div>
+    </form>
+  );
+}
+
+function FundingList({ data, update }) {
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(null);
+
+  const partnerById = Object.fromEntries(data.partners.map(p=>[p.id,p]));
+  const programById = Object.fromEntries(data.programs.map(p=>[p.id,p]));
+  const total = data.fundingSources.reduce((s,f)=>s+f.amount, 0);
+  const totals = FUNDING_STATUS.reduce((acc, s) => ({...acc, [s]: data.fundingSources.filter(f=>f.status===s).reduce((sum,f)=>sum+f.amount, 0)}), {});
+
+  const byRegion = {};
+  data.fundingSources.forEach(f => {
+    const r = programById[f.programId]?.region ?? "Pan-African";
+    byRegion[r] = (byRegion[r] || 0) + f.amount;
+  });
+
+  const save = (form) => {
+    update(d => {
+      const payload = { ...form, amount: Number(form.amount), partnerId: form.partnerId || null, programId: form.programId || null, currency:"USD" };
+      if (editing) {
+        const idx = d.fundingSources.findIndex(x => x.id === editing.id);
+        d.fundingSources[idx] = { ...d.fundingSources[idx], ...payload };
+        logAudit(d, "UPDATE", "FundingSource", editing.id);
+      } else {
+        const id = uid();
+        d.fundingSources.push({ id, ...payload, pledgeDate: new Date().toISOString() });
+        logActivity(d, "FUNDING_PLEDGED", `${payload.type} pledged: ${form.name}`, fmtCurrency(payload.amount), { programId: form.programId || null });
+        logAudit(d, "CREATE", "FundingSource", id);
+      }
+      return d;
+    });
+    setCreating(false); setEditing(null);
+  };
+  const remove = (f) => {
+    if (!confirm("Delete this funding record?")) return;
+    update(d => {
+      d.fundingSources = d.fundingSources.filter(x => x.id !== f.id);
+      logAudit(d, "DELETE", "FundingSource", f.id);
+      return d;
+    });
+  };
+
+  return (
+    <div>
+      <PageHeader title="Funding & Grants" subtitle="Investments, grants and sponsorships across the ecosystem."
+        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ Add funding</button>} />
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <StatCard label="Pledged"   value={fmtCurrency(totals.PLEDGED || 0)} />
+        <StatCard label="Approved"  value={fmtCurrency(totals.APPROVED || 0)} />
+        <StatCard label="Disbursed" value={fmtCurrency(totals.DISBURSED || 0)} />
+        <StatCard label="Total"     value={fmtCurrency(total)} hint={`${data.fundingSources.length} sources`} />
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-2">
+          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Funding ledger</h3></div>
+          <table className="table-base">
+            <thead><tr><th>Source</th><th>Type</th><th>Partner</th><th>Program</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {data.fundingSources.map(f => (
+                <tr key={f.id}>
+                  <td className="font-medium">{f.name}</td>
+                  <td>{f.type}</td>
+                  <td className="text-gray-600">{partnerById[f.partnerId]?.name ?? "—"}</td>
+                  <td className="text-gray-600">{programById[f.programId]?.code ?? "—"}</td>
+                  <td className="font-mono">{fmtCurrency(f.amount)}</td>
+                  <td><StageBadge stage={f.status}/></td>
+                  <td className="space-x-2 text-right">
+                    <button onClick={()=>setEditing(f)} className="text-xs text-brand-700 hover:underline">Edit</button>
+                    <button onClick={()=>remove(f)} className="text-xs text-red-600 hover:underline">Delete</button>
+                  </td>
+                </tr>
+              ))}
+              {data.fundingSources.length === 0 && <tr><td colSpan="7" className="py-6 text-center text-gray-500">No funding records yet.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Funding by region</h3></div>
+          <div className="space-y-3 p-5">
+            {Object.entries(byRegion).sort((a,b)=>b[1]-a[1]).map(([r, v]) => {
+              const pct = total > 0 ? (v/total)*100 : 0;
+              return (
+                <div key={r}>
+                  <div className="mb-1 flex justify-between text-sm"><span className="font-medium">{r}</span><span className="text-gray-500">{fmtCurrency(v)} ({pct.toFixed(0)}%)</span></div>
+                  <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-brand-500" style={{width:`${pct}%`}}/></div>
+                </div>
+              );
+            })}
+            {Object.keys(byRegion).length === 0 && <p className="text-sm text-gray-500">No regional data yet.</p>}
+          </div>
+        </div>
+      </div>
+
+      <Modal open={creating || !!editing} onClose={()=>{setCreating(false); setEditing(null);}} title={creating ? "Add funding" : "Edit funding"} size="lg">
+        <FundingForm initial={editing} partners={data.partners} programs={data.programs} onSave={save} onCancel={()=>{setCreating(false); setEditing(null);}} />
+      </Modal>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  EVENTS
+// ════════════════════════════════════════════════════════════════════════
+function EventForm({ initial, programs, onSave, onCancel }) {
+  const [f, setF] = useState(initial || {
+    name:"", type:"PROGRAM_EVENT", status:"PLANNING",
+    startDate:new Date().toISOString().slice(0,10), location:"", city:"", country:"",
+    capacity:"", registered:0, attended:0, programId:"", description:"",
+  });
+  const submit = (e) => { e.preventDefault(); onSave({ ...f, programId: f.programId || null,
+    capacity: f.capacity ? Number(f.capacity) : null, registered: Number(f.registered)||0, attended: Number(f.attended)||0,
+    startDate: new Date(f.startDate).toISOString() }); };
+  return (
+    <form onSubmit={submit} className="p-6 space-y-4">
+      <div><label className="label">Name *</label><input className="input" required value={f.name} onChange={e=>setF({...f,name:e.target.value})} /></div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <div><label className="label">Type</label><select className="input" value={f.type} onChange={e=>setF({...f,type:e.target.value})}>{EVENT_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+        <div><label className="label">Status</label><select className="input" value={f.status} onChange={e=>setF({...f,status:e.target.value})}>{EVENT_STATUS.map(s=><option key={s}>{s}</option>)}</select></div>
+        <div><label className="label">Start *</label><input type="date" required className="input" value={typeof f.startDate==='string' ? f.startDate.slice(0,10) : ""} onChange={e=>setF({...f,startDate:e.target.value})} /></div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <div><label className="label">Location</label><input className="input" value={f.location??""} onChange={e=>setF({...f,location:e.target.value})} /></div>
+        <div><label className="label">City</label><input className="input" value={f.city??""} onChange={e=>setF({...f,city:e.target.value})} /></div>
+        <div><label className="label">Country</label><input className="input" value={f.country??""} onChange={e=>setF({...f,country:e.target.value})} /></div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <div><label className="label">Capacity</label><input type="number" className="input" value={f.capacity??""} onChange={e=>setF({...f,capacity:e.target.value})} /></div>
+        <div><label className="label">Registered</label><input type="number" className="input" value={f.registered} onChange={e=>setF({...f,registered:e.target.value})} /></div>
+        <div><label className="label">Attended</label><input type="number" className="input" value={f.attended} onChange={e=>setF({...f,attended:e.target.value})} /></div>
+      </div>
+      <div><label className="label">Program</label><select className="input" value={f.programId??""} onChange={e=>setF({...f,programId:e.target.value})}><option value="">—</option>{programs.map(p=><option key={p.id} value={p.id}>{p.code} · {p.name}</option>)}</select></div>
+      <div><label className="label">Description</label><textarea className="input min-h-[80px]" value={f.description??""} onChange={e=>setF({...f,description:e.target.value})} /></div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary">Save event</button>
+      </div>
+    </form>
+  );
+}
+
+function EventsList({ data, update }) {
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [viewing, setViewing] = useState(null);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskDept, setTaskDept] = useState("EVENTS");
+
+  const programById = Object.fromEntries(data.programs.map(p=>[p.id,p]));
+  const counts = EVENT_STATUS.reduce((acc, s) => ({...acc, [s]: data.events.filter(e=>e.status===s).length}), {});
+
+  const save = (form) => {
+    update(d => {
+      if (editing) {
+        const idx = d.events.findIndex(e => e.id === editing.id);
+        d.events[idx] = { ...d.events[idx], ...form };
+        logActivity(d, "EVENT_UPDATED", `Event updated: ${form.name}`, null, { eventId: editing.id });
+        logAudit(d, "UPDATE", "Event", editing.id);
+      } else {
+        const id = uid();
+        d.events.push({ id, ...form });
+        logActivity(d, "EVENT_CREATED", `Event created: ${form.name}`, `Status: ${form.status}`, { eventId: id });
+        logAudit(d, "CREATE", "Event", id);
+      }
+      return d;
+    });
+    setCreating(false); setEditing(null);
+  };
+  const moveStatus = (e, newStatus) => {
+    update(d => {
+      const idx = d.events.findIndex(x => x.id === e.id);
+      d.events[idx].status = newStatus;
+      logActivity(d, "EVENT_UPDATED", `${e.name}: status → ${newStatus}`, null, { eventId: e.id });
+      logAudit(d, "UPDATE", "Event", e.id);
+      return d;
+    });
+    if (viewing?.id === e.id) setViewing({...e, status: newStatus});
+  };
+  const addTask = () => {
+    if (!taskTitle.trim() || !viewing) return;
+    update(d => {
+      const id = uid();
+      d.tasks.push({ id, title: taskTitle.trim(), eventId: viewing.id, department: taskDept, priority:"MEDIUM", status:"TODO", createdAt: new Date().toISOString() });
+      logAudit(d, "CREATE", "Task", id);
+      return d;
+    });
+    setTaskTitle("");
+  };
+  const toggleTask = (t) => {
+    update(d => {
+      const idx = d.tasks.findIndex(x => x.id === t.id);
+      const next = d.tasks[idx].status === "DONE" ? "TODO" : "DONE";
+      d.tasks[idx].status = next;
+      d.tasks[idx].completedAt = next === "DONE" ? new Date().toISOString() : null;
+      return d;
+    });
+  };
+  const remove = (e) => {
+    if (!confirm("Delete this event permanently?")) return;
+    update(d => {
+      d.events = d.events.filter(x => x.id !== e.id);
+      d.tasks = d.tasks.filter(t => t.eventId !== e.id);
+      d.eventPartners = d.eventPartners.filter(ep => ep.eventId !== e.id);
+      logAudit(d, "DELETE", "Event", e.id);
+      return d;
+    });
+    setViewing(null);
+  };
+
+  return (
+    <div>
+      <PageHeader title="Events & Activation" subtitle="AAG and program events from planning through post-event analysis."
+        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ New event</button>} />
+
+      <div className="grid gap-4 md:grid-cols-5">
+        {EVENT_STATUS.map(s => <StatCard key={s} label={s.replace(/_/g," ")} value={counts[s]} />)}
+      </div>
+
+      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">All events</h3></div>
+        <table className="table-base">
+          <thead><tr><th>Event</th><th>Type</th><th>Status</th><th>Program</th><th>Date</th><th>Tasks</th><th>Attendance</th><th></th></tr></thead>
+          <tbody>
+            {data.events.map(e => {
+              const tasks = data.tasks.filter(t => t.eventId === e.id);
+              const done = tasks.filter(t => t.status === "DONE").length;
+              const att = e.registered ? Math.round((e.attended / e.registered) * 100) : 0;
+              return (
+                <tr key={e.id}>
+                  <td><div className="font-medium">{e.name}</div><div className="text-xs text-gray-500">{e.location ?? e.country ?? "—"}</div></td>
+                  <td>{e.type}</td>
+                  <td>
+                    <select value={e.status} onChange={ev=>moveStatus(e, ev.target.value)} className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-xs">
+                      {EVENT_STATUS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </td>
+                  <td>{programById[e.programId]?.code ?? "—"}</td>
+                  <td>{fmtDate(e.startDate)}</td>
+                  <td>{done}/{tasks.length}</td>
+                  <td className="text-xs">{e.attended}/{e.registered} ({att}%)</td>
+                  <td><button onClick={()=>setViewing(e)} className="text-sm text-brand-700 hover:underline">Open</button></td>
+                </tr>
+              );
+            })}
+            {data.events.length === 0 && <tr><td colSpan="8" className="py-6 text-center text-gray-500">No events yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+
+      <Modal open={creating || !!editing || !!viewing} onClose={()=>{setCreating(false); setEditing(null); setViewing(null);}}
+             title={creating ? "New event" : editing ? "Edit event" : viewing?.name} size="lg">
+        {(creating || editing) ? (
+          <EventForm initial={editing} programs={data.programs} onSave={save} onCancel={()=>{setCreating(false); setEditing(null);}} />
+        ) : viewing ? (
+          <div className="p-6">
+            <div className="grid gap-3 md:grid-cols-4 mb-6 text-sm">
+              <div><p className="text-xs uppercase text-gray-500">Type</p><p>{viewing.type}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Status</p><p><StageBadge stage={viewing.status}/></p></div>
+              <div><p className="text-xs uppercase text-gray-500">Date</p><p>{fmtDate(viewing.startDate)}</p></div>
+              <div><p className="text-xs uppercase text-gray-500">Location</p><p>{viewing.location ?? viewing.country ?? "—"}</p></div>
+            </div>
+
+            <div className="mb-6">
+              <h4 className="mb-2 text-sm font-semibold uppercase text-gray-500">Tasks ({data.tasks.filter(t=>t.eventId===viewing.id).filter(t=>t.status==="DONE").length}/{data.tasks.filter(t=>t.eventId===viewing.id).length})</h4>
+              <div className="mb-3 grid grid-cols-12 gap-2">
+                <input value={taskTitle} onChange={e=>setTaskTitle(e.target.value)} placeholder="Task title…" className="input col-span-7" />
+                <select value={taskDept} onChange={e=>setTaskDept(e.target.value)} className="input col-span-3">{DEPARTMENTS.map(d=><option key={d.code} value={d.code}>{d.name}</option>)}</select>
+                <button onClick={addTask} className="btn-primary col-span-2">+</button>
+              </div>
+              <ul className="space-y-1 text-sm">
+                {data.tasks.filter(t => t.eventId === viewing.id).map(t => (
+                  <li key={t.id} className="flex items-center justify-between rounded-md bg-gray-50 px-3 py-2">
+                    <div className="flex items-center gap-3">
+                      <button onClick={()=>toggleTask(t)} className={cls("h-4 w-4 rounded border", t.status==="DONE" ? "border-brand-500 bg-brand-500" : "border-gray-300")} />
+                      <span className={t.status==="DONE" ? "line-through text-gray-400" : ""}>{t.title}</span>
+                      <span className="text-xs text-gray-500">{DEPARTMENTS.find(d=>d.code===t.department)?.name ?? t.department}</span>
+                    </div>
+                    <StageBadge stage={t.status}/>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex justify-between border-t border-gray-100 pt-4">
+              <button onClick={()=>remove(viewing)} className="btn-danger">Delete</button>
+              <div className="space-x-2"><button onClick={()=>setViewing(null)} className="btn-ghost">Close</button><button onClick={()=>{setEditing(viewing); setViewing(null);}} className="btn-outline">Edit</button></div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  TASKS
+// ════════════════════════════════════════════════════════════════════════
+function TasksList({ data, update }) {
+  const eventById = Object.fromEntries(data.events.map(e=>[e.id,e]));
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterDept, setFilterDept] = useState("");
+  const filtered = data.tasks.filter(t => (!filterStatus || t.status===filterStatus) && (!filterDept || t.department===filterDept));
+  const counts = TASK_STATUS.reduce((a,s)=>({...a,[s]:data.tasks.filter(t=>t.status===s).length}),{});
+
+  const updateStatus = (t, status) => update(d => {
+    const idx = d.tasks.findIndex(x=>x.id===t.id);
+    d.tasks[idx].status = status;
+    if (status === "DONE") d.tasks[idx].completedAt = new Date().toISOString();
+    logAudit(d, "UPDATE", "Task", t.id);
+    return d;
+  });
+  const remove = (t) => update(d => { d.tasks = d.tasks.filter(x=>x.id!==t.id); logAudit(d, "DELETE", "Task", t.id); return d; });
+
+  return (
+    <div>
+      <PageHeader title="Tasks" subtitle="Cross-departmental delivery items across events and programs." />
+      <div className="grid gap-4 md:grid-cols-4">
+        {TASK_STATUS.map(s => <StatCard key={s} label={s.replace(/_/g," ")} value={counts[s]} />)}
+      </div>
+      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+          <h3 className="text-base font-semibold">All tasks ({filtered.length})</h3>
+          <div className="flex gap-2 text-xs">
+            <select className="input !py-1.5" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="">Any status</option>{TASK_STATUS.map(s=><option key={s}>{s}</option>)}</select>
+            <select className="input !py-1.5" value={filterDept} onChange={e=>setFilterDept(e.target.value)}><option value="">Any dept</option>{DEPARTMENTS.map(d=><option key={d.code} value={d.code}>{d.name}</option>)}</select>
+          </div>
+        </div>
+        <table className="table-base">
+          <thead><tr><th>Title</th><th>Department</th><th>Event</th><th>Priority</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {filtered.map(t => (
+              <tr key={t.id}>
+                <td className={t.status==="DONE" ? "line-through text-gray-400" : ""}>{t.title}</td>
+                <td className="text-xs">{DEPARTMENTS.find(d=>d.code===t.department)?.name ?? t.department ?? "—"}</td>
+                <td className="text-xs">{eventById[t.eventId]?.name ?? "—"}</td>
+                <td><StageBadge stage={t.priority}/></td>
+                <td><select className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-xs" value={t.status} onChange={e=>updateStatus(t, e.target.value)}>{TASK_STATUS.map(s=><option key={s}>{s}</option>)}</select></td>
+                <td><button onClick={()=>remove(t)} className="text-xs text-red-600 hover:underline">Delete</button></td>
+              </tr>
+            ))}
+            {filtered.length === 0 && <tr><td colSpan="6" className="py-6 text-center text-gray-500">No tasks.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  COLLABORATION (activity timeline)
+// ════════════════════════════════════════════════════════════════════════
+function Collaboration({ data }) {
+  const userById = Object.fromEntries(data.users.map(u=>[u.id,u]));
+  const sorted = [...data.activities].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  return (
+    <div>
+      <PageHeader title="Internal Collaboration" subtitle="A unified feed of every signal across departments." />
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Activity timeline</h3></div>
+        <div className="space-y-4 p-5">
+          {sorted.map(a => {
+            const link = a.partnershipId ? `#/partnerships` : a.programId ? `#/programs` : a.eventId ? `#/events` : a.hubId ? `#/members` : null;
+            return (
+              <div key={a.id} className="flex gap-3 border-b border-gray-100 pb-3 last:border-b-0">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">{(userById[a.userId]?.name ?? "S").slice(0,1)}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={a.type?.includes("PARTNERSHIP") ? "green" : a.type?.includes("PROGRAM") ? "orange" : a.type?.includes("FUNDING") ? "blue" : a.type?.includes("EVENT") ? "purple" : a.type?.includes("HUB") ? "green" : "gray"}>{(a.type||"").replace(/_/g," ")}</Badge>
+                    <p className="text-sm font-medium">{a.title}</p>
+                  </div>
+                  {a.body && <p className="mt-1 text-sm text-gray-600">{a.body}</p>}
+                  <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+                    <span>{relTime(a.createdAt)}</span>
+                    <span>·</span>
+                    <span>{userById[a.userId]?.name ?? "system"}</span>
+                    {link && <><span>·</span><a href={link} className="text-brand-700 hover:underline">Open</a></>}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {sorted.length === 0 && <p className="text-sm text-gray-500">No activity yet.</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  CAMPAIGNS
+// ════════════════════════════════════════════════════════════════════════
+function CampaignForm({ initial, hubs, onSave, onCancel }) {
+  const [f, setF] = useState(initial || { name:"", channel:"EMAIL", audience:"ALL_HUBS", subject:"", body:"", status:"DRAFT" });
+  const recipientsFor = (audience) => {
+    if (audience === "ALL_HUBS") return hubs.length;
+    if (audience === "PAID_HUBS") return hubs.filter(h => h.status === "ACTIVE").length;
+    if (audience.startsWith("REGION:")) return hubs.filter(h => h.region === audience.slice(7)).length;
+    if (audience.startsWith("TIER:")) return hubs.filter(h => h.membershipTier === audience.slice(5)).length;
+    return 0;
+  };
+  const recipients = recipientsFor(f.audience);
+  const submit = (e) => { e.preventDefault(); onSave({ ...f, recipients }); };
+  return (
+    <form onSubmit={submit} className="p-6 space-y-4">
+      <div><label className="label">Name *</label><input className="input" required value={f.name} onChange={e=>setF({...f,name:e.target.value})} /></div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div><label className="label">Channel</label><select className="input" value={f.channel} onChange={e=>setF({...f,channel:e.target.value})}>{CAMPAIGN_CHANNELS.map(c=><option key={c}>{c}</option>)}</select></div>
+        <div>
+          <label className="label">Audience</label>
+          <select className="input" value={f.audience} onChange={e=>setF({...f,audience:e.target.value})}>
+            <option value="ALL_HUBS">All hubs</option>
+            <option value="PAID_HUBS">Paid hubs only</option>
+            <optgroup label="By region">{REGIONS.map(r=><option key={r} value={`REGION:${r}`}>{r}</option>)}</optgroup>
+            <optgroup label="By tier">{TIERS.map(t=><option key={t} value={`TIER:${t}`}>{t}</option>)}</optgroup>
+          </select>
+          <p className="mt-1 text-xs text-gray-500">{recipients} recipients</p>
+        </div>
+      </div>
+      <div><label className="label">Subject</label><input className="input" value={f.subject ?? ""} onChange={e=>setF({...f,subject:e.target.value})} /></div>
+      <div><label className="label">Body *</label><textarea className="input min-h-[140px]" required value={f.body} onChange={e=>setF({...f,body:e.target.value})} /></div>
+      <div><label className="label">Save as</label>
+        <select className="input" value={f.status} onChange={e=>setF({...f,status:e.target.value})}>
+          <option value="DRAFT">Draft</option><option value="SCHEDULED">Schedule</option><option value="SENT">Send (simulate)</option>
+        </select>
+      </div>
+      <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+        <button type="button" onClick={onCancel} className="btn-ghost">Cancel</button>
+        <button type="submit" className="btn-primary">Save campaign</button>
+      </div>
+    </form>
+  );
+}
+
+function CampaignsList({ data, update }) {
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const audienceLabel = (a) => a === "ALL_HUBS" ? "All hubs" : a === "PAID_HUBS" ? "Paid hubs" : a.startsWith("REGION:") ? "Region: " + a.slice(7) : a.startsWith("TIER:") ? "Tier: " + a.slice(5) : a;
+
+  const save = (form) => {
+    update(d => {
+      if (editing) {
+        const idx = d.campaigns.findIndex(c => c.id === editing.id);
+        d.campaigns[idx] = { ...d.campaigns[idx], ...form, sentAt: form.status === "SENT" ? new Date().toISOString() : null };
+        logAudit(d, "UPDATE", "Campaign", editing.id);
+      } else {
+        const id = uid();
+        d.campaigns.push({ id, ...form, opens:0, clicks:0, createdById: d.settings.currentUserId, createdAt: new Date().toISOString(),
+          sentAt: form.status === "SENT" ? new Date().toISOString() : null });
+        if (form.status === "SENT") {
+          logActivity(d, "CAMPAIGN_SENT", `Campaign sent: ${form.name}`, `${form.recipients} recipients`);
+        }
+        logAudit(d, "CREATE", "Campaign", id);
+      }
+      return d;
+    });
+    setCreating(false); setEditing(null);
+  };
+  const remove = (c) => {
+    if (!confirm("Delete this campaign?")) return;
+    update(d => { d.campaigns = d.campaigns.filter(x => x.id !== c.id); logAudit(d, "DELETE", "Campaign", c.id); return d; });
+  };
+
+  return (
+    <div>
+      <PageHeader title="Campaigns & Ad Engine" subtitle="Broadcast opportunities to all hubs, paid members, regions or sectors."
+        action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ New campaign</button>} />
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="table-base">
+          <thead><tr><th>Name</th><th>Channel</th><th>Audience</th><th>Status</th><th>Recipients</th><th>Engagement</th><th>Created</th><th></th></tr></thead>
+          <tbody>
+            {data.campaigns.map(c => (
+              <tr key={c.id}>
+                <td><div className="font-medium">{c.name}</div>{c.subject && <div className="text-xs text-gray-500">{c.subject}</div>}</td>
+                <td><Badge tone="blue">{c.channel}</Badge></td>
+                <td className="text-xs">{audienceLabel(c.audience)}</td>
+                <td><StageBadge stage={c.status}/></td>
+                <td>{c.recipients}</td>
+                <td className="text-xs">{c.opens||0} opens · {c.clicks||0} clicks</td>
+                <td className="text-xs">{relTime(c.createdAt)}</td>
+                <td className="space-x-2 text-right"><button onClick={()=>setEditing(c)} className="text-xs text-brand-700 hover:underline">Edit</button><button onClick={()=>remove(c)} className="text-xs text-red-600 hover:underline">Delete</button></td>
+              </tr>
+            ))}
+            {data.campaigns.length === 0 && <tr><td colSpan="8" className="py-10 text-center text-gray-500">No campaigns yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <Modal open={creating || !!editing} onClose={()=>{setCreating(false); setEditing(null);}} title={creating ? "New campaign" : "Edit campaign"} size="lg">
+        <CampaignForm initial={editing} hubs={data.hubs} onSave={save} onCancel={()=>{setCreating(false); setEditing(null);}} />
+      </Modal>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  INTELLIGENCE
+// ════════════════════════════════════════════════════════════════════════
+function Intelligence({ data }) {
+  const intel = useMemo(() => computeIntelligence(data), [data]);
+  return (
+    <div>
+      <PageHeader title="Decision Intelligence" subtitle="Recommendations and risk signals computed live from your data." />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Hubs to prioritize</h3><p className="text-sm text-gray-500">Based on payment + tier + engagement.</p></div>
+          <div className="space-y-3 p-5">
+            {intel.priorities.map(h => (
+              <a key={h.hubId} href="#/members" className="flex items-center justify-between rounded-md bg-gray-50 p-3 hover:bg-gray-100">
+                <div><p className="font-medium">{h.hubName}</p><p className="text-xs text-gray-500">{h.signals.join(" · ") || "—"}</p></div>
+                <Badge tone="green">{h.score}</Badge>
+              </a>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Churn risk</h3><p className="text-sm text-gray-500">Hubs likely to lapse without intervention.</p></div>
+          <div className="space-y-3 p-5">
+            {intel.churn.map(h => (
+              <a key={h.hubId} href="#/members" className="flex items-center justify-between rounded-md bg-red-50/50 p-3 ring-1 ring-red-100 hover:bg-red-50">
+                <div><p className="font-medium">{h.hubName}</p><p className="text-xs text-gray-500">{h.reasons.join(" · ")}</p></div>
+                <Badge tone="red">{h.risk}</Badge>
+              </a>
+            ))}
+            {intel.churn.length === 0 && <p className="text-sm text-gray-500">No high-risk hubs detected.</p>}
+          </div>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Suggested partner ↔ program matches</h3></div>
+          <div className="space-y-3 p-5">
+            {intel.matches.map((m,i) => (
+              <div key={i} className="rounded-md bg-gray-50 p-3">
+                <div className="flex items-center justify-between"><span className="text-sm font-medium">{m.partnerName}</span><Badge tone="orange">{m.fitScore}% fit</Badge></div>
+                <p className="text-xs text-gray-600">→ {m.programName}</p>
+                <p className="mt-1 text-xs text-gray-500">{m.rationale.join(" · ")}</p>
+              </div>
+            ))}
+            {intel.matches.length === 0 && <p className="text-sm text-gray-500">No suggestions — add more partners and active programs.</p>}
+          </div>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Funding success likelihood</h3></div>
+          <div className="space-y-3 p-5">
+            {intel.funding.map(f => (
+              <div key={f.fundingId} className="rounded-md bg-gray-50 p-3">
+                <div className="flex items-center justify-between"><span className="text-sm font-medium">{f.name}</span><Badge tone={f.successLikelihood >= 70 ? "green" : f.successLikelihood >= 40 ? "yellow" : "red"}>{f.successLikelihood}%</Badge></div>
+                <p className="mt-1 text-xs text-gray-500">{f.drivers.join(" · ")}</p>
+              </div>
+            ))}
+            {intel.funding.length === 0 && <p className="text-sm text-gray-500">No pledged or approved funding to score.</p>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  PROCUREMENT
+// ════════════════════════════════════════════════════════════════════════
+function ProcurementList({ data, update }) {
+  const [creating, setCreating] = useState(false);
+  const [f, setF] = useState({ type:"HOTEL", vendor:"", reference:"", cost:"", status:"REQUESTED", startDate:"" });
+  const totals = { spend: data.bookings.reduce((s,b)=>s+(b.cost||0), 0),
+    confirmed: data.bookings.filter(b=>b.status==="CONFIRMED").length, requested: data.bookings.filter(b=>b.status==="REQUESTED").length };
+
+  const save = (e) => {
+    e.preventDefault();
+    update(d => {
+      const id = uid();
+      d.bookings.push({ id, ...f, cost: f.cost ? Number(f.cost) : null, currency:"USD", startDate: f.startDate ? new Date(f.startDate).toISOString() : null, createdAt: new Date().toISOString() });
+      logAudit(d, "CREATE", "Booking", id);
+      return d;
+    });
+    setF({ type:"HOTEL", vendor:"", reference:"", cost:"", status:"REQUESTED", startDate:"" });
+    setCreating(false);
+  };
+  const remove = (b) => update(d => { d.bookings = d.bookings.filter(x=>x.id!==b.id); logAudit(d, "DELETE", "Booking", b.id); return d; });
+
+  return (
+    <div>
+      <PageHeader title="Procurement & Operations" subtitle="Bookings, vendors and logistics."
+        action={<button onClick={()=>setCreating(true)} className="btn-primary">+ New booking</button>} />
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatCard label="Total spend" value={fmtCurrency(totals.spend)} />
+        <StatCard label="Confirmed" value={totals.confirmed} />
+        <StatCard label="Requested" value={totals.requested} />
+      </div>
+      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="table-base">
+          <thead><tr><th>Type</th><th>Vendor</th><th>Reference</th><th>Cost</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            {data.bookings.map(b => (
+              <tr key={b.id}>
+                <td><Badge tone="blue">{b.type}</Badge></td>
+                <td>{b.vendor ?? "—"}</td>
+                <td className="font-mono text-xs">{b.reference ?? "—"}</td>
+                <td>{b.cost ? fmtCurrency(b.cost) : "—"}</td>
+                <td><StageBadge stage={b.status}/></td>
+                <td>{fmtDate(b.startDate)}</td>
+                <td><button onClick={()=>remove(b)} className="text-xs text-red-600 hover:underline">Delete</button></td>
+              </tr>
+            ))}
+            {data.bookings.length === 0 && <tr><td colSpan="7" className="py-6 text-center text-gray-500">No bookings.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <Modal open={creating} onClose={()=>setCreating(false)} title="New booking" size="md">
+        <form onSubmit={save} className="p-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div><label className="label">Type</label><select className="input" value={f.type} onChange={e=>setF({...f,type:e.target.value})}>{BOOKING_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+            <div><label className="label">Status</label><select className="input" value={f.status} onChange={e=>setF({...f,status:e.target.value})}>{BOOKING_STATUS.map(s=><option key={s}>{s}</option>)}</select></div>
+            <div><label className="label">Vendor</label><input className="input" value={f.vendor} onChange={e=>setF({...f,vendor:e.target.value})} /></div>
+            <div><label className="label">Reference</label><input className="input" value={f.reference} onChange={e=>setF({...f,reference:e.target.value})} /></div>
+            <div><label className="label">Cost (USD)</label><input type="number" className="input" value={f.cost} onChange={e=>setF({...f,cost:e.target.value})} /></div>
+            <div><label className="label">Date</label><input type="date" className="input" value={f.startDate} onChange={e=>setF({...f,startDate:e.target.value})} /></div>
+          </div>
+          <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+            <button type="button" onClick={()=>setCreating(false)} className="btn-ghost">Cancel</button>
+            <button type="submit" className="btn-primary">Save</button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  JOBS
+// ════════════════════════════════════════════════════════════════════════
+function JobsList({ data, update }) {
+  const [creating, setCreating] = useState(false);
+  const [f, setF] = useState({ title:"", organization:"", location:"", type:"FULL_TIME", sector:"", link:"" });
+  const save = (e) => {
+    e.preventDefault();
+    update(d => {
+      const id = uid();
+      d.jobs.unshift({ id, ...f, postedAt: new Date().toISOString() });
+      logAudit(d, "CREATE", "Job", id);
+      return d;
+    });
+    setF({ title:"", organization:"", location:"", type:"FULL_TIME", sector:"", link:"" });
+    setCreating(false);
+  };
+  const remove = (j) => update(d => { d.jobs = d.jobs.filter(x=>x.id!==j.id); logAudit(d, "DELETE", "Job", j.id); return d; });
+  return (
+    <div>
+      <PageHeader title="Jobs board" subtitle="Roles across the ecosystem — hubs, startups, partners."
+        action={<button onClick={()=>setCreating(true)} className="btn-primary">+ Post job</button>} />
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="table-base">
+          <thead><tr><th>Title</th><th>Organization</th><th>Type</th><th>Location</th><th>Sector</th><th>Posted</th><th></th></tr></thead>
+          <tbody>
+            {data.jobs.map(j => (
+              <tr key={j.id}>
+                <td className="font-medium">{j.link ? <a href={j.link} target="_blank" rel="noreferrer" className="text-brand-700 hover:underline">{j.title}</a> : j.title}</td>
+                <td>{j.organization}</td>
+                <td><Badge tone="blue">{j.type}</Badge></td>
+                <td>{j.location || "Remote"}</td>
+                <td>{j.sector || "—"}</td>
+                <td className="text-xs">{relTime(j.postedAt)}</td>
+                <td><button onClick={()=>remove(j)} className="text-xs text-red-600 hover:underline">Delete</button></td>
+              </tr>
+            ))}
+            {data.jobs.length === 0 && <tr><td colSpan="7" className="py-6 text-center text-gray-500">No jobs posted.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <Modal open={creating} onClose={()=>setCreating(false)} title="Post job" size="md">
+        <form onSubmit={save} className="p-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div><label className="label">Title *</label><input required className="input" value={f.title} onChange={e=>setF({...f,title:e.target.value})} /></div>
+            <div><label className="label">Organization *</label><input required className="input" value={f.organization} onChange={e=>setF({...f,organization:e.target.value})} /></div>
+            <div><label className="label">Type</label><select className="input" value={f.type} onChange={e=>setF({...f,type:e.target.value})}>{JOB_TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
+            <div><label className="label">Location</label><input className="input" value={f.location} onChange={e=>setF({...f,location:e.target.value})} /></div>
+            <div><label className="label">Sector</label><input className="input" value={f.sector} onChange={e=>setF({...f,sector:e.target.value})} /></div>
+            <div><label className="label">Apply link</label><input type="url" className="input" value={f.link} onChange={e=>setF({...f,link:e.target.value})} /></div>
+          </div>
+          <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+            <button type="button" onClick={()=>setCreating(false)} className="btn-ghost">Cancel</button>
+            <button type="submit" className="btn-primary">Post</button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  PEOPLE (HR)
+// ════════════════════════════════════════════════════════════════════════
+function PeopleList({ data, update }) {
+  const [creating, setCreating] = useState(false);
+  const [f, setF] = useState({ name:"", email:"", role:"STAFF", department:"" });
+  const byDept = {};
+  data.users.forEach(u => { byDept[u.department || "—"] = (byDept[u.department || "—"] || 0) + 1; });
+
+  const save = (e) => {
+    e.preventDefault();
+    update(d => {
+      const id = uid();
+      d.users.push({ id, ...f, department: f.department || null });
+      logAudit(d, "CREATE", "User", id);
+      return d;
+    });
+    setF({ name:"", email:"", role:"STAFF", department:"" });
+    setCreating(false);
+  };
+  const remove = (u) => {
+    if (data.users.length <= 1) return alert("Cannot remove last user.");
+    if (!confirm(`Remove ${u.name}?`)) return;
+    update(d => { d.users = d.users.filter(x => x.id !== u.id); logAudit(d, "DELETE", "User", u.id); return d; });
+  };
+
+  return (
+    <div>
+      <PageHeader title="People (HR)" subtitle="Staff and role assignments."
+        action={<button onClick={()=>setCreating(true)} className="btn-primary">+ Add person</button>} />
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatCard label="Total people" value={data.users.length} />
+        <StatCard label="Departments" value={Object.keys(byDept).length} />
+        <StatCard label="Roles in use" value={new Set(data.users.map(u=>u.role)).size} />
+      </div>
+      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="table-base">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th></th></tr></thead>
+          <tbody>
+            {data.users.map(u => (
+              <tr key={u.id}>
+                <td className="font-medium">{u.name}</td>
+                <td className="text-xs">{u.email}</td>
+                <td><Badge tone="blue">{u.role}</Badge></td>
+                <td>{DEPARTMENTS.find(d=>d.code===u.department)?.name ?? "—"}</td>
+                <td><button onClick={()=>remove(u)} className="text-xs text-red-600 hover:underline">Remove</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Modal open={creating} onClose={()=>setCreating(false)} title="Add person" size="md">
+        <form onSubmit={save} className="p-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div><label className="label">Name *</label><input required className="input" value={f.name} onChange={e=>setF({...f,name:e.target.value})} /></div>
+            <div><label className="label">Email *</label><input type="email" required className="input" value={f.email} onChange={e=>setF({...f,email:e.target.value})} /></div>
+            <div><label className="label">Role</label><select className="input" value={f.role} onChange={e=>setF({...f,role:e.target.value})}>{ROLES.map(r=><option key={r}>{r}</option>)}</select></div>
+            <div><label className="label">Department</label><select className="input" value={f.department} onChange={e=>setF({...f,department:e.target.value})}><option value="">—</option>{DEPARTMENTS.map(d=><option key={d.code} value={d.code}>{d.name}</option>)}</select></div>
+          </div>
+          <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+            <button type="button" onClick={()=>setCreating(false)} className="btn-ghost">Cancel</button>
+            <button type="submit" className="btn-primary">Add</button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  DEPARTMENTS
+// ════════════════════════════════════════════════════════════════════════
+function DepartmentsView({ data }) {
+  const SUMMARIES = {
+    COO:"Global system overview and performance dashboards.",
+    ED:"Strategic insights and ecosystem growth analytics.",
+    TECH:"System logs, integrations and platform health.",
+    PROGRAMS:"Program dashboards and partner alignment.",
+    PARTNERSHIPS:"Contact sourcing pipeline and deal/funding tracking.",
+    EVENTS:"Event lifecycle dashboards (AAG and program events).",
+    MEMBERS:"Hub management, payment tracking and communications.",
+    PROCUREMENT:"Bookings, hotels, travel and logistics.",
+    COMMS:"Email campaigns, announcements and media tracking.",
+    FINANCE:"Payment records, funding inflows, financial reports.",
+    AUDIT:"Activity logs and financial audit trails.",
+    HR:"Staff management and role assignments.",
+  };
+  return (
+    <div>
+      <PageHeader title="Departments" subtitle="Role-based dashboards across the organization." />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {DEPARTMENTS.map(d => {
+          const headcount = data.users.filter(u => u.department === d.code).length;
+          return (
+            <div key={d.code} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:bg-gray-50">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{d.code}</p>
+              <h3 className="mt-1 text-base font-semibold">{d.name}</h3>
+              <p className="mt-1 text-sm text-gray-500">{SUMMARIES[d.code]}</p>
+              <p className="mt-3 text-xs text-gray-400">{headcount} {headcount === 1 ? "person" : "people"}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  AFRICONNECT
+// ════════════════════════════════════════════════════════════════════════
+function Africonnect({ data, update }) {
+  const synced = data.hubs.filter(h => h.africonnectId).length;
+  const fileRef = useRef();
+  const exportSync = () => {
+    const payload = { generatedAt: new Date().toISOString(), hubs: data.hubs.map(h => ({...h, africonnectId: h.africonnectId})) };
+    download(`africonnect-sync-${Date.now()}.json`, JSON.stringify(payload, null, 2));
+    update(d => { d.syncLog.unshift({ id: uid(), endpoint:"/sync/hubs", direction:"OUT", status:"OK", recordCount: data.hubs.length, createdAt: new Date().toISOString() }); return d; });
+  };
+  const importSync = (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const payload = JSON.parse(ev.target.result);
+        if (!Array.isArray(payload.hubs)) throw new Error("Expected { hubs: [...] }");
+        update(d => {
+          let upserted = 0;
+          payload.hubs.forEach(h => {
+            const idx = d.hubs.findIndex(x => x.africonnectId === h.africonnectId);
+            if (idx >= 0) { d.hubs[idx] = { ...d.hubs[idx], ...h }; upserted++; }
+            else if (h.name && h.country) { d.hubs.push({ ...h, id: uid() }); upserted++; }
+          });
+          d.syncLog.unshift({ id: uid(), endpoint:"/sync/hubs", direction:"IN", status:"OK", recordCount: upserted, createdAt: new Date().toISOString() });
+          return d;
+        });
+        alert(`Imported ${payload.hubs.length} hubs`);
+      } catch (err) { alert("Import failed: " + err.message); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  return (
+    <div>
+      <PageHeader title="Africonnect Integration" subtitle="Shared profiles, SSO and activity sync." />
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatCard label="Hubs synced" value={`${synced}/${data.hubs.length}`} hint={`${data.hubs.length ? Math.round(synced/data.hubs.length*100):0}% coverage`} />
+        <StatCard label="Endpoints" value="3" hint="/sync/hubs · /sync/programs · /sync/activities" />
+        <StatCard label="Last sync" value={data.syncLog[0] ? relTime(data.syncLog[0].createdAt) : "Never"} />
+      </div>
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Sync actions</h3></div>
+          <div className="space-y-3 p-5">
+            <button onClick={exportSync} className="btn-primary w-full">Export hubs as JSON</button>
+            <button onClick={()=>fileRef.current?.click()} className="btn-outline w-full">Import hubs JSON</button>
+            <input ref={fileRef} type="file" accept="application/json" onChange={importSync} className="hidden" />
+            <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-xs text-amber-800">Auth (production): <code>Authorization: Bearer $AFRICONNECT_API_KEY</code></div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Sync history</h3></div>
+          <table className="table-base">
+            <thead><tr><th>When</th><th>Endpoint</th><th>Direction</th><th>Records</th><th>Status</th></tr></thead>
+            <tbody>
+              {data.syncLog.slice(0,10).map(l => (
+                <tr key={l.id}><td className="text-xs">{relTime(l.createdAt)}</td><td className="font-mono text-xs">{l.endpoint}</td><td><Badge tone={l.direction==="IN"?"blue":"purple"}>{l.direction}</Badge></td><td>{l.recordCount}</td><td><Badge tone={l.status==="OK"?"green":"red"}>{l.status}</Badge></td></tr>
+              ))}
+              {data.syncLog.length === 0 && <tr><td colSpan="5" className="py-6 text-center text-gray-500">No sync events yet.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  AUDIT
+// ════════════════════════════════════════════════════════════════════════
+function AuditLog({ data }) {
+  return (
+    <div>
+      <PageHeader title="Audit & Compliance" subtitle="Immutable record of system events." />
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table className="table-base">
+          <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Reference</th></tr></thead>
+          <tbody>
+            {data.auditLog.slice(0,200).map(l => (
+              <tr key={l.id}>
+                <td className="text-xs">{relTime(l.createdAt)}</td>
+                <td className="text-gray-700">{l.actorEmail}</td>
+                <td><Badge tone={l.action==="DELETE"?"red":l.action==="CREATE"?"green":"blue"}>{l.action}</Badge></td>
+                <td>{l.entity}</td>
+                <td className="font-mono text-xs text-gray-500">{l.entityId ?? "—"}</td>
+              </tr>
+            ))}
+            {data.auditLog.length === 0 && <tr><td colSpan="5" className="py-6 text-center text-gray-500">No audit events.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  SETTINGS
+// ════════════════════════════════════════════════════════════════════════
+function Settings({ data, update }) {
+  const fileRef = useRef();
+  const exportAll = () => download(`afrilabs-os-export-${Date.now()}.json`, JSON.stringify(data, null, 2));
+  const importAll = (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const payload = JSON.parse(ev.target.result);
+        if (payload.version !== 1) throw new Error("Incompatible export version");
+        update(() => payload);
+        alert("Import complete. Reloading…");
+        setTimeout(()=>window.location.reload(), 500);
+      } catch (err) { alert("Import failed: " + err.message); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+  const reset = () => {
+    if (!confirm("Reset all data to seed? This is destructive — export first if you want to keep your data.")) return;
+    localStorage.removeItem(STORE_KEY);
+    window.location.reload();
+  };
+  const wipeAll = () => {
+    if (!confirm("Erase all data — including seed? You'll start fully empty.")) return;
+    update(() => ({
+      ...buildSeed(),
+      hubs:[], payments:[], partners:[], partnerships:[], partnershipPrograms:[],
+      programs:[], programHubs:[], fundingSources:[], events:[], eventPartners:[],
+      tasks:[], campaigns:[], activities:[], bookings:[], jobs:[], auditLog:[], syncLog:[],
+    }));
+  };
+
+  return (
+    <div className="max-w-3xl">
+      <PageHeader title="Settings & Data" subtitle="Your data lives in your browser's localStorage. Export to keep, import to restore." />
+
+      <div className="space-y-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h3 className="font-semibold">Sovereignty (your data)</h3>
+          <p className="mt-1 text-sm text-gray-600">Everything you create in this app is stored in your browser only. There is no server. To preserve or move data, use Export/Import below.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={exportAll} className="btn-primary">↓ Export all data</button>
+            <button onClick={()=>fileRef.current?.click()} className="btn-outline">↑ Import JSON</button>
+            <input ref={fileRef} type="file" accept="application/json" onChange={importAll} className="hidden" />
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h3 className="font-semibold">Data stats</h3>
+          <div className="mt-2 grid gap-2 md:grid-cols-3 text-sm">
+            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Hubs:</span> <b>{data.hubs.length}</b></div>
+            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Partnerships:</span> <b>{data.partnerships.length}</b></div>
+            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Programs:</span> <b>{data.programs.length}</b></div>
+            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Funding:</span> <b>{data.fundingSources.length}</b></div>
+            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Events:</span> <b>{data.events.length}</b></div>
+            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Tasks:</span> <b>{data.tasks.length}</b></div>
+            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Campaigns:</span> <b>{data.campaigns.length}</b></div>
+            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Activities:</span> <b>{data.activities.length}</b></div>
+            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Audit log:</span> <b>{data.auditLog.length}</b></div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-red-200 bg-red-50/30 p-5 shadow-sm">
+          <h3 className="font-semibold text-red-800">Danger zone</h3>
+          <p className="mt-1 text-sm text-red-700">These actions cannot be undone. Export first.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={reset} className="btn-outline">Reset to seed data</button>
+            <button onClick={wipeAll} className="btn-danger">Erase all data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  APP
+// ════════════════════════════════════════════════════════════════════════
+function App() {
+  const [data, update] = useStore();
+  const route = useRoute();
+  const [search, setSearch] = useState("");
+
+  let body;
+  if (route === "/dashboard") body = <Dashboard data={data} />;
+  else if (route === "/members" || route === "/hubs") body = <HubsList data={data} update={update} search={search} />;
+  else if (route === "/partnerships") body = <PartnershipsList data={data} update={update} search={search} />;
+  else if (route === "/programs") body = <ProgramsList data={data} update={update} search={search} />;
+  else if (route === "/funding") body = <FundingList data={data} update={update} />;
+  else if (route === "/events") body = <EventsList data={data} update={update} />;
+  else if (route === "/tasks") body = <TasksList data={data} update={update} />;
+  else if (route === "/collaboration") body = <Collaboration data={data} />;
+  else if (route === "/campaigns") body = <CampaignsList data={data} update={update} />;
+  else if (route === "/intelligence") body = <Intelligence data={data} />;
+  else if (route === "/procurement") body = <ProcurementList data={data} update={update} />;
+  else if (route === "/jobs") body = <JobsList data={data} update={update} />;
+  else if (route === "/people") body = <PeopleList data={data} update={update} />;
+  else if (route === "/africonnect") body = <Africonnect data={data} update={update} />;
+  else if (route === "/audit") body = <AuditLog data={data} />;
+  else if (route === "/departments") body = <DepartmentsView data={data} />;
+  else if (route === "/settings") body = <Settings data={data} update={update} />;
+  else body = <div className="text-center py-20"><h2 className="text-xl font-bold">Page not found</h2><a href="#/dashboard" className="text-brand-700 hover:underline">← Back to dashboard</a></div>;
+
+  return <Shell data={data} update={update} route={route} search={search} setSearch={setSearch}>{body}</Shell>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
