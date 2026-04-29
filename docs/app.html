@@ -4,31 +4,85 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Afrilabs Ecosystem OS — Operating System for Africa's Innovation Ecosystem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+  // Apply dark mode immediately to prevent FOUC
+  try { if (localStorage.getItem('afrilabs-theme') === 'dark') document.documentElement.classList.add('dark'); } catch(e) {}
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-  tailwind.config = { theme: { extend: { colors: {
-    brand: { 50:'#f0f9f4',100:'#dcefe2',200:'#bce0c8',300:'#8ec9a3',400:'#5fae7d',500:'#3d9462',600:'#2c764e',700:'#245d40',800:'#1f4a35',900:'#1b3d2d',950:'#0d2218' },
-    accent:{ 50:'#fff8ed',100:'#ffefd4',200:'#ffdba8',300:'#ffbf71',400:'#ff9a38',500:'#fb7d12',600:'#ec6308',700:'#c44a09',800:'#9c3b10',900:'#7e3211' }
-  }}}}
+  tailwind.config = {
+    darkMode: 'class',
+    theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','sans-serif'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: {
+        brand: { 50:'#f0f9f4',100:'#dcefe2',200:'#bce0c8',300:'#8ec9a3',400:'#5fae7d',500:'#3d9462',600:'#2c764e',700:'#245d40',800:'#1f4a35',900:'#1b3d2d',950:'#0d2218' },
+        accent:{ 50:'#fff8ed',100:'#ffefd4',200:'#ffdba8',300:'#ffbf71',400:'#ff9a38',500:'#fb7d12',600:'#ec6308',700:'#c44a09',800:'#9c3b10',900:'#7e3211' },
+      },
+      animation: {
+        'fade-up': 'fade-up 0.5s cubic-bezier(0.4,0,0.2,1) both',
+        'fade-in': 'fade-in 0.4s ease-out both',
+        'scale-in': 'scale-in 0.3s cubic-bezier(0.34,1.56,0.64,1) both',
+        'slide-in-right': 'slide-in-right 0.4s cubic-bezier(0.4,0,0.2,1) both',
+        'pulse-ring': 'pulse-ring 2.5s cubic-bezier(0.4,0,0.6,1) infinite',
+        'grow-bar': 'grow-bar 0.9s cubic-bezier(0.4,0,0.2,1) both',
+      },
+      keyframes: {
+        'fade-up': { '0%':{opacity:'0',transform:'translateY(10px)'},'100%':{opacity:'1',transform:'translateY(0)'} },
+        'fade-in': { '0%':{opacity:'0'},'100%':{opacity:'1'} },
+        'scale-in': { '0%':{opacity:'0',transform:'scale(0.95)'},'100%':{opacity:'1',transform:'scale(1)'} },
+        'slide-in-right': { '0%':{opacity:'0',transform:'translateX(20px)'},'100%':{opacity:'1',transform:'translateX(0)'} },
+        'pulse-ring': { '0%':{transform:'scale(0.95)',opacity:'0.7'},'70%':{transform:'scale(1.4)',opacity:'0'},'100%':{transform:'scale(0.95)',opacity:'0'} },
+        'grow-bar': { '0%':{transform:'scaleX(0)'},'100%':{transform:'scaleX(1)'} },
+      }
+    }}
+  }
 </script>
 <style>
-  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  .input { @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500; }
-  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-md bg-brand-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50; }
-  .btn-outline { @apply inline-flex items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50; }
-  .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100; }
-  .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-red-700; }
+  body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  .input { @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-gray-800 dark:text-gray-100; }
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-600/40 hover:from-brand-700 hover:to-brand-800 transition-all disabled:opacity-50; }
+  .btn-outline { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition dark:border-white/10 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700; }
+  .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-white/5; }
+  .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-600/20 hover:shadow-red-600/40 transition-all; }
   .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset; }
-  .label { @apply block text-sm font-medium text-gray-700 mb-1; }
+  .label { @apply block text-sm font-medium text-gray-700 mb-1.5 dark:text-gray-300; }
   .table-base { @apply w-full text-sm; }
-  .table-base thead th { @apply text-left text-xs font-semibold uppercase tracking-wider text-gray-500 px-4 py-3 border-b border-gray-200 bg-gray-50; }
-  .table-base tbody td { @apply px-4 py-3 border-b border-gray-100 text-gray-700; }
-  .table-base tbody tr:hover { @apply bg-gray-50/60; }
-  .modal-bg { background: rgba(15,23,42,.5); backdrop-filter: blur(2px); }
+  .table-base thead th { @apply text-left text-xs font-semibold uppercase tracking-wider text-gray-500 px-4 py-3 border-b border-gray-200 bg-gray-50 dark:border-white/5 dark:bg-gray-800/50 dark:text-gray-400; }
+  .table-base tbody td { @apply px-4 py-3 border-b border-gray-100 text-gray-700 dark:border-white/5 dark:text-gray-300; }
+  .table-base tbody tr { @apply transition-colors; }
+  .table-base tbody tr:hover { @apply bg-gray-50 dark:bg-white/5; }
+  .modal-bg { background: rgba(15,23,42,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .card { @apply card transition dark:border-white/5 dark:bg-gray-800; }
+  .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -10px rgba(45,118,78,0.2); }
+  .stat-card { @apply card p-5 transition; }
+  .stat-card:hover { transform: translateY(-3px); }
+  .live-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #5fae7d; }
+  .live-dot::before { content:''; position: absolute; inset: 0; border-radius: 50%; background: #5fae7d; animation: pulse-ring 2.5s cubic-bezier(0.4,0,0.6,1) infinite; }
+  /* Page transition wrapper */
+  .page-enter { animation: fade-up 0.5s cubic-bezier(0.4,0,0.2,1) both; }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+  .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.3); }
+
+  /* Sidebar item active highlight bar */
+  .nav-item-active { position: relative; }
+  .nav-item-active::before {
+    content: ''; position: absolute; left: -4px; top: 8px; bottom: 8px; width: 3px;
+    background: linear-gradient(180deg, #3d9462 0%, #2c764e 100%); border-radius: 0 3px 3px 0;
+  }
+
+  /* Selection */
+  ::selection { background: rgba(95,174,125,0.3); }
 </style>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased">
-<div id="root"><div class="grid place-items-center min-h-screen text-gray-500">Loading Afrilabs Ecosystem OS…</div></div>
+<body class="bg-gray-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
+<div id="root"><div class="grid place-items-center min-h-screen text-gray-500 dark:text-gray-400">Loading Afrilabs Ecosystem OS…</div></div>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
@@ -391,12 +445,27 @@ function Modal({ open, onClose, title, children, size="md" }) {
   );
 }
 
-function StatCard({ label, value, hint, accent="green" }) {
+function StatCard({ label, value, hint, accent="green", trend, sparkline }) {
+  const accentMap = {
+    green:{bg:"from-brand-500/10 to-brand-500/5", text:"text-brand-600 dark:text-brand-400", color:"#3d9462"},
+    orange:{bg:"from-accent-500/10 to-accent-500/5", text:"text-accent-600 dark:text-accent-400", color:"#fb7d12"},
+    blue:{bg:"from-blue-500/10 to-blue-500/5", text:"text-blue-600 dark:text-blue-400", color:"#3b82f6"},
+    red:{bg:"from-red-500/10 to-red-500/5", text:"text-red-600 dark:text-red-400", color:"#ef4444"},
+    purple:{bg:"from-purple-500/10 to-purple-500/5", text:"text-purple-600 dark:text-purple-400", color:"#a855f7"},
+    gray:{bg:"from-gray-500/10 to-gray-500/5", text:"text-gray-600 dark:text-gray-400", color:"#6b7280"},
+  };
+  const a = accentMap[accent] || accentMap.green;
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</p>
-      <p className="mt-1 text-3xl font-bold text-gray-900">{value}</p>
-      {hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
+    <div className={cls("stat-card relative overflow-hidden card-hover bg-gradient-to-br", a.bg, "from-white to-white dark:from-gray-800 dark:to-gray-800")}>
+      <div className="relative">
+        <div className="flex items-start justify-between">
+          <p className={cls("text-xs font-semibold uppercase tracking-wider", a.text)}>{label}</p>
+          {trend != null && <span className={cls("text-xs font-bold", trend > 0 ? "text-brand-600" : trend < 0 ? "text-red-600" : "text-gray-500")}>{trend > 0 ? "↑" : trend < 0 ? "↓" : "—"} {Math.abs(trend)}%</span>}
+        </div>
+        <p className="mt-2 text-3xl font-black tracking-tight text-gray-900 dark:text-gray-50">{value}</p>
+        {hint && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{hint}</p>}
+        {sparkline && <div className="mt-3 -mr-2"><SparkLine data={sparkline} color={a.color} height={36} width={140} /></div>}
+      </div>
     </div>
   );
 }
@@ -413,12 +482,136 @@ function Empty({ title="Nothing here yet", hint, action }) {
 
 function PageHeader({ title, subtitle, action }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-3 animate-fade-up">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
       </div>
       {action}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
+//  CHART COMPONENTS (custom SVG, no external deps)
+// ════════════════════════════════════════════════════════════════════════
+const CHART_COLORS = ["#3d9462","#fb7d12","#3b82f6","#a855f7","#eab308","#10b981","#ef4444","#06b6d4","#8b5cf6","#f97316"];
+
+function BarChart({ data, height=200, animate=true }) {
+  // data: [{ label, value, color? }]
+  const max = Math.max(...data.map(d => d.value), 1);
+  const padTop = 20, padBot = 30, padX = 12;
+  const w = 100; // viewBox width units
+  const barW = data.length ? (w - padX*2) / data.length * 0.7 : 0;
+  const gap = data.length ? (w - padX*2) / data.length * 0.3 : 0;
+  return (
+    <svg viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" className="w-full overflow-visible" style={{height:height}}>
+      <defs>
+        <linearGradient id="bar-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#5fae7d" /><stop offset="100%" stopColor="#2c764e" />
+        </linearGradient>
+      </defs>
+      {[0.25, 0.5, 0.75, 1].map(p => (
+        <line key={p} x1={padX} x2={w-padX} y1={padTop + (height-padTop-padBot)*(1-p)} y2={padTop + (height-padTop-padBot)*(1-p)} stroke="currentColor" strokeOpacity="0.08" strokeWidth="0.3" />
+      ))}
+      {data.map((d, i) => {
+        const h = (d.value / max) * (height - padTop - padBot);
+        const x = padX + i * (barW + gap) + gap/2;
+        const y = height - padBot - h;
+        return (
+          <g key={i} className="group">
+            <rect x={x} y={y} width={barW} height={h} fill={d.color || "url(#bar-grad)"}
+                  rx="1.5" style={{transformOrigin:`${x}px ${height-padBot}px`, transform: animate?undefined:undefined, animation: animate ? `grow-bar 0.9s cubic-bezier(0.4,0,0.2,1) ${i*0.05}s both` : undefined, transformBox:"fill-box"}}>
+              <title>{d.label}: {d.value}</title>
+            </rect>
+            <text x={x + barW/2} y={y - 2} textAnchor="middle" fontSize="3" fill="currentColor" className="font-semibold opacity-70">{d.value}</text>
+            <text x={x + barW/2} y={height - 12} textAnchor="middle" fontSize="2.6" fill="currentColor" className="opacity-60">{d.label.length > 10 ? d.label.slice(0,10)+"…" : d.label}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function DonutChart({ data, size=220, thickness=28 }) {
+  // data: [{ label, value, color? }]
+  const total = data.reduce((s,d)=>s+d.value, 0) || 1;
+  const radius = size/2 - thickness/2 - 4;
+  const cx = size/2, cy = size/2;
+  let cumulative = 0;
+  const segments = data.map((d, i) => {
+    const start = (cumulative / total) * 2 * Math.PI;
+    const end = ((cumulative + d.value) / total) * 2 * Math.PI;
+    cumulative += d.value;
+    const x1 = cx + radius * Math.sin(start), y1 = cy - radius * Math.cos(start);
+    const x2 = cx + radius * Math.sin(end), y2 = cy - radius * Math.cos(end);
+    const large = end - start > Math.PI ? 1 : 0;
+    return { d:`M ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2}`, color: d.color || CHART_COLORS[i % CHART_COLORS.length], label: d.label, value: d.value, pct: ((d.value/total)*100).toFixed(0) };
+  });
+  return (
+    <div className="flex items-center gap-6">
+      <svg width={size} height={size} className="shrink-0 animate-scale-in">
+        {segments.map((s,i) => (
+          <path key={i} d={s.d} stroke={s.color} strokeWidth={thickness} fill="none" strokeLinecap="round" style={{transition:"stroke-width 0.2s"}} className="hover:[stroke-width:32]">
+            <title>{s.label}: {s.value} ({s.pct}%)</title>
+          </path>
+        ))}
+        <text x={cx} y={cy-4} textAnchor="middle" fontSize="14" fontWeight="800" fill="currentColor">{total}</text>
+        <text x={cx} y={cy+12} textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.6">total</text>
+      </svg>
+      <div className="flex-1 space-y-2 text-sm">
+        {segments.map((s,i) => (
+          <div key={i} className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="h-3 w-3 shrink-0 rounded-full" style={{background:s.color}}></span>
+              <span className="truncate text-gray-700 dark:text-gray-300">{s.label}</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="font-semibold text-gray-900 dark:text-gray-100">{s.value}</span>
+              <span className="text-gray-500 w-9 text-right">{s.pct}%</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SparkLine({ data, color="#3d9462", height=40, width=120 }) {
+  if (!data.length) return null;
+  const max = Math.max(...data, 1), min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const points = data.map((v, i) => `${(i/(data.length-1))*width},${height - ((v-min)/range)*(height-4) - 2}`).join(" ");
+  return (
+    <svg width={width} height={height} className="overflow-visible">
+      <defs>
+        <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <polygon points={`0,${height} ${points} ${width},${height}`} fill="url(#spark-grad)" />
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-fade-in" />
+      <circle cx={width} cy={height - ((data[data.length-1]-min)/range)*(height-4) - 2} r="3" fill={color} />
+    </svg>
+  );
+}
+
+function ProgressRing({ value, max=100, size=80, thickness=8, color="#3d9462", label }) {
+  const radius = size/2 - thickness/2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (Math.min(value,max)/max) * circumference;
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size/2} cy={size/2} r={radius} stroke="currentColor" strokeWidth={thickness} fill="none" opacity="0.1" />
+        <circle cx={size/2} cy={size/2} r={radius} stroke={color} strokeWidth={thickness} fill="none" strokeLinecap="round"
+                strokeDasharray={circumference} strokeDashoffset={offset} style={{transition:"stroke-dashoffset 1s ease-out"}} />
+      </svg>
+      <div className="absolute text-center">
+        <div className="text-lg font-bold leading-none">{value}{label?"":"%"}</div>
+        {label && <div className="mt-0.5 text-[10px] uppercase tracking-wider text-gray-500">{label}</div>}
+      </div>
     </div>
   );
 }
@@ -548,66 +741,92 @@ const NAV = [
 
 function Sidebar({ route }) {
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-gray-200 bg-white lg:block">
-      <a href="#/dashboard" className="flex h-16 items-center gap-2 border-b border-gray-200 px-5 hover:bg-gray-50">
-        <div className="grid h-9 w-9 place-items-center rounded-lg bg-brand-600 font-black text-white">A</div>
+    <aside className="hidden w-64 shrink-0 border-r border-gray-200 bg-white lg:block dark:border-white/5 dark:bg-gray-900">
+      <a href="#/dashboard" className="flex h-16 items-center gap-2 border-b border-gray-200 px-5 hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/5 transition">
+        <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 font-black text-white shadow-md shadow-brand-500/30">A</div>
         <div>
-          <div className="text-sm font-semibold leading-tight">Afrilabs</div>
-          <div className="text-xs text-gray-500">Ecosystem OS</div>
+          <div className="text-sm font-bold leading-tight">Afrilabs</div>
+          <div className="text-[10px] uppercase tracking-widest text-gray-500">Ecosystem OS</div>
         </div>
       </a>
       <nav className="px-3 py-4">
         {NAV.map(g => (
           <div key={g.group} className="mb-4">
-            <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">{g.group}</p>
+            <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">{g.group}</p>
             {g.items.map(it => {
               const active = route === it.href || route.startsWith(it.href + "/");
               return (
                 <a key={it.href} href={"#" + it.href}
-                  className={cls("flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition",
-                    active ? "bg-brand-50 font-medium text-brand-700" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900")}>
+                  className={cls("flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition relative",
+                    active
+                      ? "nav-item-active bg-brand-50 font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-100")}>
                   <span className="text-base">{it.icon}</span>{it.label}
                 </a>
               );
             })}
           </div>
         ))}
-        <a href="index.html" className="block px-3 py-2 text-xs text-gray-400 hover:text-gray-700">← Marketing site</a>
+        <a href="index.html" className="block px-3 py-2 text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition">← Marketing site</a>
       </nav>
     </aside>
   );
 }
 
-function Topbar({ data, update, search, setSearch }) {
+// Theme management hook
+function useTheme() {
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem("afrilabs-theme") || "light"; } catch { return "light"; }
+  });
+  useEffect(() => {
+    if (theme === "dark") document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+    try { localStorage.setItem("afrilabs-theme", theme); } catch {}
+  }, [theme]);
+  const toggle = () => setTheme(t => t === "dark" ? "light" : "dark");
+  return [theme, toggle];
+}
+
+function Topbar({ data, update, search, setSearch, theme, toggleTheme }) {
   const [open, setOpen] = useState(false);
   const user = data.users.find(u => u.id === data.settings.currentUserId);
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white/85 px-6 backdrop-blur">
+    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white/85 px-6 backdrop-blur-md dark:border-white/5 dark:bg-gray-900/85">
       <div className="flex flex-1 items-center gap-3">
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search hubs, partners, programs…"
-               className="w-full max-w-md rounded-md border border-gray-200 bg-gray-50 py-2 px-3 text-sm focus:bg-white focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500" />
+        <div className="relative w-full max-w-md">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">⌕</span>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search hubs, partners, programs…"
+                 className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:focus:bg-gray-800" />
+        </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <span className="hidden items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-500/10 dark:text-brand-300 md:flex">
+          <span className="live-dot"></span> Live
+        </span>
+        <button onClick={toggleTheme} aria-label="Toggle theme"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-gray-200 hover:bg-gray-50 transition dark:border-white/10 dark:hover:bg-white/5">
+          <span className="text-base">{theme === "dark" ? "☀" : "🌙"}</span>
+        </button>
         <div className="relative">
-          <button onClick={()=>setOpen(o=>!o)} className="flex items-center gap-3 rounded-md border-l border-gray-200 pl-3 pr-1 hover:bg-gray-50">
+          <button onClick={()=>setOpen(o=>!o)} className="flex items-center gap-3 rounded-lg border border-transparent px-2 py-1 transition hover:border-gray-200 hover:bg-gray-50 dark:hover:border-white/10 dark:hover:bg-white/5">
             <div className="text-right text-sm leading-tight">
-              <div className="font-medium">{user?.name ?? "Guest"}</div>
-              <div className="text-xs text-gray-500">{user?.role}</div>
+              <div className="font-semibold">{user?.name ?? "Guest"}</div>
+              <div className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400">{user?.role}</div>
             </div>
-            <div className="grid h-8 w-8 place-items-center rounded-full bg-brand-600 text-xs font-semibold text-white">{(user?.name??"?").slice(0,1)}</div>
+            <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-bold text-white shadow-md shadow-brand-500/30">{(user?.name??"?").slice(0,1)}</div>
           </button>
           {open && (
-            <div className="absolute right-0 top-12 w-64 rounded-md border border-gray-200 bg-white shadow-lg z-20">
-              <p className="border-b border-gray-100 px-4 py-2 text-xs font-semibold uppercase text-gray-400">Switch user (demo)</p>
+            <div className="absolute right-0 top-12 w-64 rounded-xl border border-gray-200 bg-white shadow-xl z-20 dark:border-white/10 dark:bg-gray-800 animate-scale-in">
+              <p className="border-b border-gray-100 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:border-white/5 dark:text-gray-500">Switch user (demo)</p>
               {data.users.map(u => (
                 <button key={u.id} onClick={()=>{update(d=>{d.settings.currentUserId=u.id; logAudit(d,"LOGIN","User",u.id); return d;}); setOpen(false);}}
-                  className={cls("flex w-full items-center justify-between px-4 py-2 text-sm hover:bg-gray-50",
-                    u.id===user?.id ? "bg-brand-50 text-brand-700" : "")}>
-                  <span><span className="font-medium">{u.name}</span><span className="ml-2 text-xs text-gray-500">{u.role}</span></span>
-                  {u.id===user?.id && <span className="text-brand-600">✓</span>}
+                  className={cls("flex w-full items-center justify-between px-4 py-2 text-sm transition",
+                    u.id===user?.id ? "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300" : "hover:bg-gray-50 dark:hover:bg-white/5")}>
+                  <span><span className="font-medium">{u.name}</span><span className="ml-2 text-[10px] uppercase tracking-wider text-gray-500">{u.role}</span></span>
+                  {u.id===user?.id && <span className="text-brand-600 dark:text-brand-400">✓</span>}
                 </button>
               ))}
-              <a href="#/settings" onClick={()=>setOpen(false)} className="block border-t border-gray-100 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">⚙ Settings & data</a>
+              <a href="#/settings" onClick={()=>setOpen(false)} className="block border-t border-gray-100 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-white/5 dark:text-gray-300 dark:hover:bg-white/5">⚙ Settings & data</a>
             </div>
           )}
         </div>
@@ -616,13 +835,15 @@ function Topbar({ data, update, search, setSearch }) {
   );
 }
 
-function Shell({ data, update, route, search, setSearch, children }) {
+function Shell({ data, update, route, search, setSearch, theme, toggleTheme, children }) {
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
       <Sidebar route={route} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar data={data} update={update} search={search} setSearch={setSearch} />
-        <main className="flex-1 px-6 py-6 lg:px-8">{children}</main>
+        <Topbar data={data} update={update} search={search} setSearch={setSearch} theme={theme} toggleTheme={toggleTheme} />
+        <main className="flex-1 px-6 py-6 lg:px-8">
+          <div key={route} className="page-enter">{children}</div>
+        </main>
       </div>
     </div>
   );
@@ -639,34 +860,70 @@ function Dashboard({ data }) {
   const partnerById = Object.fromEntries(data.partners.map(p=>[p.id,p]));
   const recent = [...data.activities].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,8);
   const userById = Object.fromEntries(data.users.map(u=>[u.id,u]));
-  const topPrograms = data.programs.slice(0,5);
-  const topEvents = [...data.events].sort((a,b)=>new Date(b.startDate)-new Date(a.startDate)).slice(0,5);
+
+  // Chart data
+  const hubsByRegion = REGIONS.map(r => ({ label: r.split(" ")[0], value: data.hubs.filter(h=>h.region===r).length }));
+  const fundingByStatus = FUNDING_STATUS.map((s,i) => ({ label: s, value: data.fundingSources.filter(f=>f.status===s).reduce((sum,f)=>sum+f.amount,0), color: ["#eab308","#3b82f6","#3d9462","#a855f7"][i] }));
+  const stageData = PARTNERSHIP_STAGES.map((s,i) => ({ label: s, value: data.partnerships.filter(p=>p.stage===s).length, color: ["#94a3b8","#3b82f6","#eab308","#3d9462","#6b7280"][i] }));
+
+  // Activity over last 7 days
+  const days = Array.from({length: 7}, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i)); d.setHours(0,0,0,0);
+    return d.getTime();
+  });
+  const activitySpark = days.map((day, i) => {
+    const next = i < days.length-1 ? days[i+1] : day + 86400000;
+    return data.activities.filter(a => { const t = new Date(a.createdAt).getTime(); return t >= day && t < next; }).length;
+  });
+  const hubsTrend = [data.hubs.length-3, data.hubs.length-2, data.hubs.length-2, data.hubs.length-1, data.hubs.length-1, data.hubs.length, data.hubs.length].map(v=>Math.max(0,v));
+  const fundingTrend = [totalFunding*0.6, totalFunding*0.7, totalFunding*0.75, totalFunding*0.85, totalFunding*0.9, totalFunding*0.95, totalFunding].map(v=>Math.round(v/1000));
 
   return (
     <div>
-      <PageHeader title="Ecosystem overview" subtitle="A live snapshot of partnerships, programs, funding and member activity." />
+      <PageHeader
+        title="Ecosystem overview"
+        subtitle="A live snapshot of partnerships, programs, funding and member activity."
+        action={<a href="#/intelligence" className="btn-outline">✨ View intelligence</a>}
+      />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Member hubs"   value={fmtNum(data.hubs.length)} hint={`${paidHubs} paid · ${data.hubs.length-paidHubs} other`} />
-        <StatCard label="Active programs" value={data.programs.filter(p=>p.status==="ACTIVE").length} hint={`${data.programs.length} total`} />
-        <StatCard label="Total funding" value={fmtCurrency(totalFunding)} hint="Pledged → disbursed" />
-        <StatCard label="Live partnerships" value={activePartnerships} hint={`${data.partnerships.length} pipeline`} />
+        <StatCard label="Member hubs"       value={fmtNum(data.hubs.length)} hint={`${paidHubs} paid · ${data.hubs.length-paidHubs} other`} accent="green" trend={5} sparkline={hubsTrend} />
+        <StatCard label="Active programs"   value={data.programs.filter(p=>p.status==="ACTIVE").length} hint={`${data.programs.length} total`} accent="orange" trend={0} sparkline={[3,4,4,5,5,5,5]} />
+        <StatCard label="Total funding"     value={fmtCurrency(totalFunding)} hint="Pledged → disbursed" accent="blue" trend={12} sparkline={fundingTrend} />
+        <StatCard label="Live partnerships" value={activePartnerships} hint={`${data.partnerships.length} pipeline`} accent="purple" trend={3} sparkline={[1,1,2,2,2,2,2]} />
+      </div>
+
+      {/* CHARTS ROW */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <div className="card lg:col-span-2 animate-fade-up">
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-white/5 dark:border-white/5">
+            <div><h3 className="text-base font-bold">Hubs by region</h3><p className="text-sm text-gray-500 dark:text-gray-400">Pan-African coverage</p></div>
+            <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">{data.hubs.length} hubs</span>
+          </div>
+          <div className="p-5 text-gray-700 dark:text-gray-300"><BarChart data={hubsByRegion} height={200} /></div>
+        </div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-white/5 dark:border-white/5">
+            <div><h3 className="text-base font-bold">Pipeline distribution</h3><p className="text-sm text-gray-500 dark:text-gray-400">Partnerships by stage</p></div>
+          </div>
+          <div className="p-5"><DonutChart data={stageData} size={170} thickness={22} /></div>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-            <div><h3 className="text-base font-semibold">Recent partnerships</h3><p className="text-sm text-gray-500">Latest pipeline activity</p></div>
-            <a href="#/partnerships" className="text-sm text-brand-700 hover:underline">View all →</a>
+        <div className="card lg:col-span-2 animate-fade-up">
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-white/5 dark:border-white/5">
+            <div><h3 className="text-base font-bold">Recent partnerships</h3><p className="text-sm text-gray-500 dark:text-gray-400">Latest pipeline activity</p></div>
+            <a href="#/partnerships" className="text-sm font-semibold text-brand-700 dark:text-brand-400 hover:underline">View all →</a>
           </div>
           <table className="table-base">
             <thead><tr><th>Partner</th><th>Title</th><th>Stage</th><th>Value</th></tr></thead>
             <tbody>
               {recentP.map(p => (
                 <tr key={p.id}>
-                  <td className="font-medium">{partnerById[p.partnerId]?.name ?? "—"}</td>
+                  <td className="font-semibold">{partnerById[p.partnerId]?.name ?? "—"}</td>
                   <td>{p.title}</td>
                   <td><StageBadge stage={p.stage}/></td>
-                  <td>{p.value ? fmtCurrency(p.value, p.currency) : "—"}</td>
+                  <td className="font-mono text-xs">{p.value ? fmtCurrency(p.value, p.currency) : "—"}</td>
                 </tr>
               ))}
               {recentP.length === 0 && <tr><td colSpan="4" className="py-6 text-center text-gray-500">No partnerships yet.</td></tr>}
@@ -674,16 +931,20 @@ function Dashboard({ data }) {
           </table>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Activity feed</h3><p className="text-sm text-gray-500">Cross-department signals</p></div>
-          <div className="space-y-4 p-5">
-            {recent.map(a => (
-              <div key={a.id} className="flex gap-3">
-                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">{(userById[a.userId]?.name ?? "S").slice(0,1)}</div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">{a.title}</p>
-                  {a.body && <p className="line-clamp-2 text-xs text-gray-500">{a.body}</p>}
-                  <p className="text-[11px] text-gray-400">{relTime(a.createdAt)} · {(a.type||"").replace(/_/g," ").toLowerCase()}</p>
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-white/5 dark:border-white/5">
+            <div><h3 className="text-base font-bold">Activity feed</h3><p className="text-sm text-gray-500 dark:text-gray-400">Last 7 days · {activitySpark.reduce((s,n)=>s+n,0)} events</p></div>
+            <span className="live-dot"></span>
+          </div>
+          <div className="border-b border-gray-100 px-5 py-3 dark:border-white/5"><SparkLine data={activitySpark.length ? activitySpark : [0,0,0,0,0,0,1]} color="#3d9462" height={36} width={260} /></div>
+          <div className="space-y-4 p-5 max-h-72 overflow-y-auto">
+            {recent.map((a,i) => (
+              <div key={a.id} className="flex gap-3 animate-slide-in-right" style={{animationDelay:`${i*0.05}s`}}>
+                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-xs font-bold text-white">{(userById[a.userId]?.name ?? "S").slice(0,1)}</div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">{a.title}</p>
+                  {a.body && <p className="line-clamp-2 text-xs text-gray-500 dark:text-gray-400">{a.body}</p>}
+                  <p className="mt-0.5 text-[11px] text-gray-400">{relTime(a.createdAt)} · {(a.type||"").replace(/_/g," ").toLowerCase()}</p>
                 </div>
               </div>
             ))}
@@ -692,19 +953,23 @@ function Dashboard({ data }) {
         </div>
       </div>
 
+      {/* FUNDING STATUS DONUT + UPCOMING EVENTS */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Programs</h3><a href="#/programs" className="text-sm text-brand-700 hover:underline">All →</a></div>
-          <table className="table-base">
-            <thead><tr><th>Code</th><th>Name</th><th>Status</th><th>Region</th></tr></thead>
-            <tbody>{topPrograms.map(p => (<tr key={p.id}><td className="font-mono text-xs">{p.code}</td><td className="font-medium">{p.name}</td><td><StageBadge stage={p.status}/></td><td className="text-gray-500">{p.region ?? "Pan-African"}</td></tr>))}</tbody>
-          </table>
+        <div className="card animate-fade-up">
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-white/5 dark:border-white/5">
+            <div><h3 className="text-base font-bold">Funding flow</h3><p className="text-sm text-gray-500 dark:text-gray-400">Pledged → Disbursed</p></div>
+            <a href="#/funding" className="text-sm font-semibold text-brand-700 dark:text-brand-400 hover:underline">Ledger →</a>
+          </div>
+          <div className="p-5"><DonutChart data={fundingByStatus.filter(d=>d.value>0)} size={180} thickness={22} /></div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Events</h3><a href="#/events" className="text-sm text-brand-700 hover:underline">All →</a></div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-white/5 dark:border-white/5">
+            <div><h3 className="text-base font-bold">Upcoming events</h3><p className="text-sm text-gray-500 dark:text-gray-400">Next on the calendar</p></div>
+            <a href="#/events" className="text-sm font-semibold text-brand-700 dark:text-brand-400 hover:underline">All →</a>
+          </div>
           <table className="table-base">
-            <thead><tr><th>Event</th><th>Status</th><th>Location</th><th>Date</th></tr></thead>
-            <tbody>{topEvents.map(e => (<tr key={e.id}><td className="font-medium">{e.name}</td><td><StageBadge stage={e.status}/></td><td className="text-gray-500">{e.city ? `${e.city}, ${e.country}` : e.location ?? e.country ?? "—"}</td><td className="text-gray-500">{fmtDate(e.startDate)}</td></tr>))}</tbody>
+            <thead><tr><th>Event</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>{[...data.events].sort((a,b)=>new Date(a.startDate)-new Date(b.startDate)).slice(0,5).map(e => (<tr key={e.id}><td className="font-semibold">{e.name}<div className="text-xs text-gray-500">{e.city ? `${e.city}, ${e.country}` : e.location ?? e.country ?? "—"}</div></td><td><StageBadge stage={e.status}/></td><td className="text-xs text-gray-500">{fmtDate(e.startDate)}</td></tr>))}</tbody>
           </table>
         </div>
       </div>
@@ -835,14 +1100,25 @@ function HubsList({ data, update, search }) {
         action={<><button className="btn-outline mr-2" onClick={()=>navigate("/campaigns")}>Send campaign</button><button className="btn-primary" onClick={()=>setCreating(true)}>+ Onboard hub</button></>} />
 
       <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Total hubs" value={data.hubs.length} />
-        <StatCard label="Paid" value={paid} hint="Active subscriptions" />
-        <StatCard label="Pending" value={pending} hint="Awaiting payment" />
-        <StatCard label="Expired" value={expired} hint="Need renewal" />
+        <StatCard label="Total hubs" value={data.hubs.length} accent="green" trend={12} />
+        <StatCard label="Paid" value={paid} hint="Active subscriptions" accent="green" trend={5} />
+        <StatCard label="Pending" value={pending} hint="Awaiting payment" accent="orange" />
+        <StatCard label="Expired" value={expired} hint="Need renewal" accent="red" trend={-3} />
       </div>
 
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <div className="card lg:col-span-2 animate-fade-up">
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-bold">Regional distribution</h3><p className="text-sm text-gray-500 dark:text-gray-400">Hubs across all 5 African regions</p></div>
+          <div className="p-5 text-gray-700 dark:text-gray-300"><BarChart data={REGIONS.map(r => ({label: r.split(" ")[0], value: data.hubs.filter(h=>h.region===r).length}))} height={200} /></div>
+        </div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-bold">Tier mix</h3><p className="text-sm text-gray-500 dark:text-gray-400">Membership tier breakdown</p></div>
+          <div className="p-5"><DonutChart data={TIERS.map((t,i)=>({label:t, value: data.hubs.filter(h=>h.membershipTier===t).length, color:["#94a3b8","#3b82f6","#a855f7"][i]})).filter(d=>d.value>0)} size={170} thickness={22} /></div>
+        </div>
+      </div>
+
+      <div className="mt-6 card">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4 dark:border-white/5">
           <h3 className="text-base font-semibold">Hubs ({filtered.length})</h3>
           <div className="flex gap-2 text-xs">
             <select className="input !py-1.5" value={filterRegion} onChange={e=>setFilterRegion(e.target.value)}><option value="">All regions</option>{REGIONS.map(r=><option key={r}>{r}</option>)}</select>
@@ -1067,7 +1343,7 @@ function PartnershipsList({ data, update, search }) {
         ))}
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="card">
         <table className="table-base">
           <thead><tr><th>Partner</th><th>Title</th><th>Stage</th><th>Value</th><th>Programs</th><th>Owner</th><th>Updated</th><th></th></tr></thead>
           <tbody>
@@ -1360,15 +1636,19 @@ function FundingList({ data, update }) {
         action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ Add funding</button>} />
 
       <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Pledged"   value={fmtCurrency(totals.PLEDGED || 0)} />
-        <StatCard label="Approved"  value={fmtCurrency(totals.APPROVED || 0)} />
-        <StatCard label="Disbursed" value={fmtCurrency(totals.DISBURSED || 0)} />
-        <StatCard label="Total"     value={fmtCurrency(total)} hint={`${data.fundingSources.length} sources`} />
+        <StatCard label="Pledged"   value={fmtCurrency(totals.PLEDGED || 0)} accent="orange" />
+        <StatCard label="Approved"  value={fmtCurrency(totals.APPROVED || 0)} accent="blue" />
+        <StatCard label="Disbursed" value={fmtCurrency(totals.DISBURSED || 0)} accent="green" />
+        <StatCard label="Total"     value={fmtCurrency(total)} hint={`${data.fundingSources.length} sources`} accent="purple" />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-2">
-          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Funding ledger</h3></div>
+        <div className="card animate-fade-up">
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-bold">Status breakdown</h3><p className="text-sm text-gray-500 dark:text-gray-400">Pipeline distribution</p></div>
+          <div className="p-5"><DonutChart data={FUNDING_STATUS.map((s,i)=>({label:s, value: totals[s] || 0, color:["#eab308","#3b82f6","#3d9462","#a855f7"][i]})).filter(d=>d.value>0)} size={170} thickness={22} /></div>
+        </div>
+        <div className="card lg:col-span-2 animate-fade-up" style={{animationDelay:"0.1s"}}>
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Funding ledger</h3></div>
           <table className="table-base">
             <thead><tr><th>Source</th><th>Type</th><th>Partner</th><th>Program</th><th>Amount</th><th>Status</th><th></th></tr></thead>
             <tbody>
@@ -1391,8 +1671,8 @@ function FundingList({ data, update }) {
           </table>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Funding by region</h3></div>
+        <div className="card">
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Funding by region</h3></div>
           <div className="space-y-3 p-5">
             {Object.entries(byRegion).sort((a,b)=>b[1]-a[1]).map(([r, v]) => {
               const pct = total > 0 ? (v/total)*100 : 0;
@@ -1532,8 +1812,8 @@ function EventsList({ data, update }) {
         {EVENT_STATUS.map(s => <StatCard key={s} label={s.replace(/_/g," ")} value={counts[s]} />)}
       </div>
 
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">All events</h3></div>
+      <div className="mt-6 card">
+        <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">All events</h3></div>
         <table className="table-base">
           <thead><tr><th>Event</th><th>Type</th><th>Status</th><th>Program</th><th>Date</th><th>Tasks</th><th>Attendance</th><th></th></tr></thead>
           <tbody>
@@ -1633,8 +1913,8 @@ function TasksList({ data, update }) {
       <div className="grid gap-4 md:grid-cols-4">
         {TASK_STATUS.map(s => <StatCard key={s} label={s.replace(/_/g," ")} value={counts[s]} />)}
       </div>
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+      <div className="mt-6 card">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4 dark:border-white/5">
           <h3 className="text-base font-semibold">All tasks ({filtered.length})</h3>
           <div className="flex gap-2 text-xs">
             <select className="input !py-1.5" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="">Any status</option>{TASK_STATUS.map(s=><option key={s}>{s}</option>)}</select>
@@ -1671,8 +1951,8 @@ function Collaboration({ data }) {
   return (
     <div>
       <PageHeader title="Internal Collaboration" subtitle="A unified feed of every signal across departments." />
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Activity timeline</h3></div>
+      <div className="card">
+        <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Activity timeline</h3></div>
         <div className="space-y-4 p-5">
           {sorted.map(a => {
             const link = a.partnershipId ? `#/partnerships` : a.programId ? `#/programs` : a.eventId ? `#/events` : a.hubId ? `#/members` : null;
@@ -1780,7 +2060,7 @@ function CampaignsList({ data, update }) {
     <div>
       <PageHeader title="Campaigns & Ad Engine" subtitle="Broadcast opportunities to all hubs, paid members, regions or sectors."
         action={<button className="btn-primary" onClick={()=>setCreating(true)}>+ New campaign</button>} />
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="card">
         <table className="table-base">
           <thead><tr><th>Name</th><th>Channel</th><th>Audience</th><th>Status</th><th>Recipients</th><th>Engagement</th><th>Created</th><th></th></tr></thead>
           <tbody>
@@ -1816,8 +2096,8 @@ function Intelligence({ data }) {
     <div>
       <PageHeader title="Decision Intelligence" subtitle="Recommendations and risk signals computed live from your data." />
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Hubs to prioritize</h3><p className="text-sm text-gray-500">Based on payment + tier + engagement.</p></div>
+        <div className="card">
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Hubs to prioritize</h3><p className="text-sm text-gray-500">Based on payment + tier + engagement.</p></div>
           <div className="space-y-3 p-5">
             {intel.priorities.map(h => (
               <a key={h.hubId} href="#/members" className="flex items-center justify-between rounded-md bg-gray-50 p-3 hover:bg-gray-100">
@@ -1827,8 +2107,8 @@ function Intelligence({ data }) {
             ))}
           </div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Churn risk</h3><p className="text-sm text-gray-500">Hubs likely to lapse without intervention.</p></div>
+        <div className="card">
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Churn risk</h3><p className="text-sm text-gray-500">Hubs likely to lapse without intervention.</p></div>
           <div className="space-y-3 p-5">
             {intel.churn.map(h => (
               <a key={h.hubId} href="#/members" className="flex items-center justify-between rounded-md bg-red-50/50 p-3 ring-1 ring-red-100 hover:bg-red-50">
@@ -1839,8 +2119,8 @@ function Intelligence({ data }) {
             {intel.churn.length === 0 && <p className="text-sm text-gray-500">No high-risk hubs detected.</p>}
           </div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Suggested partner ↔ program matches</h3></div>
+        <div className="card">
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Suggested partner ↔ program matches</h3></div>
           <div className="space-y-3 p-5">
             {intel.matches.map((m,i) => (
               <div key={i} className="rounded-md bg-gray-50 p-3">
@@ -1852,8 +2132,8 @@ function Intelligence({ data }) {
             {intel.matches.length === 0 && <p className="text-sm text-gray-500">No suggestions — add more partners and active programs.</p>}
           </div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Funding success likelihood</h3></div>
+        <div className="card">
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Funding success likelihood</h3></div>
           <div className="space-y-3 p-5">
             {intel.funding.map(f => (
               <div key={f.fundingId} className="rounded-md bg-gray-50 p-3">
@@ -1900,7 +2180,7 @@ function ProcurementList({ data, update }) {
         <StatCard label="Confirmed" value={totals.confirmed} />
         <StatCard label="Requested" value={totals.requested} />
       </div>
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="mt-6 card">
         <table className="table-base">
           <thead><tr><th>Type</th><th>Vendor</th><th>Reference</th><th>Cost</th><th>Status</th><th>Date</th><th></th></tr></thead>
           <tbody>
@@ -1961,7 +2241,7 @@ function JobsList({ data, update }) {
     <div>
       <PageHeader title="Jobs board" subtitle="Roles across the ecosystem — hubs, startups, partners."
         action={<button onClick={()=>setCreating(true)} className="btn-primary">+ Post job</button>} />
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="card">
         <table className="table-base">
           <thead><tr><th>Title</th><th>Organization</th><th>Type</th><th>Location</th><th>Sector</th><th>Posted</th><th></th></tr></thead>
           <tbody>
@@ -2035,7 +2315,7 @@ function PeopleList({ data, update }) {
         <StatCard label="Departments" value={Object.keys(byDept).length} />
         <StatCard label="Roles in use" value={new Set(data.users.map(u=>u.role)).size} />
       </div>
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="mt-6 card">
         <table className="table-base">
           <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th></th></tr></thead>
           <tbody>
@@ -2151,8 +2431,8 @@ function Africonnect({ data, update }) {
         <StatCard label="Last sync" value={data.syncLog[0] ? relTime(data.syncLog[0].createdAt) : "Never"} />
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Sync actions</h3></div>
+        <div className="card">
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Sync actions</h3></div>
           <div className="space-y-3 p-5">
             <button onClick={exportSync} className="btn-primary w-full">Export hubs as JSON</button>
             <button onClick={()=>fileRef.current?.click()} className="btn-outline w-full">Import hubs JSON</button>
@@ -2160,8 +2440,8 @@ function Africonnect({ data, update }) {
             <div className="rounded-md border border-amber-100 bg-amber-50 p-3 text-xs text-amber-800">Auth (production): <code>Authorization: Bearer $AFRICONNECT_API_KEY</code></div>
           </div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-100 px-5 py-4"><h3 className="text-base font-semibold">Sync history</h3></div>
+        <div className="card">
+          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Sync history</h3></div>
           <table className="table-base">
             <thead><tr><th>When</th><th>Endpoint</th><th>Direction</th><th>Records</th><th>Status</th></tr></thead>
             <tbody>
@@ -2184,7 +2464,7 @@ function AuditLog({ data }) {
   return (
     <div>
       <PageHeader title="Audit & Compliance" subtitle="Immutable record of system events." />
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="card">
         <table className="table-base">
           <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Reference</th></tr></thead>
           <tbody>
@@ -2291,6 +2571,7 @@ function App() {
   const [data, update] = useStore();
   const route = useRoute();
   const [search, setSearch] = useState("");
+  const [theme, toggleTheme] = useTheme();
 
   let body;
   if (route === "/dashboard") body = <Dashboard data={data} />;
@@ -2312,7 +2593,7 @@ function App() {
   else if (route === "/settings") body = <Settings data={data} update={update} />;
   else body = <div className="text-center py-20"><h2 className="text-xl font-bold">Page not found</h2><a href="#/dashboard" className="text-brand-700 hover:underline">← Back to dashboard</a></div>;
 
-  return <Shell data={data} update={update} route={route} search={search} setSearch={setSearch}>{body}</Shell>;
+  return <Shell data={data} update={update} route={route} search={search} setSearch={setSearch} theme={theme} toggleTheme={toggleTheme}>{body}</Shell>;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);

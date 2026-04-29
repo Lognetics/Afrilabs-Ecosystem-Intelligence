@@ -1,312 +1,387 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Afrilabs Ecosystem OS — Africa's Innovation Command Center</title>
-  <meta name="description" content="Multi-department CRM and ecosystem intelligence platform for Afrilabs — partnerships, programs, funding, and 500+ member hubs across Africa." />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: { 50:'#f0f9f4',100:'#dcefe2',200:'#bce0c8',300:'#8ec9a3',400:'#5fae7d',500:'#3d9462',600:'#2c764e',700:'#245d40',800:'#1f4a35',900:'#1b3d2d',950:'#0d2218' },
-            accent:{ 50:'#fff8ed',100:'#ffefd4',200:'#ffdba8',300:'#ffbf71',400:'#ff9a38',500:'#fb7d12',600:'#ec6308',700:'#c44a09',800:'#9c3b10',900:'#7e3211' }
-          }
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Afrilabs Ecosystem OS — Africa's Innovation Command Center</title>
+<meta name="description" content="The operating system for Africa's innovation ecosystem. Connect 500+ hubs, partnerships, programs and funding flows in one sovereign platform." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','sans-serif'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: {
+        brand: { 50:'#f0f9f4',100:'#dcefe2',200:'#bce0c8',300:'#8ec9a3',400:'#5fae7d',500:'#3d9462',600:'#2c764e',700:'#245d40',800:'#1f4a35',900:'#1b3d2d',950:'#0d2218' },
+        accent:{ 50:'#fff8ed',100:'#ffefd4',200:'#ffdba8',300:'#ffbf71',400:'#ff9a38',500:'#fb7d12',600:'#ec6308',700:'#c44a09',800:'#9c3b10',900:'#7e3211' },
+      },
+      animation: {
+        'gradient-x': 'gradient-x 15s ease infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'float-slow': 'float 9s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+        'fade-up': 'fade-up 0.7s ease-out both',
+        'fade-in': 'fade-in 0.6s ease-out both',
+      },
+      keyframes: {
+        'gradient-x': { '0%, 100%':{'background-position':'0% 50%'}, '50%':{'background-position':'100% 50%'} },
+        'float': { '0%, 100%':{transform:'translateY(0)'}, '50%':{transform:'translateY(-20px)'} },
+        'pulse-glow': { '0%, 100%':{opacity:'0.5'}, '50%':{opacity:'1'} },
+        'fade-up': { '0%':{opacity:'0',transform:'translateY(20px)'}, '100%':{opacity:'1',transform:'translateY(0)'} },
+        'fade-in': { '0%':{opacity:'0'}, '100%':{opacity:'1'} },
       }
-    }
-  </script>
-  <style>
-    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-    .scroll-mt { scroll-margin-top: 80px; }
-  </style>
+    }}
+  }
+</script>
+<style>
+  :root { color-scheme: light dark; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  .mesh-bg {
+    background:
+      radial-gradient(at 20% 20%, rgba(45,118,78,0.7) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(251,125,18,0.55) 0px, transparent 50%),
+      radial-gradient(at 0% 80%, rgba(45,118,78,0.4) 0px, transparent 50%),
+      radial-gradient(at 80% 80%, rgba(196,74,9,0.4) 0px, transparent 50%),
+      radial-gradient(at 100% 50%, rgba(13,34,24,1) 0px, transparent 80%),
+      #0a1410;
+    background-size: 200% 200%;
+  }
+  .glass { backdrop-filter: blur(20px) saturate(120%); -webkit-backdrop-filter: blur(20px) saturate(120%); }
+  .grain::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #5fae7d 0%, #ff9a38 50%, #5fae7d 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    animation: gradient-x 8s ease infinite;
+  }
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .card-hover { transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s, border-color 0.3s; }
+  .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -15px rgba(45,118,78,0.3); }
+  .orb {
+    position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; pointer-events: none;
+  }
+  /* hide scrollbar in marquee row */
+  .marquee::-webkit-scrollbar { display: none; }
+  .marquee { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased">
+<body class="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
 
-<!-- Hero -->
-<header class="bg-gradient-to-br from-brand-950 via-brand-800 to-brand-600 text-white">
-  <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
+<!-- ─── Sticky Top Nav ─── -->
+<nav class="fixed top-0 left-0 right-0 z-40 glass border-b border-white/10 dark:border-white/5 bg-white/70 dark:bg-gray-950/70">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <a href="#top" class="flex items-center gap-2">
+      <div class="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 font-black text-white shadow-lg shadow-brand-500/30">A</div>
+      <div>
+        <div class="text-sm font-bold leading-tight">Afrilabs</div>
+        <div class="text-[10px] uppercase tracking-widest text-gray-500">Ecosystem OS</div>
+      </div>
+    </a>
+    <div class="hidden items-center gap-6 text-sm font-medium md:flex">
+      <a href="#features" class="text-gray-600 hover:text-brand-600 dark:text-gray-300 dark:hover:text-brand-400 transition">Features</a>
+      <a href="#modules" class="text-gray-600 hover:text-brand-600 dark:text-gray-300 dark:hover:text-brand-400 transition">Modules</a>
+      <a href="#stack" class="text-gray-600 hover:text-brand-600 dark:text-gray-300 dark:hover:text-brand-400 transition">Stack</a>
+      <a href="https://github.com/Lognetics/Afrilabs-Ecosystem-Intelligence" class="text-gray-600 hover:text-brand-600 dark:text-gray-300 dark:hover:text-brand-400 transition">GitHub</a>
+    </div>
     <div class="flex items-center gap-2">
-      <div class="grid h-9 w-9 place-items-center rounded-lg bg-accent-500 font-black">A</div>
-      <span class="text-lg font-semibold">Afrilabs Ecosystem OS</span>
+      <button id="theme-toggle" aria-label="Toggle theme" class="grid h-9 w-9 place-items-center rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition">
+        <span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀</span>
+      </button>
+      <a href="app.html#/dashboard" class="rounded-lg bg-gradient-to-r from-brand-600 to-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-600/30 hover:shadow-xl hover:shadow-brand-600/40 transition-all">
+        Launch app →
+      </a>
     </div>
-    <div class="flex items-center gap-3 text-sm">
-      <a href="#features" class="hidden md:inline rounded-md px-3 py-2 hover:bg-white/10">Features</a>
-      <a href="#modules" class="hidden md:inline rounded-md px-3 py-2 hover:bg-white/10">Modules</a>
-      <a href="#preview" class="hidden md:inline rounded-md px-3 py-2 hover:bg-white/10">Preview</a>
-      <a href="https://github.com/Lognetics/Afrilabs-Ecosystem-Intelligence" class="rounded-md bg-white/10 px-4 py-2 font-medium ring-1 ring-white/20 hover:bg-white/20">View on GitHub</a>
-    </div>
-  </nav>
+  </div>
+</nav>
 
-  <section class="mx-auto max-w-7xl px-6 pt-12 pb-24 lg:pt-20">
-    <p class="inline-block rounded-full bg-accent-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent-200">
-      Africa's Innovation Command Center
-    </p>
-    <h1 class="mt-6 max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-      One operating system for the Afrilabs ecosystem.
-    </h1>
-    <p class="mt-6 max-w-2xl text-lg text-brand-100">
-      Connect partnerships, programs, funding, events and 500+ member hubs across Africa.
-      Internal collaboration, payment tracking, ecosystem intelligence — in one platform.
-    </p>
-    <div class="mt-10 flex flex-wrap gap-3">
-      <a href="app.html#/dashboard" class="rounded-lg bg-accent-500 px-5 py-3 text-sm font-semibold text-white hover:bg-accent-600">
-        Launch the working app →
-      </a>
-      <a href="dashboard.html" class="rounded-lg bg-white/10 px-5 py-3 text-sm font-semibold text-white ring-1 ring-white/20 hover:bg-white/20">
-        View static preview
-      </a>
-      <a href="#modules" class="rounded-lg bg-white/10 px-5 py-3 text-sm font-semibold ring-1 ring-white/20 hover:bg-white/20">
-        Explore modules
-      </a>
-    </div>
+<!-- ─── HERO ─── -->
+<header id="top" class="mesh-bg grain relative animate-gradient-x overflow-hidden text-white">
+  <div class="orb h-96 w-96 bg-brand-400 animate-float" style="top:-100px; left:-100px;"></div>
+  <div class="orb h-96 w-96 bg-accent-500 animate-float-slow" style="bottom:-100px; right:-100px;"></div>
+  <div class="orb h-72 w-72 bg-brand-300 animate-float" style="top:40%; right:20%; animation-delay:-3s;"></div>
 
-    <div class="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <div class="rounded-xl bg-white/5 p-5 ring-1 ring-white/10">
-        <p class="text-3xl font-bold">500+</p><p class="mt-1 text-sm text-brand-100">Member hubs</p>
+  <div class="relative mx-auto max-w-7xl px-6 pt-32 pb-32 lg:pt-40 lg:pb-40">
+    <div class="reveal max-w-4xl">
+      <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-1.5 backdrop-blur-md">
+        <span class="relative flex h-2 w-2">
+          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-400 opacity-75"></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-accent-500"></span>
+        </span>
+        <span class="text-xs font-semibold uppercase tracking-wider text-white/90">Africa's Innovation Command Center</span>
       </div>
-      <div class="rounded-xl bg-white/5 p-5 ring-1 ring-white/10">
-        <p class="text-3xl font-bold">52</p><p class="mt-1 text-sm text-brand-100">African countries</p>
+
+      <h1 class="mt-8 text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl xl:text-8xl">
+        One operating system for the
+        <span class="gradient-text">Afrilabs ecosystem</span>.
+      </h1>
+
+      <p class="mt-8 max-w-2xl text-xl leading-relaxed text-white/80">
+        Connect <strong class="text-white">500+ member hubs</strong>, partnerships, programs and funding flows across Africa.
+        Sovereign-by-design — your data, your control, your platform.
+      </p>
+
+      <div class="mt-12 flex flex-wrap gap-4">
+        <a href="app.html#/dashboard" class="group relative overflow-hidden rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-accent-500/40 hover:shadow-accent-500/60 transition-all">
+          <span class="relative z-10 flex items-center gap-2">
+            Launch the working app
+            <svg class="h-4 w-4 transition group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          </span>
+        </a>
+        <a href="#features" class="rounded-xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white backdrop-blur-md hover:bg-white/10 transition-all">
+          Explore features
+        </a>
       </div>
-      <div class="rounded-xl bg-white/5 p-5 ring-1 ring-white/10">
-        <p class="text-3xl font-bold">12</p><p class="mt-1 text-sm text-brand-100">Departmental modules</p>
-      </div>
-      <div class="rounded-xl bg-white/5 p-5 ring-1 ring-white/10">
-        <p class="text-3xl font-bold">1M+</p><p class="mt-1 text-sm text-brand-100">Data points</p>
+
+      <!-- live ticker -->
+      <div class="mt-20 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="reveal glass rounded-2xl border border-white/10 bg-white/5 p-5 card-hover" style="transition-delay:0.1s">
+          <div class="counter text-4xl font-black text-white" data-target="500">0</div>
+          <div class="mt-1 text-xs font-medium uppercase tracking-wider text-white/60">Member hubs</div>
+          <div class="mt-2 flex items-center gap-1 text-xs text-brand-300"><span>↑</span> +12 this month</div>
+        </div>
+        <div class="reveal glass rounded-2xl border border-white/10 bg-white/5 p-5 card-hover" style="transition-delay:0.2s">
+          <div class="counter text-4xl font-black text-white" data-target="52">0</div>
+          <div class="mt-1 text-xs font-medium uppercase tracking-wider text-white/60">African countries</div>
+          <div class="mt-2 flex items-center gap-1 text-xs text-brand-300"><span>●</span> Pan-continental</div>
+        </div>
+        <div class="reveal glass rounded-2xl border border-white/10 bg-white/5 p-5 card-hover" style="transition-delay:0.3s">
+          <div class="text-4xl font-black text-white">$<span class="counter" data-target="8.25">0</span>M</div>
+          <div class="mt-1 text-xs font-medium uppercase tracking-wider text-white/60">Funding tracked</div>
+          <div class="mt-2 flex items-center gap-1 text-xs text-accent-300"><span>↑</span> Live ledger</div>
+        </div>
+        <div class="reveal glass rounded-2xl border border-white/10 bg-white/5 p-5 card-hover" style="transition-delay:0.4s">
+          <div class="counter text-4xl font-black text-white" data-target="16">0</div>
+          <div class="mt-1 text-xs font-medium uppercase tracking-wider text-white/60">Integrated modules</div>
+          <div class="mt-2 flex items-center gap-1 text-xs text-brand-300"><span>✓</span> All connected</div>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
+
+  <!-- scroll cue -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-pulse-glow">
+    <svg class="h-6 w-6 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+  </div>
 </header>
 
-<!-- Features -->
-<section id="features" class="scroll-mt border-t border-gray-200 py-16">
+<!-- ─── FEATURES ─── -->
+<section id="features" class="relative py-24 dark:bg-gray-950">
   <div class="mx-auto max-w-7xl px-6">
-    <p class="text-xs font-semibold uppercase tracking-wider text-brand-700">What's inside</p>
-    <h2 class="mt-2 text-3xl font-bold">Six pillars, one connected system</h2>
-    <div class="mt-10 grid gap-6 md:grid-cols-3">
-      <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <div class="grid h-10 w-10 place-items-center rounded-lg bg-brand-50 text-brand-700 font-bold">P</div>
-        <h3 class="mt-4 text-base font-semibold">Partnerships Intelligence</h3>
-        <p class="mt-2 text-sm text-gray-600">Source, manage and activate every contact across Prospect → Engaged → Negotiation → Active.</p>
+    <div class="reveal mx-auto max-w-3xl text-center">
+      <p class="text-xs font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400">Operating system, not a CRM</p>
+      <h2 class="mt-3 text-4xl font-black tracking-tight sm:text-5xl">Six pillars. <span class="gradient-text">One connected ecosystem.</span></h2>
+      <p class="mt-5 text-lg text-gray-600 dark:text-gray-400">Built for Afrilabs to run their continent-wide ecosystem. Built for any organization that needs more than a CRM, less than enterprise bloat.</p>
+    </div>
+
+    <div class="mt-16 grid gap-6 lg:grid-cols-3">
+      <div class="reveal card-hover group rounded-3xl border border-gray-200 dark:border-white/5 bg-gradient-to-br from-brand-50 to-white dark:from-brand-900/20 dark:to-gray-900 p-7 shadow-sm">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-2xl text-white shadow-lg shadow-brand-500/30">🤝</div>
+        <h3 class="mt-6 text-xl font-bold">Partnerships Intelligence</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Source, manage and activate every contact across Prospect → Engaged → Negotiation → Active. Pipeline you can drag through, deals you can track to disbursement.</p>
+        <div class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-700 dark:text-brand-400">5-stage pipeline<span>→</span></div>
       </div>
-      <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <div class="grid h-10 w-10 place-items-center rounded-lg bg-accent-50 text-accent-700 font-bold">M</div>
-        <h3 class="mt-4 text-base font-semibold">Member Services</h3>
-        <p class="mt-2 text-sm text-gray-600">Onboard hubs, track payments, segment by region/tier, automate renewals across 500+ orgs.</p>
+      <div class="reveal card-hover group rounded-3xl border border-gray-200 dark:border-white/5 bg-gradient-to-br from-accent-50 to-white dark:from-accent-900/20 dark:to-gray-900 p-7 shadow-sm">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-accent-500 to-accent-700 text-2xl text-white shadow-lg shadow-accent-500/30">🏢</div>
+        <h3 class="mt-6 text-xl font-bold">Member Services</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Onboard hubs, track payments, segment by region/tier, automate renewals. Built to run 500+ orgs without breaking.</p>
+        <div class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-accent-700 dark:text-accent-400">Auto segmentation<span>→</span></div>
       </div>
-      <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <div class="grid h-10 w-10 place-items-center rounded-lg bg-blue-50 text-blue-700 font-bold">F</div>
-        <h3 class="mt-4 text-base font-semibold">Funding Flow</h3>
-        <p class="mt-2 text-sm text-gray-600">Grants, investments and sponsorships — Pledged → Approved → Disbursed in one ledger.</p>
+      <div class="reveal card-hover group rounded-3xl border border-gray-200 dark:border-white/5 bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-900 p-7 shadow-sm">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-2xl text-white shadow-lg shadow-blue-500/30">💰</div>
+        <h3 class="mt-6 text-xl font-bold">Funding Flow</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Grants, investments, sponsorships — Pledged → Approved → Disbursed in one ledger with regional breakdown.</p>
+        <div class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-700 dark:text-blue-400">Multi-status ledger<span>→</span></div>
       </div>
-      <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <div class="grid h-10 w-10 place-items-center rounded-lg bg-purple-50 text-purple-700 font-bold">R</div>
-        <h3 class="mt-4 text-base font-semibold">Programs OS</h3>
-        <p class="mt-2 text-sm text-gray-600">Accelerators, initiatives and ecosystem projects, linked to partners, funding and outcomes.</p>
+      <div class="reveal card-hover group rounded-3xl border border-gray-200 dark:border-white/5 bg-gradient-to-br from-purple-50 to-white dark:from-purple-900/20 dark:to-gray-900 p-7 shadow-sm">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 text-2xl text-white shadow-lg shadow-purple-500/30">🚀</div>
+        <h3 class="mt-6 text-xl font-bold">Programs OS</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Accelerators, initiatives, ecosystem projects — linked to partners, funding and outcomes. Cohort hubs, startups, metrics.</p>
+        <div class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-purple-700 dark:text-purple-400">Cross-linked<span>→</span></div>
       </div>
-      <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <div class="grid h-10 w-10 place-items-center rounded-lg bg-yellow-50 text-yellow-700 font-bold">E</div>
-        <h3 class="mt-4 text-base font-semibold">Events & Activation</h3>
-        <p class="mt-2 text-sm text-gray-600">AAG and program events from planning through execution and post-event analysis.</p>
+      <div class="reveal card-hover group rounded-3xl border border-gray-200 dark:border-white/5 bg-gradient-to-br from-yellow-50 to-white dark:from-yellow-900/20 dark:to-gray-900 p-7 shadow-sm">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-700 text-2xl text-white shadow-lg shadow-yellow-500/30">📅</div>
+        <h3 class="mt-6 text-xl font-bold">Events & Activation</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">AAG and program events from planning through execution and post-event analysis. Cross-departmental task tracking.</p>
+        <div class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-yellow-700 dark:text-yellow-400">Lifecycle stages<span>→</span></div>
       </div>
-      <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <div class="grid h-10 w-10 place-items-center rounded-lg bg-emerald-50 text-emerald-700 font-bold">A</div>
-        <h3 class="mt-4 text-base font-semibold">Africonnect Integration</h3>
-        <p class="mt-2 text-sm text-gray-600">Shared profiles, SSO, and activity sync. Three named API endpoints, bearer auth.</p>
+      <div class="reveal card-hover group rounded-3xl border border-gray-200 dark:border-white/5 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-900/20 dark:to-gray-900 p-7 shadow-sm">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-2xl text-white shadow-lg shadow-emerald-500/30">✨</div>
+        <h3 class="mt-6 text-xl font-bold">Decision Intelligence</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Live recommendations: hub priority scoring, churn risk, partner-program fit, funding success likelihood. Computed from your real data.</p>
+        <div class="mt-4 inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400">Rule-based AI<span>→</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Module preview -->
-<section id="preview" class="scroll-mt bg-gray-100 py-16">
-  <div class="mx-auto max-w-7xl px-6">
-    <p class="text-xs font-semibold uppercase tracking-wider text-brand-700">Inside the app</p>
-    <h2 class="mt-2 text-3xl font-bold">A real dashboard, not a mockup</h2>
-    <p class="mt-2 max-w-2xl text-gray-600">Sidebar nav, search, role-based dashboards, server actions, Prisma + Postgres. Below: a static render of the live dashboard view.</p>
+<!-- ─── BIG SPLIT: SOVEREIGNTY ─── -->
+<section class="relative bg-gradient-to-br from-brand-950 via-brand-900 to-gray-950 py-24 text-white overflow-hidden">
+  <div class="orb h-96 w-96 bg-brand-500 animate-float" style="top:30%; left:-150px;"></div>
+  <div class="orb h-72 w-72 bg-accent-500 animate-float-slow" style="bottom:-100px; right:10%;"></div>
 
-    <!-- Dashboard mock -->
-    <div class="mt-10 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
-      <div class="flex">
-        <!-- Sidebar -->
-        <aside class="hidden w-64 shrink-0 border-r border-gray-200 bg-white lg:block">
-          <div class="flex h-16 items-center gap-2 border-b border-gray-200 px-5">
-            <div class="grid h-9 w-9 place-items-center rounded-lg bg-brand-600 font-black text-white">A</div>
-            <div>
-              <div class="text-sm font-semibold leading-tight">Afrilabs</div>
-              <div class="text-xs text-gray-500">Ecosystem OS</div>
+  <div class="relative mx-auto max-w-7xl px-6">
+    <div class="grid items-center gap-12 lg:grid-cols-2">
+      <div class="reveal">
+        <p class="text-xs font-bold uppercase tracking-widest text-accent-400">Sovereign by design</p>
+        <h2 class="mt-3 text-4xl font-black tracking-tight sm:text-5xl">Your data lives <br/>where <span class="gradient-text">you choose</span>.</h2>
+        <p class="mt-5 text-lg leading-relaxed text-white/70">No third-party CRM holding your member list. No SaaS licence locking your funding ledger. Every byte exports as JSON. Every action logs to your audit trail. Run it locally, run it on your server, run it on a free Vercel URL — same code, your control.</p>
+        <ul class="mt-8 space-y-4">
+          <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500/20 text-brand-300">✓</span><span><strong>Local-first</strong> · Data persists in your browser, syncs only when you choose</span></li>
+          <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500/20 text-brand-300">✓</span><span><strong>JSON export</strong> · Full backup in one click; portable to any system</span></li>
+          <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500/20 text-brand-300">✓</span><span><strong>Audit trail</strong> · Every CREATE/UPDATE/DELETE recorded automatically</span></li>
+          <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500/20 text-brand-300">✓</span><span><strong>Open source</strong> · 2,300 lines on GitHub. No black boxes, no telemetry</span></li>
+        </ul>
+      </div>
+
+      <div class="reveal">
+        <div class="rounded-3xl border border-white/10 bg-gray-900/50 p-2 shadow-2xl backdrop-blur-md">
+          <div class="rounded-2xl bg-black p-1">
+            <!-- terminal-esque export demo -->
+            <div class="flex items-center gap-1.5 px-3 py-2">
+              <div class="h-3 w-3 rounded-full bg-red-500"></div>
+              <div class="h-3 w-3 rounded-full bg-yellow-500"></div>
+              <div class="h-3 w-3 rounded-full bg-green-500"></div>
+              <span class="ml-3 font-mono text-xs text-gray-500">~/afrilabs-os-export-2026.json</span>
             </div>
+            <pre class="overflow-x-auto px-4 pb-4 font-mono text-xs leading-relaxed text-gray-300"><code><span class="text-gray-500">{</span>
+  <span class="text-accent-400">"version"</span>: <span class="text-brand-300">1</span>,
+  <span class="text-accent-400">"hubs"</span>: [<span class="text-brand-300">30</span> <span class="text-gray-500">items</span>],
+  <span class="text-accent-400">"partnerships"</span>: [<span class="text-brand-300">8</span>],
+  <span class="text-accent-400">"programs"</span>: [<span class="text-brand-300">5</span>],
+  <span class="text-accent-400">"fundingSources"</span>: [<span class="text-brand-300">10</span>],
+  <span class="text-accent-400">"events"</span>: [<span class="text-brand-300">3</span>],
+  <span class="text-accent-400">"campaigns"</span>: [<span class="text-brand-300">3</span>],
+  <span class="text-accent-400">"activities"</span>: [<span class="text-brand-300">42</span>],
+  <span class="text-accent-400">"auditLog"</span>: [<span class="text-brand-300">156</span>],
+  <span class="text-gray-500">// your entire ecosystem,</span>
+  <span class="text-gray-500">// portable, auditable, yours</span>
+<span class="text-gray-500">}</span>
+</code></pre>
           </div>
-          <nav class="px-3 py-4 text-sm">
-            <p class="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Operate</p>
-            <div class="rounded-md bg-brand-50 px-3 py-2 font-medium text-brand-700">Dashboard</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Partnerships</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Programs</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Funding</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Member Hubs</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Events</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Jobs</div>
-            <p class="mt-4 px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Engage</p>
-            <div class="rounded-md px-3 py-2 text-gray-600">Collaboration</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Campaigns</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Intelligence</div>
-            <p class="mt-4 px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">System</p>
-            <div class="rounded-md px-3 py-2 text-gray-600">Africonnect</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Audit Log</div>
-            <div class="rounded-md px-3 py-2 text-gray-600">Departments</div>
-          </nav>
-        </aside>
-
-        <div class="flex-1 bg-gray-50">
-          <header class="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 px-6 backdrop-blur">
-            <div class="flex flex-1 items-center gap-3">
-              <input placeholder="Search partners, programs, hubs…" class="w-full max-w-md rounded-md border border-gray-200 bg-gray-50 py-2 px-3 text-sm" />
-            </div>
-            <div class="flex items-center gap-3 border-l border-gray-200 pl-3 text-sm">
-              <div class="text-right">
-                <div class="font-medium">Ada Admin</div>
-                <div class="text-xs text-gray-500">SUPER_ADMIN</div>
-              </div>
-              <div class="grid h-8 w-8 place-items-center rounded-full bg-brand-600 text-xs font-semibold text-white">A</div>
-            </div>
-          </header>
-
-          <main class="p-6">
-            <h1 class="text-2xl font-bold">Ecosystem overview</h1>
-            <p class="text-sm text-gray-500">A live snapshot of partnerships, programs, funding and member activity.</p>
-
-            <div class="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Member hubs</p>
-                <p class="mt-1 text-3xl font-bold">30</p>
-                <p class="mt-1 text-xs text-gray-500">22 paid · 8 other</p>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Active programs</p>
-                <p class="mt-1 text-3xl font-bold">5</p>
-                <p class="mt-1 text-xs text-gray-500">Last created</p>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total funding</p>
-                <p class="mt-1 text-3xl font-bold">$8.2M</p>
-                <p class="mt-1 text-xs text-gray-500">Pledged → disbursed</p>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Live partnerships</p>
-                <p class="mt-1 text-3xl font-bold">8</p>
-                <p class="mt-1 text-xs text-gray-500">In motion</p>
-              </div>
-            </div>
-
-            <div class="mt-6 grid gap-6 lg:grid-cols-3">
-              <div class="rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-2">
-                <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-                  <div>
-                    <h3 class="text-base font-semibold">Recent partnerships</h3>
-                    <p class="text-sm text-gray-500">Latest pipeline activity</p>
-                  </div>
-                  <span class="text-sm text-brand-700">View all →</span>
-                </div>
-                <table class="w-full text-sm">
-                  <thead><tr class="text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    <th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Partner</th>
-                    <th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Title</th>
-                    <th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Stage</th>
-                    <th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Value</th>
-                  </tr></thead>
-                  <tbody>
-                    <tr><td class="border-b border-gray-100 px-4 py-3 font-medium">Mastercard Foundation</td><td class="border-b border-gray-100 px-4 py-3 text-gray-600">Engagement</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-200">NEGOTIATION</span></td><td class="border-b border-gray-100 px-4 py-3">$200,000</td></tr>
-                    <tr><td class="border-b border-gray-100 px-4 py-3 font-medium">IFC</td><td class="border-b border-gray-100 px-4 py-3 text-gray-600">Engagement</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-200">ACTIVE</span></td><td class="border-b border-gray-100 px-4 py-3">$350,000</td></tr>
-                    <tr><td class="border-b border-gray-100 px-4 py-3 font-medium">Google for Startups</td><td class="border-b border-gray-100 px-4 py-3 text-gray-600">Engagement</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200">ENGAGED</span></td><td class="border-b border-gray-100 px-4 py-3">$125,000</td></tr>
-                    <tr><td class="px-4 py-3 font-medium">GIZ</td><td class="px-4 py-3 text-gray-600">Engagement</td><td class="px-4 py-3"><span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200">PROSPECT</span></td><td class="px-4 py-3">$50,000</td></tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
-                <div class="border-b border-gray-100 px-5 py-4">
-                  <h3 class="text-base font-semibold">Activity feed</h3>
-                  <p class="text-sm text-gray-500">Cross-department signals</p>
-                </div>
-                <div class="space-y-4 p-5">
-                  <div class="flex gap-3">
-                    <div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">T</div>
-                    <div><p class="text-sm font-medium">Catalytic Africa launched</p><p class="text-xs text-gray-500">Match-funding programme is live.</p><p class="text-[11px] text-gray-400">5m ago · program launched</p></div>
-                  </div>
-                  <div class="flex gap-3">
-                    <div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">A</div>
-                    <div><p class="text-sm font-medium">Mastercard Foundation in negotiation</p><p class="text-xs text-gray-500">Round 2 conversations scheduled.</p><p class="text-[11px] text-gray-400">12m ago · partnership created</p></div>
-                  </div>
-                  <div class="flex gap-3">
-                    <div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">E</div>
-                    <div><p class="text-sm font-medium">$1.5M pledged by IFC</p><p class="text-[11px] text-gray-400">1h ago · funding pledged</p></div>
-                  </div>
-                  <div class="flex gap-3">
-                    <div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">K</div>
-                    <div><p class="text-sm font-medium">AAG 2026 registrations exceed 800</p><p class="text-[11px] text-gray-400">2h ago · event updated</p></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </main>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Modules -->
-<section id="modules" class="scroll-mt py-16">
+<!-- ─── MODULES GRID ─── -->
+<section id="modules" class="bg-gray-50 py-24 dark:bg-gray-900">
   <div class="mx-auto max-w-7xl px-6">
-    <p class="text-xs font-semibold uppercase tracking-wider text-brand-700">Modules</p>
-    <h2 class="mt-2 text-3xl font-bold">12 department dashboards + cross-cutting modules</h2>
-    <div class="mt-8 grid gap-3 md:grid-cols-3 lg:grid-cols-4">
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">COO</p><p class="mt-1 font-medium">Office of COO</p><p class="text-xs text-gray-500">Global system overview</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">ED</p><p class="mt-1 font-medium">Office of ED</p><p class="text-xs text-gray-500">Strategic insights</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">TECH</p><p class="mt-1 font-medium">Tech</p><p class="text-xs text-gray-500">Logs & integrations</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">PROGRAMS</p><p class="mt-1 font-medium">Programs</p><p class="text-xs text-gray-500">Initiatives & alignment</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">PARTNERS</p><p class="mt-1 font-medium">Partnerships</p><p class="text-xs text-gray-500">Pipeline & deals</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">EVENTS</p><p class="mt-1 font-medium">Events (AAG)</p><p class="text-xs text-gray-500">Lifecycle dashboards</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">MEMBERS</p><p class="mt-1 font-medium">Member Services</p><p class="text-xs text-gray-500">Hubs & payments</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">PROCUREMENT</p><p class="mt-1 font-medium">Procurement</p><p class="text-xs text-gray-500">Bookings & logistics</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">COMMS</p><p class="mt-1 font-medium">Communications</p><p class="text-xs text-gray-500">Campaigns & media</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">FINANCE</p><p class="mt-1 font-medium">Finance</p><p class="text-xs text-gray-500">Inflows & reports</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">AUDIT</p><p class="mt-1 font-medium">Audit & Compliance</p><p class="text-xs text-gray-500">Activity trails</p></div>
-      <div class="rounded-lg bg-white p-4 ring-1 ring-gray-200"><p class="text-xs font-semibold uppercase text-gray-400">HR</p><p class="mt-1 font-medium">HR</p><p class="text-xs text-gray-500">Staff & roles</p></div>
+    <div class="reveal mx-auto max-w-3xl text-center">
+      <p class="text-xs font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400">All modules included</p>
+      <h2 class="mt-3 text-4xl font-black tracking-tight sm:text-5xl">12 departments. <span class="gradient-text">One workspace.</span></h2>
+    </div>
+
+    <div class="mt-16 grid gap-3 md:grid-cols-3 lg:grid-cols-4">
+      <a href="app.html#/dashboard"     class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">▦</div><div class="mt-3 font-bold">Dashboard</div><div class="text-xs text-gray-500 dark:text-gray-400">Live KPIs · Activity feed</div></a>
+      <a href="app.html#/partnerships"  class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">🤝</div><div class="mt-3 font-bold">Partnerships</div><div class="text-xs text-gray-500 dark:text-gray-400">Pipeline CRM</div></a>
+      <a href="app.html#/programs"      class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">🚀</div><div class="mt-3 font-bold">Programs</div><div class="text-xs text-gray-500 dark:text-gray-400">Accelerators · Initiatives</div></a>
+      <a href="app.html#/funding"       class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">💰</div><div class="mt-3 font-bold">Funding</div><div class="text-xs text-gray-500 dark:text-gray-400">Ledger · Region split</div></a>
+      <a href="app.html#/members"       class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">🏢</div><div class="mt-3 font-bold">Member Hubs</div><div class="text-xs text-gray-500 dark:text-gray-400">Hub mgmt · Payments</div></a>
+      <a href="app.html#/events"        class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">📅</div><div class="mt-3 font-bold">Events</div><div class="text-xs text-gray-500 dark:text-gray-400">Lifecycle · Tasks</div></a>
+      <a href="app.html#/tasks"         class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">✓</div><div class="mt-3 font-bold">Tasks</div><div class="text-xs text-gray-500 dark:text-gray-400">Cross-dept tracking</div></a>
+      <a href="app.html#/collaboration" class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">💬</div><div class="mt-3 font-bold">Collaboration</div><div class="text-xs text-gray-500 dark:text-gray-400">Activity feed</div></a>
+      <a href="app.html#/campaigns"     class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">📢</div><div class="mt-3 font-bold">Campaigns</div><div class="text-xs text-gray-500 dark:text-gray-400">Targeted outreach</div></a>
+      <a href="app.html#/intelligence"  class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">✨</div><div class="mt-3 font-bold">Intelligence</div><div class="text-xs text-gray-500 dark:text-gray-400">AI recommendations</div></a>
+      <a href="app.html#/procurement"   class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">📦</div><div class="mt-3 font-bold">Procurement</div><div class="text-xs text-gray-500 dark:text-gray-400">Bookings · Logistics</div></a>
+      <a href="app.html#/jobs"          class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">💼</div><div class="mt-3 font-bold">Jobs Board</div><div class="text-xs text-gray-500 dark:text-gray-400">Open roles</div></a>
+      <a href="app.html#/people"        class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">👥</div><div class="mt-3 font-bold">People (HR)</div><div class="text-xs text-gray-500 dark:text-gray-400">Staff · Roles</div></a>
+      <a href="app.html#/africonnect"   class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">🌍</div><div class="mt-3 font-bold">Africonnect</div><div class="text-xs text-gray-500 dark:text-gray-400">Sync · Export/Import</div></a>
+      <a href="app.html#/audit"         class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">🛡</div><div class="mt-3 font-bold">Audit Log</div><div class="text-xs text-gray-500 dark:text-gray-400">Compliance trail</div></a>
+      <a href="app.html#/settings"      class="reveal card-hover group rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-800 p-5 transition"><div class="text-2xl">⚙</div><div class="mt-3 font-bold">Settings</div><div class="text-xs text-gray-500 dark:text-gray-400">Sovereignty controls</div></a>
     </div>
   </div>
 </section>
 
-<!-- Tech stack -->
-<section class="border-t border-gray-200 bg-white py-12">
-  <div class="mx-auto max-w-7xl px-6">
-    <p class="text-xs font-semibold uppercase tracking-wider text-brand-700">Built with</p>
-    <div class="mt-4 flex flex-wrap gap-2 text-sm">
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">Next.js 14 (App Router)</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">TypeScript</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">Tailwind CSS</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">Prisma 5</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">PostgreSQL</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">NextAuth (credentials)</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">Server Actions</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">RBAC (7 roles)</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">24 Prisma models</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">32 routes</span>
-      <span class="rounded-md bg-gray-100 px-3 py-1.5">10+ REST endpoints</span>
+<!-- ─── STACK ─── -->
+<section id="stack" class="bg-white py-20 dark:bg-gray-950">
+  <div class="mx-auto max-w-7xl px-6 text-center">
+    <p class="reveal text-xs font-bold uppercase tracking-widest text-brand-600 dark:text-brand-400">Built with</p>
+    <h2 class="reveal mt-3 text-3xl font-black tracking-tight sm:text-4xl">Modern. Open. Sovereign.</h2>
+    <div class="reveal mt-10 flex flex-wrap justify-center gap-3">
+      <span class="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-sm font-medium">React 18</span>
+      <span class="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-sm font-medium">TypeScript</span>
+      <span class="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-sm font-medium">Tailwind CSS</span>
+      <span class="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-sm font-medium">Prisma 5</span>
+      <span class="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-sm font-medium">PostgreSQL</span>
+      <span class="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-sm font-medium">Next.js 14</span>
+      <span class="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-sm font-medium">NextAuth</span>
+      <span class="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-sm font-medium">Server Actions</span>
+      <span class="rounded-full border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 px-4 py-2 text-sm font-medium">Zero-build SPA mode</span>
     </div>
   </div>
 </section>
 
-<!-- Footer -->
-<footer class="bg-brand-950 py-10 text-center text-sm text-brand-200">
-  <div class="mx-auto max-w-7xl px-6">
-    <p>This is a static preview. The full running app (with login, server actions, database) deploys to Render/Vercel from the same repo.</p>
-    <p class="mt-2">© <span id="year">2026</span> Afrilabs · Ecosystem OS · <a class="underline" href="https://github.com/Lognetics/Afrilabs-Ecosystem-Intelligence">Source on GitHub</a></p>
+<!-- ─── CTA ─── -->
+<section class="relative overflow-hidden py-24">
+  <div class="mesh-bg absolute inset-0 animate-gradient-x"></div>
+  <div class="relative mx-auto max-w-4xl px-6 text-center text-white">
+    <h2 class="reveal text-4xl font-black tracking-tight sm:text-5xl">Ready to run your ecosystem?</h2>
+    <p class="reveal mt-5 text-lg text-white/80">No signup, no credit card. Open the app and start working.</p>
+    <div class="reveal mt-10 flex flex-wrap justify-center gap-4">
+      <a href="app.html#/dashboard" class="rounded-xl bg-white px-8 py-4 text-base font-bold text-brand-700 shadow-2xl hover:bg-gray-50 transition">
+        Launch the app →
+      </a>
+      <a href="https://github.com/Lognetics/Afrilabs-Ecosystem-Intelligence" class="rounded-xl border border-white/30 bg-white/5 px-8 py-4 text-base font-bold text-white backdrop-blur-md hover:bg-white/10 transition">
+        Star on GitHub
+      </a>
+    </div>
   </div>
-  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer class="border-t border-gray-200 dark:border-white/5 bg-white py-10 text-center text-sm text-gray-500 dark:bg-gray-950 dark:text-gray-400">
+  <p>© <span id="year"></span> Afrilabs Ecosystem OS · <a href="https://github.com/Lognetics/Afrilabs-Ecosystem-Intelligence" class="text-brand-700 dark:text-brand-400 hover:underline">Source</a> · Built sovereign.</p>
 </footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ─── Theme toggle ───
+  const root = document.documentElement;
+  const stored = localStorage.getItem('afrilabs-theme');
+  if (stored === 'dark') root.classList.add('dark');
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    root.classList.toggle('dark');
+    localStorage.setItem('afrilabs-theme', root.classList.contains('dark') ? 'dark' : 'light');
+  });
+
+  // ─── Reveal on scroll ───
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ─── Counter animation ───
+  function animateCounter(el) {
+    const target = parseFloat(el.dataset.target);
+    const decimal = (target % 1 !== 0);
+    const duration = 1800;
+    const start = performance.now();
+    const tick = (t) => {
+      const progress = Math.min((t - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = target * eased;
+      el.textContent = decimal ? current.toFixed(2) : Math.floor(current).toLocaleString();
+      if (progress < 1) requestAnimationFrame(tick);
+      else el.textContent = decimal ? target.toFixed(2) : target.toLocaleString();
+    };
+    requestAnimationFrame(tick);
+  }
+  const cio = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { animateCounter(e.target); cio.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.counter').forEach(el => cio.observe(el));
+</script>
 
 </body>
 </html>
