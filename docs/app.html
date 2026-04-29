@@ -1223,10 +1223,6 @@ function Dashboard({ data }) {
       <PageHeader
         title="Ecosystem overview"
         subtitle="A live snapshot of partnerships, programs, funding and member activity."
-        action={<div className="header-actions">
-          <a href="#/intelligence" className="btn-soft"><Icon.intel className="h-4 w-4"/> Intelligence</a>
-          <a href="#/africonnect" className="btn-soft-accent"><Icon.africonnect className="h-4 w-4"/> Africonnect</a>
-        </div>}
       />
       <QuickActions items={[
         { icon: Icon.plus,        title: "Onboard a hub",     desc: "Add a new member to the ecosystem", href: "#/members" },
@@ -2061,10 +2057,7 @@ function HubsList({ data, update, search }) {
   return (
     <div>
       <PageHeader title="Member Services" subtitle="Manage 500+ Afrilabs hubs across the continent — onboarding, payments, segmentation, communications."
-        action={<div className="header-actions">
-          <button className="btn-soft" onClick={()=>sendCampaign("ALL_HUBS")}><Icon.send className="h-4 w-4"/> Targeted message</button>
-          <button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> Onboard hub</button>
-        </div>} />
+        action={<button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> Onboard hub</button>} />
 
       {/* TOP STATS */}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
