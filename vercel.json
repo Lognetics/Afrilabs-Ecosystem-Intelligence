@@ -1,5 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "prisma generate && prisma db push --skip-generate --accept-data-loss && next build",
+  "buildCommand": "prisma generate && ([ -z \"$DATABASE_URL\" ] && echo '⚠️  DATABASE_URL not set — skipping db push. Attach Postgres in Storage tab and redeploy.' || prisma db push --skip-generate --accept-data-loss) && next build",
   "framework": "nextjs"
 }
