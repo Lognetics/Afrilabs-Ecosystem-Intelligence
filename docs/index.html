@@ -15,8 +15,9 @@
     theme: { extend: {
       fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','sans-serif'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
       colors: {
-        brand: { 50:'#f0f9f4',100:'#dcefe2',200:'#bce0c8',300:'#8ec9a3',400:'#5fae7d',500:'#3d9462',600:'#2c764e',700:'#245d40',800:'#1f4a35',900:'#1b3d2d',950:'#0d2218' },
-        accent:{ 50:'#fff8ed',100:'#ffefd4',200:'#ffdba8',300:'#ffbf71',400:'#ff9a38',500:'#fb7d12',600:'#ec6308',700:'#c44a09',800:'#9c3b10',900:'#7e3211' },
+        brand: { 50:'#f0f9fa',100:'#d8eef0',200:'#b1dde2',300:'#83c5cd',400:'#52a8b4',500:'#338e9b',600:'#2a727f',700:'#265c66',800:'#234c54',900:'#1f3f48',950:'#0e2227' },
+        accent:{ 50:'#fef5ee',100:'#fde8d8',200:'#fbcfb0',300:'#f7ad7d',400:'#f28851',500:'#ea6a32',600:'#d65221',700:'#b13d1c',800:'#8c321c',900:'#722c1b' },
+        ink:   { 50:'#eef3f8',100:'#d6e1ec',800:'#152a3d',900:'#0e1d2c',950:'#06121c' },
       },
       animation: {
         'gradient-x': 'gradient-x 15s ease infinite',
@@ -42,12 +43,12 @@
   body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
   .mesh-bg {
     background:
-      radial-gradient(at 20% 20%, rgba(45,118,78,0.7) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, rgba(251,125,18,0.55) 0px, transparent 50%),
-      radial-gradient(at 0% 80%, rgba(45,118,78,0.4) 0px, transparent 50%),
-      radial-gradient(at 80% 80%, rgba(196,74,9,0.4) 0px, transparent 50%),
-      radial-gradient(at 100% 50%, rgba(13,34,24,1) 0px, transparent 80%),
-      #0a1410;
+      radial-gradient(at 18% 22%, rgba(51,142,155,0.72) 0px, transparent 50%),
+      radial-gradient(at 82% 0%, rgba(234,106,50,0.55) 0px, transparent 50%),
+      radial-gradient(at 0% 82%, rgba(82,168,180,0.45) 0px, transparent 50%),
+      radial-gradient(at 80% 82%, rgba(214,82,33,0.42) 0px, transparent 50%),
+      radial-gradient(at 100% 50%, rgba(14,34,39,1) 0px, transparent 80%),
+      #08161c;
     background-size: 200% 200%;
   }
   .glass { backdrop-filter: blur(20px) saturate(120%); -webkit-backdrop-filter: blur(20px) saturate(120%); }
@@ -79,11 +80,17 @@
 <!-- ─── Sticky Top Nav ─── -->
 <nav class="fixed top-0 left-0 right-0 z-40 glass border-b border-white/10 dark:border-white/5 bg-white/70 dark:bg-gray-950/70">
   <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-    <a href="#top" class="flex items-center gap-2">
-      <div class="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 font-black text-white shadow-lg shadow-brand-500/30">A</div>
+    <a href="#top" class="flex items-center gap-2.5">
+      <svg width="36" height="36" viewBox="0 0 100 100" aria-label="AfriLabs">
+        <g><circle cx="90" cy="50" r="4.5" fill="#338e9b"/><circle cx="84.6" cy="70" r="4.5" fill="#338e9b"/><circle cx="70" cy="84.6" r="4.5" fill="#338e9b"/><circle cx="50" cy="90" r="4.5" fill="#338e9b"/><circle cx="30" cy="84.6" r="4.5" fill="#338e9b"/><circle cx="15.4" cy="70" r="4.5" fill="#338e9b"/><circle cx="10" cy="50" r="4.5" fill="#338e9b"/><circle cx="15.4" cy="30" r="4.5" fill="#338e9b"/><circle cx="30" cy="15.4" r="4.5" fill="#338e9b"/><circle cx="50" cy="10" r="4.5" fill="#338e9b"/><circle cx="70" cy="15.4" r="4.5" fill="#338e9b"/><circle cx="84.6" cy="30" r="4.5" fill="#338e9b"/></g>
+        <g><circle cx="79.5" cy="55" r="3.6" fill="#ea6a32"/><circle cx="71.6" cy="71.5" r="3.6" fill="#ea6a32"/><circle cx="55" cy="79.5" r="3.6" fill="#ea6a32"/><circle cx="36.5" cy="76.7" r="3.6" fill="#ea6a32"/><circle cx="22.4" cy="64.5" r="3.6" fill="#ea6a32"/><circle cx="20.5" cy="45" r="3.6" fill="#ea6a32"/><circle cx="28.4" cy="28.5" r="3.6" fill="#ea6a32"/><circle cx="45" cy="20.5" r="3.6" fill="#ea6a32"/><circle cx="63.5" cy="23.3" r="3.6" fill="#ea6a32"/><circle cx="77.6" cy="35.5" r="3.6" fill="#ea6a32"/></g>
+        <g><circle cx="72" cy="50" r="3" fill="#52a8b4"/><circle cx="65.6" cy="65.6" r="3" fill="#52a8b4"/><circle cx="50" cy="72" r="3" fill="#52a8b4"/><circle cx="34.4" cy="65.6" r="3" fill="#52a8b4"/><circle cx="28" cy="50" r="3" fill="#52a8b4"/><circle cx="34.4" cy="34.4" r="3" fill="#52a8b4"/><circle cx="50" cy="28" r="3" fill="#52a8b4"/><circle cx="65.6" cy="34.4" r="3" fill="#52a8b4"/></g>
+        <g><circle cx="61.3" cy="56.5" r="2.5" fill="#f28851"/><circle cx="50" cy="63" r="2.5" fill="#f28851"/><circle cx="38.7" cy="56.5" r="2.5" fill="#f28851"/><circle cx="38.7" cy="43.5" r="2.5" fill="#f28851"/><circle cx="50" cy="37" r="2.5" fill="#f28851"/><circle cx="61.3" cy="43.5" r="2.5" fill="#f28851"/></g>
+        <circle cx="50" cy="50" r="3.2" fill="#265c66"/>
+      </svg>
       <div>
-        <div class="text-sm font-bold leading-tight">Afrilabs</div>
-        <div class="text-[10px] uppercase tracking-widest text-gray-500">Ecosystem OS</div>
+        <div class="text-[15px] font-extrabold tracking-tight leading-none">AfriLabs</div>
+        <div class="mt-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">Ecosystem OS</div>
       </div>
     </a>
     <div class="hidden items-center gap-6 text-sm font-medium md:flex">

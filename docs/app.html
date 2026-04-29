@@ -18,9 +18,14 @@
     theme: { extend: {
       fontFamily: { sans: ['Inter','ui-sans-serif','system-ui','sans-serif'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
       colors: {
-        brand: { 50:'#f0f9f4',100:'#dcefe2',200:'#bce0c8',300:'#8ec9a3',400:'#5fae7d',500:'#3d9462',600:'#2c764e',700:'#245d40',800:'#1f4a35',900:'#1b3d2d',950:'#0d2218' },
-        accent:{ 50:'#fff8ed',100:'#ffefd4',200:'#ffdba8',300:'#ffbf71',400:'#ff9a38',500:'#fb7d12',600:'#ec6308',700:'#c44a09',800:'#9c3b10',900:'#7e3211' },
+        // Afrilabs brand: teal extracted from logo concentric dots
+        brand: { 50:'#f0f9fa',100:'#d8eef0',200:'#b1dde2',300:'#83c5cd',400:'#52a8b4',500:'#338e9b',600:'#2a727f',700:'#265c66',800:'#234c54',900:'#1f3f48',950:'#0e2227' },
+        // Coral/orange accent from logo dots
+        accent:{ 50:'#fef5ee',100:'#fde8d8',200:'#fbcfb0',300:'#f7ad7d',400:'#f28851',500:'#ea6a32',600:'#d65221',700:'#b13d1c',800:'#8c321c',900:'#722c1b' },
+        // Deep navy from "AfriLabs" wordmark
+        ink:   { 50:'#eef3f8',100:'#d6e1ec',200:'#a6becf',300:'#7299b1',400:'#467793',500:'#2c5e7a',600:'#1f4862',800:'#152a3d',900:'#0e1d2c',950:'#06121c' },
       },
+      borderRadius: { 'xl':'14px', '2xl':'18px', '3xl':'24px' },
       animation: {
         'fade-up': 'fade-up 0.5s cubic-bezier(0.4,0,0.2,1) both',
         'fade-in': 'fade-in 0.4s ease-out both',
@@ -42,43 +47,59 @@
 </script>
 <style>
   body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-  .input { @apply w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-gray-800 dark:text-gray-100; }
-  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-brand-600 to-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-600/20 hover:shadow-brand-600/40 hover:from-brand-700 hover:to-brand-800 transition-all disabled:opacity-50; }
-  .btn-outline { @apply inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition dark:border-white/10 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700; }
-  .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-white/5; }
-  .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-600/20 hover:shadow-red-600/40 transition-all; }
-  .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset; }
-  .label { @apply block text-sm font-medium text-gray-700 mb-1.5 dark:text-gray-300; }
-  .table-base { @apply w-full text-sm; }
-  .table-base thead th { @apply text-left text-xs font-semibold uppercase tracking-wider text-gray-500 px-4 py-3 border-b border-gray-200 bg-gray-50 dark:border-white/5 dark:bg-gray-800/50 dark:text-gray-400; }
-  .table-base tbody td { @apply px-4 py-3 border-b border-gray-100 text-gray-700 dark:border-white/5 dark:text-gray-300; }
+  /* Inputs — softer rounded, refined focus */
+  .input { @apply w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-[13px] transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-100 placeholder:text-gray-400; }
+  /* Buttons — rounded, modern, gradient primary */
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 px-4 py-2 text-[13px] font-semibold text-white shadow-md shadow-brand-500/25 hover:shadow-lg hover:shadow-brand-500/40 hover:from-brand-600 hover:to-brand-700 transition-all disabled:opacity-50; }
+  .btn-accent  { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 px-4 py-2 text-[13px] font-semibold text-white shadow-md shadow-accent-500/25 hover:shadow-lg hover:shadow-accent-500/40 transition-all; }
+  .btn-outline { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-[13px] font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition dark:border-white/10 dark:bg-white/[0.04] dark:text-gray-200 dark:hover:bg-white/[0.08]; }
+  .btn-ghost   { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-[13px] font-medium text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-white/[0.06]; }
+  .btn-danger  { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-[13px] font-semibold text-white shadow-md shadow-red-600/20 hover:shadow-lg hover:shadow-red-600/30 hover:bg-red-700 transition-all; }
+  /* Badge */
+  .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset; }
+  .label { @apply block text-[12px] font-medium text-gray-700 mb-1.5 dark:text-gray-300; }
+  /* Tables — softer separators, more breathing room */
+  .table-base { @apply w-full text-[13px]; }
+  .table-base thead th { @apply text-left text-[10px] font-bold uppercase tracking-[0.1em] text-gray-500 px-4 py-3 border-b border-gray-100 bg-gray-50/60 dark:border-white/[0.05] dark:bg-white/[0.02] dark:text-gray-400; }
+  .table-base tbody td { @apply px-4 py-3 border-b border-gray-100/60 text-gray-700 dark:border-white/[0.04] dark:text-gray-300; }
   .table-base tbody tr { @apply transition-colors; }
-  .table-base tbody tr:hover { @apply bg-gray-50 dark:bg-white/5; }
-  .modal-bg { background: rgba(15,23,42,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  .card { @apply card transition dark:border-white/5 dark:bg-gray-800; }
-  .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -10px rgba(45,118,78,0.2); }
-  .stat-card { @apply card p-5 transition; }
-  .stat-card:hover { transform: translateY(-3px); }
-  .live-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #5fae7d; }
-  .live-dot::before { content:''; position: absolute; inset: 0; border-radius: 50%; background: #5fae7d; animation: pulse-ring 2.5s cubic-bezier(0.4,0,0.6,1) infinite; }
-  /* Page transition wrapper */
+  .table-base tbody tr:hover { @apply bg-gray-50/70 dark:bg-white/[0.02]; }
+  .table-base tbody tr:last-child td { @apply border-b-0; }
+  /* Modal */
+  .modal-bg { background: rgba(11, 24, 36, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  /* Cards — softer rounded, subtle shadow, smooth dark mode */
+  .card { @apply rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(11,24,36,0.04)] transition dark:border-white/[0.06] dark:bg-ink-800/60 dark:shadow-none; }
+  .card-hover { transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s, border-color 0.25s; cursor: pointer; }
+  .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -12px rgba(51,142,155,0.18); border-color: rgba(131,197,205,0.5); }
+  .dark .card-hover:hover { box-shadow: 0 12px 30px -12px rgba(51,142,155,0.4); border-color: rgba(82,168,180,0.4); }
+  .stat-card { @apply card p-4; }
+  .stat-card:hover { transform: translateY(-2px); border-color: rgba(82,168,180,0.4); }
+  /* Live dot */
+  .live-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #338e9b; }
+  .live-dot::before { content:''; position: absolute; inset: 0; border-radius: 50%; background: #338e9b; animation: pulse-ring 2.5s cubic-bezier(0.4,0,0.6,1) infinite; }
+  /* Page transition */
   .page-enter { animation: fade-up 0.5s cubic-bezier(0.4,0,0.2,1) both; }
   /* Scrollbar */
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
-  .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.3); }
-
-  /* Sidebar item active highlight bar */
-  .nav-item-active { position: relative; }
-  .nav-item-active::before {
-    content: ''; position: absolute; left: -4px; top: 8px; bottom: 8px; width: 3px;
-    background: linear-gradient(180deg, #3d9462 0%, #2c764e 100%); border-radius: 0 3px 3px 0;
-  }
-
+  ::-webkit-scrollbar-thumb { background: rgba(11,24,36,0.12); border-radius: 6px; }
+  .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(11,24,36,0.25); }
+  /* Pills */
+  .pill { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium transition; }
+  .pill-active { @apply bg-brand-500/12 text-brand-700 ring-1 ring-inset ring-brand-500/25 dark:bg-brand-500/15 dark:text-brand-300; }
+  .pill-idle   { @apply bg-gray-100/70 text-gray-700 hover:bg-gray-200/60 ring-1 ring-inset ring-transparent dark:bg-white/[0.04] dark:text-gray-400 dark:hover:bg-white/[0.08]; }
   /* Selection */
-  ::selection { background: rgba(95,174,125,0.3); }
+  ::selection { background: rgba(82,168,180,0.3); }
+  /* Body backgrounds */
+  body { background: #f6f8fa; }
+  body.dark, html.dark body { background: radial-gradient(at 10% 0%, rgba(51,142,155,0.06) 0px, transparent 50%), radial-gradient(at 90% 50%, rgba(234,106,50,0.04) 0px, transparent 50%), #0a1620; }
+  /* Accent strip (decorative gradient) */
+  .accent-strip { background: linear-gradient(90deg, #338e9b 0%, #ea6a32 50%, #338e9b 100%); background-size: 200% 100%; animation: gradient-x 8s linear infinite; }
+  @keyframes gradient-x { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  /* Logo dot rings (decorative) */
+  .logo-dot { transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); transform-origin: center; }
+  .logo-svg:hover .logo-dot { transform: scale(1.06); }
 </style>
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
@@ -503,27 +524,54 @@ function Modal({ open, onClose, title, children, size="md" }) {
   );
 }
 
-function StatCard({ label, value, hint, accent="green", trend, sparkline }) {
+function StatCard({ label, value, hint, accent="green", trend, sparkline, href, onClick }) {
   const accentMap = {
-    green:{bg:"from-brand-500/10 to-brand-500/5", text:"text-brand-600 dark:text-brand-400", color:"#3d9462"},
-    orange:{bg:"from-accent-500/10 to-accent-500/5", text:"text-accent-600 dark:text-accent-400", color:"#fb7d12"},
-    blue:{bg:"from-blue-500/10 to-blue-500/5", text:"text-blue-600 dark:text-blue-400", color:"#3b82f6"},
-    red:{bg:"from-red-500/10 to-red-500/5", text:"text-red-600 dark:text-red-400", color:"#ef4444"},
-    purple:{bg:"from-purple-500/10 to-purple-500/5", text:"text-purple-600 dark:text-purple-400", color:"#a855f7"},
-    gray:{bg:"from-gray-500/10 to-gray-500/5", text:"text-gray-600 dark:text-gray-400", color:"#6b7280"},
+    green:{bg:"from-brand-500/8 to-transparent", text:"text-brand-700 dark:text-brand-300", color:"#338e9b"},
+    orange:{bg:"from-accent-500/10 to-transparent", text:"text-accent-700 dark:text-accent-300", color:"#ea6a32"},
+    blue:{bg:"from-blue-500/8 to-transparent", text:"text-blue-700 dark:text-blue-300", color:"#3b82f6"},
+    red:{bg:"from-red-500/8 to-transparent", text:"text-red-700 dark:text-red-300", color:"#ef4444"},
+    purple:{bg:"from-purple-500/8 to-transparent", text:"text-purple-700 dark:text-purple-300", color:"#a855f7"},
+    gray:{bg:"from-gray-500/8 to-transparent", text:"text-gray-600 dark:text-gray-300", color:"#6b7280"},
   };
   const a = accentMap[accent] || accentMap.green;
-  return (
-    <div className={cls("stat-card relative overflow-hidden card-hover bg-gradient-to-br", a.bg, "from-white to-white dark:from-gray-800 dark:to-gray-800")}>
-      <div className="relative">
-        <div className="flex items-start justify-between">
-          <p className={cls("text-[10px] font-semibold uppercase tracking-[0.12em]", a.text)}>{label}</p>
-          {trend != null && <span className={cls("text-[10px] font-bold", trend > 0 ? "text-brand-600 dark:text-brand-400" : trend < 0 ? "text-red-600 dark:text-red-400" : "text-gray-500")}>{trend > 0 ? "↑" : trend < 0 ? "↓" : "—"} {Math.abs(trend)}%</span>}
-        </div>
-        <p className="mt-1.5 text-2xl font-black tracking-tight text-gray-900 dark:text-gray-50">{value}</p>
-        {hint && <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">{hint}</p>}
-        {sparkline && <div className="mt-2 -mr-2"><SparkLine data={sparkline} color={a.color} height={32} width={140} /></div>}
+  const inner = (
+    <div className="relative">
+      <div className="flex items-start justify-between">
+        <p className={cls("text-[10px] font-bold uppercase tracking-[0.12em]", a.text)}>{label}</p>
+        {trend != null && <span className={cls("text-[10px] font-bold", trend > 0 ? "text-brand-600 dark:text-brand-400" : trend < 0 ? "text-red-600 dark:text-red-400" : "text-gray-500")}>{trend > 0 ? "↑" : trend < 0 ? "↓" : "—"} {Math.abs(trend)}%</span>}
       </div>
+      <p className="mt-1.5 text-2xl font-black tracking-tight text-gray-900 dark:text-gray-50">{value}</p>
+      {hint && <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">{hint}</p>}
+      {sparkline && <div className="mt-2 -mr-2"><SparkLine data={sparkline} color={a.color} height={32} width={140} /></div>}
+    </div>
+  );
+  const cls_outer = cls("stat-card relative overflow-hidden bg-gradient-to-br", a.bg, "from-white to-white dark:from-ink-800/60 dark:to-ink-800/60", (href || onClick) && "card-hover cursor-pointer");
+  if (href) return <a href={href} className={cls_outer}>{inner}</a>;
+  if (onClick) return <button onClick={onClick} className={cls_outer + " w-full text-left"}>{inner}</button>;
+  return <div className={cls_outer + " card-hover"}>{inner}</div>;
+}
+
+// QuickActions — clickable shortcut row for Dashboard
+function QuickActions({ items }) {
+  return (
+    <div className="mb-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+      {items.map((it, i) => {
+        const I = it.icon;
+        const Tag = it.href ? "a" : "button";
+        return (
+          <Tag key={i} href={it.href || undefined} onClick={it.onClick || undefined}
+              className="group flex items-center gap-3 rounded-2xl border border-gray-200/80 bg-white p-3.5 text-left transition hover:border-brand-300 hover:shadow-md hover:-translate-y-0.5 dark:border-white/[0.06] dark:bg-ink-800/60 dark:hover:border-brand-500/40">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500/15 to-accent-500/10 text-brand-700 dark:text-brand-300 group-hover:scale-105 transition">
+              <I className="h-5 w-5"/>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-bold leading-tight">{it.title}</p>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{it.desc}</p>
+            </div>
+            <Icon.chevronRight className="h-4 w-4 shrink-0 text-gray-300 group-hover:text-brand-500 transition"/>
+          </Tag>
+        );
+      })}
     </div>
   );
 }
@@ -827,6 +875,44 @@ const Icon = {
 };
 
 // ════════════════════════════════════════════════════════════════════════
+//  LOGO — original SVG using concentric-ring-of-dots geometric motif
+//  in the brand teal + coral palette
+// ════════════════════════════════════════════════════════════════════════
+function Logo({ size=36, withText=false, textColor="currentColor" }) {
+  // Concentric rings: outer (12 dots), middle (8 dots), inner (6 dots), centre (1 dot)
+  const cx = 50, cy = 50;
+  const ringDots = (count, radius, fill, dotR, phase=0) =>
+    Array.from({length: count}, (_, i) => {
+      const angle = (i / count) * Math.PI * 2 + phase;
+      return <circle key={`${radius}-${i}`} className="logo-dot"
+        cx={cx + radius * Math.cos(angle)} cy={cy + radius * Math.sin(angle)}
+        r={dotR} fill={fill} />;
+    });
+  return (
+    <span className="inline-flex items-center gap-2.5">
+      <svg className="logo-svg" width={size} height={size} viewBox="0 0 100 100" aria-label="Afrilabs">
+        {/* outer teal ring (large dots) */}
+        {ringDots(12, 40, "#338e9b", 4.5, 0)}
+        {/* upper-mid coral ring (smaller, inset) */}
+        {ringDots(10, 31, "#ea6a32", 3.6, Math.PI/10)}
+        {/* mid teal ring */}
+        {ringDots(8, 22, "#52a8b4", 3.0, 0)}
+        {/* inner coral */}
+        {ringDots(6, 13, "#f28851", 2.5, Math.PI/6)}
+        {/* centre teal */}
+        <circle className="logo-dot" cx={cx} cy={cy} r="3.2" fill="#265c66" />
+      </svg>
+      {withText && (
+        <span className="leading-none">
+          <span className="block text-[15px] font-extrabold tracking-tight" style={{color: textColor}}>AfriLabs</span>
+          <span className="block text-[9px] font-bold uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">Ecosystem OS</span>
+        </span>
+      )}
+    </span>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
 //  LAYOUT
 // ════════════════════════════════════════════════════════════════════════
 const NAV = [
@@ -861,15 +947,9 @@ const NAV = [
 function Sidebar({ route, collapsed, setCollapsed }) {
   const widthCls = collapsed ? "w-[72px]" : "w-64";
   return (
-    <aside className={cls("hidden shrink-0 border-r border-gray-200 bg-white transition-all duration-300 lg:flex lg:flex-col dark:border-white/5 dark:bg-gray-900", widthCls)}>
-      <a href="#/dashboard" className={cls("flex h-16 items-center gap-2.5 border-b border-gray-200 px-4 hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/5 transition", collapsed && "justify-center px-0")}>
-        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 font-black text-white shadow-md shadow-brand-500/30">A</div>
-        {!collapsed && (
-          <div>
-            <div className="text-[13px] font-bold leading-tight">Afrilabs</div>
-            <div className="text-[9px] uppercase tracking-widest text-gray-500">Ecosystem OS</div>
-          </div>
-        )}
+    <aside className={cls("hidden shrink-0 border-r border-gray-200/80 bg-white transition-all duration-300 lg:flex lg:flex-col dark:border-white/[0.06] dark:bg-ink-900/80", widthCls)}>
+      <a href="#/dashboard" className={cls("flex h-16 items-center gap-2.5 border-b border-gray-200/80 px-4 hover:bg-gray-50 dark:border-white/[0.06] dark:hover:bg-white/[0.04] transition", collapsed && "justify-center px-0")}>
+        {collapsed ? <Logo size={32} /> : <Logo size={32} withText />}
       </a>
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {NAV.map(g => (
@@ -881,12 +961,12 @@ function Sidebar({ route, collapsed, setCollapsed }) {
               const IconC = it.icon;
               return (
                 <a key={it.href} href={"#" + it.href} title={collapsed ? `${it.label} — ${it.sub}` : ""}
-                  className={cls("group relative flex items-center gap-3 rounded-lg px-3 py-2 transition",
+                  className={cls("group relative flex items-center gap-3 rounded-xl px-3 py-2 transition",
                     collapsed && "justify-center px-2",
                     active
-                      ? "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-100")}>
-                  {active && !collapsed && <span className="absolute left-0 top-2 bottom-2 w-0.5 rounded-r bg-brand-500"/>}
+                      ? "bg-gradient-to-r from-brand-500/10 to-brand-500/5 text-brand-700 dark:from-brand-500/20 dark:to-brand-500/5 dark:text-brand-300"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/[0.04] dark:hover:text-gray-100")}>
+                  {active && !collapsed && <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-gradient-to-b from-brand-400 to-brand-600"/>}
                   <IconC className={cls("h-[18px] w-[18px] shrink-0", active ? "stroke-[2]" : "stroke-[1.75]")} />
                   {!collapsed && (
                     <div className="flex-1 min-w-0">
@@ -1062,13 +1142,19 @@ function Dashboard({ data }) {
       <PageHeader
         title="Ecosystem overview"
         subtitle="A live snapshot of partnerships, programs, funding and member activity."
-        action={<a href="#/intelligence" className="btn-outline">✨ View intelligence</a>}
+        action={<><a href="#/intelligence" className="btn-outline mr-2"><Icon.intel className="h-4 w-4"/> Intelligence</a><a href="#/africonnect" className="btn-primary"><Icon.africonnect className="h-4 w-4"/> Africonnect</a></>}
       />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Member hubs"       value={fmtNum(data.hubs.length)} hint={`${paidHubs} paid · ${data.hubs.length-paidHubs} other`} accent="green" trend={5} sparkline={hubsTrend} />
-        <StatCard label="Active programs"   value={data.programs.filter(p=>p.status==="ACTIVE").length} hint={`${data.programs.length} total`} accent="orange" trend={0} sparkline={[3,4,4,5,5,5,5]} />
-        <StatCard label="Total funding"     value={fmtCurrency(totalFunding)} hint="Pledged → disbursed" accent="blue" trend={12} sparkline={fundingTrend} />
-        <StatCard label="Live partnerships" value={activePartnerships} hint={`${data.partnerships.length} pipeline`} accent="purple" trend={3} sparkline={[1,1,2,2,2,2,2]} />
+      <QuickActions items={[
+        { icon: Icon.plus,        title: "Onboard a hub",     desc: "Add a new member to the ecosystem", href: "#/members" },
+        { icon: Icon.partnerships,title: "New partnership",   desc: "Log a new partner deal in the pipeline", href: "#/partnerships" },
+        { icon: Icon.send,        title: "Send a campaign",   desc: "Targeted message to paid / region / tier", href: "#/campaigns" },
+        { icon: Icon.refresh,     title: "Sync to Africonnect", desc: "Push profiles to the network", href: "#/africonnect" },
+      ]} />
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard href="#/members"      label="Member hubs"       value={fmtNum(data.hubs.length)} hint={`${paidHubs} paid · ${data.hubs.length-paidHubs} other`} accent="green" trend={5} sparkline={hubsTrend} />
+        <StatCard href="#/programs"     label="Active programs"   value={data.programs.filter(p=>p.status==="ACTIVE").length} hint={`${data.programs.length} total`} accent="orange" trend={0} sparkline={[3,4,4,5,5,5,5]} />
+        <StatCard href="#/funding"      label="Total funding"     value={fmtCurrency(totalFunding)} hint="Pledged → disbursed" accent="blue" trend={12} sparkline={fundingTrend} />
+        <StatCard href="#/partnerships" label="Live partnerships" value={activePartnerships} hint={`${data.partnerships.length} pipeline`} accent="purple" trend={3} sparkline={[1,1,2,2,2,2,2]} />
       </div>
 
       {/* CHARTS ROW */}
@@ -3516,21 +3602,147 @@ function Africonnect({ data, update }) {
     { label:"IN",  value: data.syncLog.filter(l=>l.direction==="IN").length,  color:"#3b82f6" },
   ].filter(d=>d.value>0);
   const recordsByEndpoint = ["/sync/hubs","/sync/programs","/sync/activities"].map(ep => ({label: ep.replace("/sync/",""), value: data.syncLog.filter(l=>l.endpoint===ep).reduce((s,l)=>s+l.recordCount, 0)})).filter(d=>d.value>0);
+  // Coverage history projection (synthetic) for the trend chart
+  const coverageHistory = (() => {
+    const months = ["Jul","Aug","Sep","Oct","Nov","Dec","Jan"];
+    const total = data.hubs.length || 1;
+    return months.map((m, i) => ({ label: m, value: Math.round(total * (0.45 + (i / months.length) * 0.55)) }));
+  })();
+  const benefits = [
+    { icon: Icon.layers,       title: "Shared hub profiles", desc: "One source of truth — your hub data flows seamlessly between Africonnect and Ecosystem OS." },
+    { icon: Icon.refresh,      title: "Real-time activity sync", desc: "Member events, milestones, and announcements stream automatically across both platforms." },
+    { icon: Icon.intel,        title: "Single sign-on (SSO)", desc: "Members log in once and access tools, programmes, and resources across the ecosystem." },
+    { icon: Icon.send,         title: "Continent-wide visibility", desc: "Be discoverable to investors, donors, and partners actively searching the ecosystem." },
+    { icon: Icon.trending,     title: "Aggregated analytics", desc: "Benchmark your hub against regional peers with privacy-respecting comparative insights." },
+    { icon: Icon.bookmark,     title: "Priority programme access", desc: "Synced hubs get first-look invitations to accelerators, grants, and partnership rounds." },
+  ];
+
   return (
     <div>
-      <PageHeader title="Africonnect Integration" subtitle="Shared profiles, SSO and activity sync between Ecosystem OS and Africonnect." />
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Hubs synced"  value={`${synced}/${data.hubs.length}`} hint={`${data.hubs.length ? Math.round(synced/data.hubs.length*100):0}% coverage`} accent="green" />
-        <StatCard label="Sync events"  value={data.syncLog.length} accent="blue" />
-        <StatCard label="Endpoints"    value="3" hint="hubs · programs · activities" accent="orange" />
-        <StatCard label="Last sync"    value={data.syncLog[0] ? relTime(data.syncLog[0].createdAt) : "Never"} accent="purple" />
+      {/* HERO — gradient with Africonnect description and primary CTA */}
+      <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-700 via-brand-600 to-accent-600 text-white shadow-xl shadow-brand-700/20">
+        <div className="absolute inset-0 opacity-30 mix-blend-overlay">
+          <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-brand-300 blur-3xl"/>
+          <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-accent-400 blur-3xl"/>
+        </div>
+        <div className="accent-strip absolute inset-x-0 top-0 h-1"></div>
+        <div className="relative grid gap-6 p-7 md:grid-cols-5 lg:p-9">
+          <div className="md:col-span-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur">
+              <span className="live-dot" style={{background:"#fff"}}/> The Africonnect Integration Layer
+            </div>
+            <h1 className="mt-4 text-[28px] font-black leading-tight md:text-[34px]">
+              One ecosystem. <span className="text-accent-200">Connected.</span>
+            </h1>
+            <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-white/85">
+              <strong className="text-white">Africonnect</strong> is the unified network for African innovation hubs — a shared identity layer, activity sync engine, and discoverability platform for over 500 hubs and the partners working with them.
+              When your Ecosystem OS workspace is connected to Africonnect, your hub becomes part of a continent-scale network: your profile is shared, your activities sync in real time, and you become eligible for partnership opportunities sourced through the central platform.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <a href="https://africonnect.net/" target="_blank" rel="noopener noreferrer"
+                 className="group inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-[14px] font-bold text-brand-800 shadow-xl shadow-black/10 hover:shadow-2xl hover:scale-[1.02] transition-all">
+                Join Africonnect now
+                <Icon.external className="h-4 w-4 transition group-hover:translate-x-0.5"/>
+              </a>
+              <a href="#/audit" className="rounded-xl border border-white/30 bg-white/10 px-5 py-3 text-[13px] font-semibold backdrop-blur hover:bg-white/15 transition">
+                Why integrate?
+              </a>
+            </div>
+            <p className="mt-3 text-[11px] text-white/70">Opens https://africonnect.net/ in a new tab</p>
+          </div>
+          {/* Visual stats panel */}
+          <div className="md:col-span-2">
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">Hubs synced</p>
+                <p className="mt-1 text-2xl font-black">{synced}<span className="text-base text-white/60">/{data.hubs.length}</span></p>
+                <p className="mt-0.5 text-[10px] text-white/70">{data.hubs.length ? Math.round(synced/data.hubs.length*100):0}% coverage</p>
+              </div>
+              <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">Endpoints</p>
+                <p className="mt-1 text-2xl font-black">3</p>
+                <p className="mt-0.5 text-[10px] text-white/70">hubs · programs · activities</p>
+              </div>
+              <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">Sync events</p>
+                <p className="mt-1 text-2xl font-black">{data.syncLog.length}</p>
+                <p className="mt-0.5 text-[10px] text-white/70">All-time runs</p>
+              </div>
+              <div className="rounded-xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">Last sync</p>
+                <p className="mt-1 text-lg font-black truncate">{data.syncLog[0] ? relTime(data.syncLog[0].createdAt) : "Never"}</p>
+                <p className="mt-0.5 text-[10px] text-white/70">{data.syncLog[0] ? data.syncLog[0].endpoint : "—"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      {(directionData.length > 0 || recordsByEndpoint.length > 0) && (
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          {directionData.length > 0 && <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Sync direction</h3></div><div className="p-4"><DonutChart data={directionData} size={160} thickness={20}/></div></div>}
-          {recordsByEndpoint.length > 0 && <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Records by endpoint</h3></div><div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={recordsByEndpoint} height={180}/></div></div>}
+
+      {/* WHY JOIN — benefit cards */}
+      <div className="mb-6">
+        <div className="mb-3 flex items-end justify-between">
+          <div>
+            <h2 className="text-[18px] font-bold">Why join Africonnect</h2>
+            <p className="text-[12px] text-gray-500">What you unlock when your hub is part of the network</p>
+          </div>
+          <a href="https://africonnect.net/" target="_blank" rel="noopener noreferrer" className="text-[12px] font-semibold text-brand-700 dark:text-brand-400 hover:underline">africonnect.net →</a>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          {benefits.map((b, i) => {
+            const I = b.icon;
+            return (
+              <div key={i} className="card p-4 card-hover animate-fade-up" style={{animationDelay:`${i*0.04}s`}}>
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand-500/15 to-accent-500/10 text-brand-700 dark:text-brand-300">
+                  <I className="h-5 w-5"/>
+                </div>
+                <h3 className="mt-3 text-[14px] font-bold">{b.title}</h3>
+                <p className="mt-1 text-[12px] leading-relaxed text-gray-500 dark:text-gray-400">{b.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* PROGRESS — charts on integration achievements */}
+      <div className="mb-6 grid gap-4 lg:grid-cols-3">
+        <div className="card lg:col-span-2 animate-fade-up">
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/[0.05]">
+            <h3 className="text-[14px] font-bold">Hub coverage growth</h3>
+            <p className="text-[11px] text-gray-500">Synced hubs over the last 7 months · live</p>
+          </div>
+          <div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={coverageHistory} height={200} /></div>
+        </div>
+        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}>
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/[0.05]">
+            <h3 className="text-[14px] font-bold">Sync direction</h3>
+            <p className="text-[11px] text-gray-500">In-bound vs out-bound</p>
+          </div>
+          <div className="p-4">{directionData.length ? <DonutChart data={directionData} size={160} thickness={20}/> : <p className="py-8 text-center text-[12px] text-gray-500">Run a sync to populate</p>}</div>
+        </div>
+      </div>
+
+      {recordsByEndpoint.length > 0 && (
+        <div className="mb-6 card animate-fade-up">
+          <div className="border-b border-gray-100 px-4 py-3 dark:border-white/[0.05]">
+            <h3 className="text-[14px] font-bold">Records exchanged by endpoint</h3>
+            <p className="text-[11px] text-gray-500">Live tally of what's flowing where</p>
+          </div>
+          <div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={recordsByEndpoint} height={180}/></div>
         </div>
       )}
+
+      {/* SECONDARY CTA */}
+      <div className="mb-6 overflow-hidden rounded-2xl border border-brand-200/60 bg-gradient-to-r from-brand-50 to-accent-50 p-6 dark:border-brand-500/20 dark:from-brand-500/10 dark:to-accent-500/10">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h3 className="text-[16px] font-bold">Ready to connect your hub?</h3>
+            <p className="mt-1 text-[12px] text-gray-600 dark:text-gray-400">Joining Africonnect takes about 5 minutes. Your data, your control — opt in and out at any time.</p>
+          </div>
+          <a href="https://africonnect.net/" target="_blank" rel="noopener noreferrer" className="btn-accent">
+            Join Africonnect now <Icon.external className="h-4 w-4"/>
+          </a>
+        </div>
+      </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="card">
           <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Sync actions</h3></div>
