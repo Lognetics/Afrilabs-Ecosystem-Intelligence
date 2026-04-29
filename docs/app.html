@@ -833,6 +833,61 @@ function SparkLine({ data, color="#3d9462", height=40, width=120 }) {
   );
 }
 
+// FunnelChart — horizontal funnel for pipeline visualization (Partnerships, CRM Deals)
+function FunnelChart({ stages, onStageClick }) {
+  // stages: [{ label, count, value, color, accent }]
+  const max = Math.max(...stages.map(s => s.count), 1);
+  const total = stages.reduce((s, x) => s + (x.value || 0), 0);
+  return (
+    <div className="space-y-1.5">
+      {stages.map((s, i) => {
+        const widthPct = Math.max(20, (s.count / max) * 100);
+        const conv = i > 0 ? (stages[i].count > 0 && stages[i-1].count > 0 ? Math.round(stages[i].count / stages[i-1].count * 100) : 0) : null;
+        return (
+          <div key={s.label} className="group">
+            <div className="relative flex h-14 items-center">
+              <div onClick={onStageClick ? () => onStageClick(s) : undefined}
+                   className={cls(
+                     "relative flex h-full items-center gap-3 rounded-xl px-4 transition-all",
+                     "bg-gradient-to-r border border-gray-200/80 dark:border-white/[0.06]",
+                     onStageClick && "cursor-pointer hover:scale-[1.01]",
+                     s.tone === "green"  && "from-brand-500/20 to-brand-500/5",
+                     s.tone === "blue"   && "from-blue-500/20 to-blue-500/5",
+                     s.tone === "yellow" && "from-yellow-500/20 to-yellow-500/5",
+                     s.tone === "orange" && "from-accent-500/20 to-accent-500/5",
+                     s.tone === "red"    && "from-red-500/20 to-red-500/5",
+                     s.tone === "purple" && "from-purple-500/20 to-purple-500/5",
+                     (!s.tone || s.tone === "gray") && "from-gray-500/15 to-gray-500/5",
+                   )}
+                   style={{ width: widthPct + "%", minWidth: "200px" }}>
+                <div className={cls("flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white",
+                  s.tone === "green"&&"bg-brand-500", s.tone === "blue"&&"bg-blue-500", s.tone === "yellow"&&"bg-yellow-500",
+                  s.tone === "orange"&&"bg-accent-500", s.tone === "red"&&"bg-red-500", s.tone === "purple"&&"bg-purple-500",
+                  (!s.tone || s.tone === "gray")&&"bg-gray-400")}>{s.count}</div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-bold uppercase tracking-wider">{s.label}</p>
+                  {s.value != null && <p className="font-mono text-[11px] text-gray-600 dark:text-gray-400">{fmtCurrency(s.value)}</p>}
+                </div>
+              </div>
+              {conv != null && (
+                <span className="ml-3 flex items-center gap-1 text-[10px] font-bold text-gray-500">
+                  <span>↓</span><span>{conv}%</span>
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+      {total > 0 && (
+        <div className="mt-3 flex items-center justify-between rounded-xl bg-gray-50/70 px-4 py-2.5 dark:bg-white/[0.02]">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">Total pipeline</span>
+          <span className="font-mono text-[14px] font-black">{fmtCurrency(total)}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProgressRing({ value, max=100, size=80, thickness=8, color="#3d9462", label }) {
   const radius = size/2 - thickness/2;
   const circumference = 2 * Math.PI * radius;
@@ -2561,13 +2616,34 @@ function PartnershipsList({ data, update, search }) {
       <PageHeader title="Partnerships" subtitle="Pipeline of investors, donors, corporates and government partners."
         action={<HeaderButton onClick={()=>setCreating(true)} icon={Icon.plus} primary>New partnership</HeaderButton>} />
 
-      <div className="mb-5 flex flex-wrap gap-2">
-        <button onClick={()=>setFilterStage("")} className={cls("rounded-md border px-2 py-1 text-xs", !filterStage ? "border-brand-300 bg-brand-50 text-brand-700" : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100")}>All ({data.partnerships.length})</button>
-        {PARTNERSHIP_STAGES.map(s => (
-          <button key={s} onClick={()=>setFilterStage(s)} className={cls("rounded-md border px-2 py-1 text-xs", filterStage===s ? "border-brand-300 bg-brand-50 text-brand-700" : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100")}>
-            {s.replace(/_/g," ")} ({stageCounts[s]})
-          </button>
-        ))}
+      {/* FUNNEL — pipeline visualization */}
+      <div className="card mb-5 p-4 animate-fade-up">
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-[14px] font-bold">Pipeline funnel</h3>
+            <p className="text-[11px] text-gray-500">Click a stage to filter the list below</p>
+          </div>
+          {filterStage && <button onClick={()=>setFilterStage("")} className="text-[11px] font-semibold text-brand-700 hover:underline">Clear filter ✕</button>}
+        </div>
+        <FunnelChart
+          stages={PARTNERSHIP_STAGES.map(s => {
+            const items = data.partnerships.filter(p => p.stage === s);
+            return {
+              label: s.replace(/_/g," "),
+              count: items.length,
+              value: items.reduce((sum, p) => sum + (p.value || 0), 0),
+              tone: STAGE_TONES[s] ?? "gray",
+            };
+          })}
+          onStageClick={(s) => {
+            const stage = PARTNERSHIP_STAGES.find(x => x.replace(/_/g," ") === s.label);
+            setFilterStage(filterStage === stage ? "" : stage);
+          }}
+        />
+      </div>
+
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-[14px] font-bold">{filterStage ? `${filterStage} (${filtered.length})` : `All partnerships (${filtered.length})`}</h3>
       </div>
 
       <div className="card">
@@ -2582,8 +2658,7 @@ function PartnershipsList({ data, update, search }) {
                   <td><div className="font-medium">{partner?.name ?? "—"}</div><div className="text-xs text-gray-500">{partner?.type} · {partner?.country ?? "—"}</div></td>
                   <td>{p.title}</td>
                   <td>
-                    <select value={p.stage} onChange={e=>changeStage(p, e.target.value)}
-                            className={cls("stage-select uppercase", STAGE_TONES[p.stage]==="green"&&"text-brand-700",STAGE_TONES[p.stage]==="orange"&&"text-accent-700",STAGE_TONES[p.stage]==="blue"&&"text-blue-700",STAGE_TONES[p.stage]==="yellow"&&"text-yellow-800",STAGE_TONES[p.stage]==="red"&&"text-red-700",STAGE_TONES[p.stage]==="gray"&&"text-gray-700")}>
+                    <select value={p.stage} onChange={e=>changeStage(p, e.target.value)} className="stage-select uppercase">
                       {PARTNERSHIP_STAGES.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </td>
@@ -2595,7 +2670,7 @@ function PartnershipsList({ data, update, search }) {
                 </tr>
               );
             })}
-            {filtered.length === 0 && <tr><td colSpan="8" className="py-10 text-center text-gray-500">No partnerships match.</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan="8" className="py-10 text-center text-gray-500 text-[13px]">No partnerships match.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -2899,6 +2974,48 @@ function FundingList({ data, update }) {
         <StatCard icon={Icon.check}    label="Approved"  value={fmtCurrency(totals.APPROVED || 0)} accent="blue" />
         <StatCard icon={Icon.send}     label="Disbursed" value={fmtCurrency(totals.DISBURSED || 0)} accent="green" />
         <StatCard icon={Icon.funding}  label="Total"     value={fmtCurrency(total)} hint={`${data.fundingSources.length} sources`} accent="purple" />
+      </div>
+
+      {/* PIPELINE — 4 horizontal lanes by status */}
+      <div className="mt-6 mb-3 flex items-center justify-between">
+        <h3 className="text-[14px] font-bold">Funding pipeline</h3>
+        <p className="text-[11px] text-gray-500">Pledged → Approved → Disbursed → Completed</p>
+      </div>
+      <div className="grid gap-3 lg:grid-cols-4">
+        {FUNDING_STATUS.map((status, i) => {
+          const items = data.fundingSources.filter(f => f.status === status);
+          const lanetotal = items.reduce((s,f) => s+f.amount, 0);
+          const tones = ["#eab308","#3b82f6","#338e9b","#a855f7"];
+          const bgs = ["from-yellow-500/12 to-yellow-500/2","from-blue-500/12 to-blue-500/2","from-brand-500/12 to-brand-500/2","from-purple-500/12 to-purple-500/2"];
+          return (
+            <div key={status} className={cls("rounded-2xl border border-gray-200/80 bg-gradient-to-b dark:border-white/[0.06]", bgs[i])}>
+              <div className="border-b border-gray-200/70 px-3 py-2.5 dark:border-white/[0.05]">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider">
+                    <span className="h-2 w-2 rounded-full" style={{background: tones[i]}}/>
+                    {status}
+                  </span>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-gray-700 dark:bg-ink-800 dark:text-gray-300">{items.length}</span>
+                </div>
+                <p className="mt-1 font-mono text-[11px] font-bold">{fmtCurrency(lanetotal)}</p>
+              </div>
+              <div className="space-y-2 p-2 min-h-[140px]">
+                {items.map(f => (
+                  <div key={f.id} onClick={()=>setEditing(f)}
+                       className="cursor-pointer rounded-xl border border-gray-200/70 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:border-white/[0.08] dark:bg-ink-800 dark:hover:border-brand-500/40">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="line-clamp-2 flex-1 text-[12px] font-semibold leading-tight">{f.name}</p>
+                      <Badge tone={f.type==="GRANT"?"green":f.type==="INVESTMENT"?"blue":"orange"}>{f.type}</Badge>
+                    </div>
+                    <p className="mt-1.5 font-mono text-[13px] font-black">{fmtCurrency(f.amount)}</p>
+                    <p className="mt-0.5 line-clamp-1 text-[10px] text-gray-500">{partnerById[f.partnerId]?.name ?? "—"} · {programById[f.programId]?.code ?? "—"}</p>
+                  </div>
+                ))}
+                {items.length === 0 && <p className="py-6 text-center text-[10px] text-gray-400">No items in this stage</p>}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
@@ -3547,24 +3664,49 @@ function ProcurementList({ data, update }) {
         <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Status</h3></div><div className="p-4"><DonutChart data={statusData} size={160} thickness={20}/></div></div>
         <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Spend by type</h3><p className="text-[11px] text-gray-500">USD</p></div><div className="p-4 text-gray-700 dark:text-gray-300">{spendByType.length ? <BarChart data={spendByType.map(d=>({label:d.label, value: Math.round(d.value/100)}))} height={180}/> : <p className="py-8 text-center text-[12px] text-gray-500">No spend yet</p>}</div></div>
       </div>
-      <div className="mt-6 card">
-        <table className="table-base">
-          <thead><tr><th>Type</th><th>Vendor</th><th>Reference</th><th>Cost</th><th>Status</th><th>Date</th><th></th></tr></thead>
-          <tbody>
-            {data.bookings.map(b => (
-              <tr key={b.id}>
-                <td><Badge tone="blue">{b.type}</Badge></td>
-                <td>{b.vendor ?? "—"}</td>
-                <td className="font-mono text-xs">{b.reference ?? "—"}</td>
-                <td>{b.cost ? fmtCurrency(b.cost) : "—"}</td>
-                <td><StageBadge stage={b.status}/></td>
-                <td>{fmtDate(b.startDate)}</td>
-                <td><button onClick={()=>remove(b)} className="text-xs text-red-600 hover:underline">Delete</button></td>
-              </tr>
-            ))}
-            {data.bookings.length === 0 && <tr><td colSpan="7" className="py-6 text-center text-gray-500">No bookings.</td></tr>}
-          </tbody>
-        </table>
+      {/* KANBAN — bookings by status */}
+      <div className="mt-6 mb-3 flex items-center justify-between">
+        <h3 className="text-[14px] font-bold">Bookings board</h3>
+        <p className="text-[11px] text-gray-500">Requested → Confirmed (or Cancelled)</p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-3">
+        {BOOKING_STATUS.map((status, i) => {
+          const items = data.bookings.filter(b => b.status === status);
+          const lanetotal = items.reduce((s,b) => s+(b.cost||0), 0);
+          const tones = ["#fb7d12","#338e9b","#ef4444"];
+          const bgs = ["from-accent-500/12 to-accent-500/2","from-brand-500/12 to-brand-500/2","from-red-500/12 to-red-500/2"];
+          const typeIcon = { HOTEL:"🏨", FLIGHT:"✈️", VENUE:"🏛", TRANSPORT:"🚗" };
+          return (
+            <div key={status} className={cls("rounded-2xl border border-gray-200/80 bg-gradient-to-b dark:border-white/[0.06]", bgs[i])}>
+              <div className="border-b border-gray-200/70 px-3 py-2.5 dark:border-white/[0.05]">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider"><span className="h-2 w-2 rounded-full" style={{background: tones[i]}}/>{status}</span>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-gray-700 dark:bg-ink-800 dark:text-gray-300">{items.length}</span>
+                </div>
+                <p className="mt-1 font-mono text-[11px] font-bold">{fmtCurrency(lanetotal)}</p>
+              </div>
+              <div className="space-y-2 p-2 min-h-[140px]">
+                {items.map(b => (
+                  <div key={b.id} className="group relative rounded-xl border border-gray-200/70 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:border-white/[0.08] dark:bg-ink-800 dark:hover:border-brand-500/40">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-[15px]">{typeIcon[b.type] ?? "📦"}</span>
+                        <p className="line-clamp-1 text-[12px] font-semibold">{b.vendor ?? b.type}</p>
+                      </div>
+                      <button onClick={()=>remove(b)} title="Delete" className="action-icon action-icon-danger opacity-0 group-hover:opacity-100"><Icon.trash className="h-3 w-3"/></button>
+                    </div>
+                    {b.cost && <p className="mt-1.5 font-mono text-[13px] font-black">{fmtCurrency(b.cost)}</p>}
+                    <div className="mt-1.5 flex items-center justify-between text-[10px] text-gray-500">
+                      {b.reference && <span className="font-mono">{b.reference}</span>}
+                      {b.startDate && <span>{fmtDate(b.startDate)}</span>}
+                    </div>
+                  </div>
+                ))}
+                {items.length === 0 && <p className="py-6 text-center text-[10px] text-gray-400">No bookings</p>}
+              </div>
+            </div>
+          );
+        })}
       </div>
       <Modal open={creating} onClose={()=>setCreating(false)} title="New booking" size="md">
         <form onSubmit={save} className="p-6 space-y-4">
