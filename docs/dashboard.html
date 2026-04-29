@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard · Afrilabs Ecosystem OS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{brand:{50:'#f0f9f4',100:'#dcefe2',200:'#bce0c8',300:'#8ec9a3',400:'#5fae7d',500:'#3d9462',600:'#2c764e',700:'#245d40',800:'#1f4a35',900:'#1b3d2d',950:'#0d2218'},accent:{50:'#fff8ed',100:'#ffefd4',200:'#ffdba8',300:'#ffbf71',400:'#ff9a38',500:'#fb7d12',600:'#ec6308',700:'#c44a09',800:'#9c3b10',900:'#7e3211'}}}}}</script>
+<style>body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body class="bg-gray-50 text-gray-900 antialiased">
+<div class="flex min-h-screen">
+
+<!-- Sidebar -->
+<aside class="hidden w-64 shrink-0 border-r border-gray-200 bg-white lg:block">
+  <a href="dashboard.html" class="flex h-16 items-center gap-2 border-b border-gray-200 px-5">
+    <div class="grid h-9 w-9 place-items-center rounded-lg bg-brand-600 font-black text-white">A</div>
+    <div><div class="text-sm font-semibold leading-tight">Afrilabs</div><div class="text-xs text-gray-500">Ecosystem OS</div></div>
+  </a>
+  <nav class="px-3 py-4 text-sm">
+    <p class="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Operate</p>
+    <a href="dashboard.html"   class="flex items-center gap-2.5 rounded-md bg-brand-50 px-3 py-2 font-medium text-brand-700">▦ Dashboard</a>
+    <a href="partnerships.html" class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">🤝 Partnerships</a>
+    <a href="programs.html"     class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">🚀 Programs</a>
+    <a href="funding.html"      class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">💰 Funding</a>
+    <a href="members.html"      class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">🏢 Member Hubs</a>
+    <a href="events.html"       class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">📅 Events</a>
+    <p class="mt-4 px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Engage</p>
+    <a href="collaboration.html" class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">💬 Collaboration</a>
+    <a href="campaigns.html"     class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">📢 Campaigns</a>
+    <a href="intelligence.html"  class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">✨ Intelligence</a>
+    <p class="mt-4 px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">System</p>
+    <a href="africonnect.html"   class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">🌍 Africonnect</a>
+    <a href="audit.html"         class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">🛡 Audit Log</a>
+    <a href="departments.html"   class="flex items-center gap-2.5 rounded-md px-3 py-2 text-gray-600 hover:bg-gray-50">⚙ Departments</a>
+    <a href="index.html"         class="mt-6 flex items-center gap-2.5 rounded-md px-3 py-2 text-xs text-gray-400 hover:text-gray-700">← Back to landing</a>
+  </nav>
+</aside>
+
+<div class="flex min-w-0 flex-1 flex-col">
+  <!-- Topbar -->
+  <header class="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 px-6 backdrop-blur">
+    <input placeholder="Search partners, programs, hubs…" class="w-full max-w-md rounded-md border border-gray-200 bg-gray-50 py-2 px-3 text-sm" />
+    <div class="flex items-center gap-3 border-l border-gray-200 pl-3 text-sm">
+      <div class="text-right"><div class="font-medium">Ada Admin</div><div class="text-xs text-gray-500">SUPER_ADMIN</div></div>
+      <div class="grid h-8 w-8 place-items-center rounded-full bg-brand-600 text-xs font-semibold text-white">A</div>
+    </div>
+  </header>
+
+  <main class="flex-1 px-6 py-6 lg:px-8">
+    <h1 class="text-2xl font-bold tracking-tight">Ecosystem overview</h1>
+    <p class="mt-1 text-sm text-gray-500">A live snapshot of partnerships, programs, funding and member activity.</p>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Member hubs</p>
+        <p class="mt-1 text-3xl font-bold">30</p><p class="mt-1 text-xs text-gray-500">22 paid · 8 other</p>
+      </div>
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Active programs</p>
+        <p class="mt-1 text-3xl font-bold">5</p><p class="mt-1 text-xs text-gray-500">4 active · 1 draft</p>
+      </div>
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total funding</p>
+        <p class="mt-1 text-3xl font-bold">$8,250,000</p><p class="mt-1 text-xs text-gray-500">Pledged → disbursed</p>
+      </div>
+      <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Live partnerships</p>
+        <p class="mt-1 text-3xl font-bold">8</p><p class="mt-1 text-xs text-gray-500">In motion</p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-3">
+      <div class="rounded-xl border border-gray-200 bg-white shadow-sm lg:col-span-2">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+          <div><h3 class="text-base font-semibold">Recent partnerships</h3><p class="text-sm text-gray-500">Latest pipeline activity</p></div>
+          <a href="partnerships.html" class="text-sm text-brand-700 hover:underline">View all →</a>
+        </div>
+        <table class="w-full text-sm">
+          <thead><tr class="text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Partner</th>
+            <th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Title</th>
+            <th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Stage</th>
+            <th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Value</th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-medium">Mastercard Foundation</td><td class="border-b border-gray-100 px-4 py-3 text-gray-600">Engagement</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-200">NEGOTIATION</span></td><td class="border-b border-gray-100 px-4 py-3">$200,000</td></tr>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-medium">IFC</td><td class="border-b border-gray-100 px-4 py-3 text-gray-600">Engagement</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-200">ACTIVE</span></td><td class="border-b border-gray-100 px-4 py-3">$350,000</td></tr>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-medium">Google for Startups</td><td class="border-b border-gray-100 px-4 py-3 text-gray-600">Engagement</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200">ENGAGED</span></td><td class="border-b border-gray-100 px-4 py-3">$125,000</td></tr>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-medium">GIZ</td><td class="border-b border-gray-100 px-4 py-3 text-gray-600">Engagement</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200">PROSPECT</span></td><td class="border-b border-gray-100 px-4 py-3">$50,000</td></tr>
+            <tr><td class="px-4 py-3 font-medium">UNDP</td><td class="px-4 py-3 text-gray-600">Engagement</td><td class="px-4 py-3"><span class="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-200">ACTIVE</span></td><td class="px-4 py-3">$425,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div class="border-b border-gray-100 px-5 py-4"><h3 class="text-base font-semibold">Activity feed</h3><p class="text-sm text-gray-500">Cross-department signals</p></div>
+        <div class="space-y-4 p-5">
+          <div class="flex gap-3"><div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">T</div><div><p class="text-sm font-medium">Catalytic Africa launched</p><p class="text-xs text-gray-500">Match-funding programme is live.</p><p class="text-[11px] text-gray-400">5m ago · program launched</p></div></div>
+          <div class="flex gap-3"><div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">A</div><div><p class="text-sm font-medium">Mastercard Foundation in negotiation</p><p class="text-xs text-gray-500">Round 2 conversations scheduled.</p><p class="text-[11px] text-gray-400">12m ago · partnership created</p></div></div>
+          <div class="flex gap-3"><div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">E</div><div><p class="text-sm font-medium">$1.5M pledged by IFC</p><p class="text-[11px] text-gray-400">1h ago · funding pledged</p></div></div>
+          <div class="flex gap-3"><div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">K</div><div><p class="text-sm font-medium">AAG 2026 registrations exceed 800</p><p class="text-[11px] text-gray-400">2h ago · event updated</p></div></div>
+          <div class="flex gap-3"><div class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">L</div><div><p class="text-sm font-medium">CcHub renewed STRATEGIC tier</p><p class="text-[11px] text-gray-400">3h ago · hub paid</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-2">
+      <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4"><h3 class="text-base font-semibold">Programs</h3><a href="programs.html" class="text-sm text-brand-700 hover:underline">All programs →</a></div>
+        <table class="w-full text-sm">
+          <thead><tr class="text-left text-xs font-semibold uppercase tracking-wider text-gray-500"><th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Code</th><th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Name</th><th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Status</th><th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Region</th></tr></thead>
+          <tbody>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-mono text-xs">CATALYTIC</td><td class="border-b border-gray-100 px-4 py-3 font-medium">Catalytic Africa</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-200">ACTIVE</span></td><td class="border-b border-gray-100 px-4 py-3 text-gray-500">Pan-African</td></tr>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-mono text-xs">AFRI-ACC-26</td><td class="border-b border-gray-100 px-4 py-3 font-medium">Afrilabs Accelerator</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-200">ACTIVE</span></td><td class="border-b border-gray-100 px-4 py-3 text-gray-500">Pan-African</td></tr>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-mono text-xs">HCB-2026</td><td class="border-b border-gray-100 px-4 py-3 font-medium">Hub Capacity Building</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-200">ACTIVE</span></td><td class="border-b border-gray-100 px-4 py-3 text-gray-500">East Africa</td></tr>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-mono text-xs">AAG-2026</td><td class="border-b border-gray-100 px-4 py-3 font-medium">AAG 2026 Programme</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-200">ACTIVE</span></td><td class="border-b border-gray-100 px-4 py-3 text-gray-500">West Africa</td></tr>
+            <tr><td class="px-4 py-3 font-mono text-xs">INSIGHTS</td><td class="px-4 py-3 font-medium">Ecosystem Insights</td><td class="px-4 py-3"><span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200">DRAFT</span></td><td class="px-4 py-3 text-gray-500">Pan-African</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4"><h3 class="text-base font-semibold">Upcoming & recent events</h3><a href="events.html" class="text-sm text-brand-700 hover:underline">Events →</a></div>
+        <table class="w-full text-sm">
+          <thead><tr class="text-left text-xs font-semibold uppercase tracking-wider text-gray-500"><th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Event</th><th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Status</th><th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Location</th><th class="border-b border-gray-200 bg-gray-50 px-4 py-3">Date</th></tr></thead>
+          <tbody>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-medium">Africa Annual Gathering 2026</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200">PROMOTION</span></td><td class="border-b border-gray-100 px-4 py-3 text-gray-500">Lagos, Nigeria</td><td class="border-b border-gray-100 px-4 py-3 text-gray-500">Oct 15, 2026</td></tr>
+            <tr><td class="border-b border-gray-100 px-4 py-3 font-medium">Catalytic Africa Demo Day</td><td class="border-b border-gray-100 px-4 py-3"><span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200">PLANNING</span></td><td class="border-b border-gray-100 px-4 py-3 text-gray-500">Online</td><td class="border-b border-gray-100 px-4 py-3 text-gray-500">Jun 22, 2026</td></tr>
+            <tr><td class="px-4 py-3 font-medium">Hub Capacity Workshop — Nairobi</td><td class="px-4 py-3"><span class="inline-flex items-center rounded-full bg-accent-50 px-2 py-0.5 text-xs font-medium text-accent-700 ring-1 ring-inset ring-accent-200">EXECUTION</span></td><td class="px-4 py-3 text-gray-500">Nairobi, Kenya</td><td class="px-4 py-3 text-gray-500">May 10, 2026</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+</div>
+</body>
+</html>
