@@ -1766,6 +1766,27 @@ function DealsKanban({ data, update }) {
         <div className="text-[12px] text-gray-500">{data.deals.length} deals · pipeline {fmtCurrency(data.deals.filter(d=>d.stage!=="WON"&&d.stage!=="LOST").reduce((s,d)=>s+d.value,0))}</div>
         <button className="btn-primary" onClick={()=>setCreating(true)}><Icon.plus className="h-4 w-4"/> New deal</button>
       </div>
+
+      {/* FUNNEL — visual stage distribution above the board */}
+      <div className="card mb-4 p-4 animate-fade-up">
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-[14px] font-bold">Stage funnel</h3>
+            <p className="text-[11px] text-gray-500">Pipeline conversion across stages</p>
+          </div>
+        </div>
+        <FunnelChart stages={DEAL_STAGES.map((s, i) => {
+          const items = data.deals.filter(d => d.stage === s);
+          return {
+            label: s,
+            count: items.length,
+            value: items.reduce((sum, d) => sum + (d.value || 0), 0),
+            tone: ["gray","blue","purple","yellow","green","red"][i],
+          };
+        })} />
+      </div>
+
+      <h3 className="mb-3 text-[14px] font-bold">Drag to move between stages</h3>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         {DEAL_STAGES.map((stage, i) => {
           const deals = data.deals.filter(d => d.stage === stage);
@@ -3504,35 +3525,55 @@ function TasksList({ data, update }) {
 function Collaboration({ data }) {
   const userById = Object.fromEntries(data.users.map(u=>[u.id,u]));
   const sorted = [...data.activities].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+
+  const columns = [
+    { id:"partnerships", label:"Partnerships", icon: Icon.partnerships, tone:"green",  match: t => t?.includes("PARTNERSHIP") },
+    { id:"programs",     label:"Programs",     icon: Icon.programs,     tone:"orange", match: t => t?.includes("PROGRAM") },
+    { id:"funding-hubs", label:"Funding & Hubs", icon: Icon.funding,    tone:"blue",   match: t => t?.includes("FUNDING") || t?.includes("HUB") },
+    { id:"events",       label:"Events",       icon: Icon.events,       tone:"purple", match: t => t?.includes("EVENT") || t?.includes("CAMPAIGN") },
+  ];
+
   return (
     <div>
-      <PageHeader title="Internal Collaboration" subtitle="A unified feed of every signal across departments." />
-      <div className="card">
-        <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Activity timeline</h3></div>
-        <div className="space-y-4 p-5">
-          {sorted.map(a => {
-            const link = a.partnershipId ? `#/partnerships` : a.programId ? `#/programs` : a.eventId ? `#/events` : a.hubId ? `#/members` : null;
-            return (
-              <div key={a.id} className="flex gap-3 border-b border-gray-100 pb-3 last:border-b-0">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">{(userById[a.userId]?.name ?? "S").slice(0,1)}</div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge tone={a.type?.includes("PARTNERSHIP") ? "green" : a.type?.includes("PROGRAM") ? "orange" : a.type?.includes("FUNDING") ? "blue" : a.type?.includes("EVENT") ? "purple" : a.type?.includes("HUB") ? "green" : "gray"}>{(a.type||"").replace(/_/g," ")}</Badge>
-                    <p className="text-sm font-medium">{a.title}</p>
-                  </div>
-                  {a.body && <p className="mt-1 text-sm text-gray-600">{a.body}</p>}
-                  <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                    <span>{relTime(a.createdAt)}</span>
-                    <span>·</span>
-                    <span>{userById[a.userId]?.name ?? "system"}</span>
-                    {link && <><span>·</span><a href={link} className="text-brand-700 hover:underline">Open</a></>}
-                  </div>
-                </div>
+      <PageHeader title="Internal Collaboration" subtitle="Activity board grouped by entity — track every signal as it flows across departments." />
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {columns.map((col, i) => {
+          const items = sorted.filter(a => col.match(a.type));
+          const tones = { green:"#338e9b", orange:"#ea6a32", blue:"#3b82f6", purple:"#a855f7" };
+          const bgs = { green:"from-brand-500/12 to-brand-500/2", orange:"from-accent-500/12 to-accent-500/2", blue:"from-blue-500/12 to-blue-500/2", purple:"from-purple-500/12 to-purple-500/2" };
+          const Ic = col.icon;
+          return (
+            <div key={col.id} className={cls("rounded-2xl border border-gray-200/80 bg-gradient-to-b dark:border-white/[0.06]", bgs[col.tone])}>
+              <div className="flex items-center justify-between border-b border-gray-200/70 px-3 py-2.5 dark:border-white/[0.05]">
+                <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider">
+                  <span className="grid h-6 w-6 place-items-center rounded-md bg-white/80 dark:bg-ink-800/60" style={{color: tones[col.tone]}}><Ic className="h-3 w-3"/></span>
+                  {col.label}
+                </span>
+                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-gray-700 dark:bg-ink-800 dark:text-gray-300">{items.length}</span>
               </div>
-            );
-          })}
-          {sorted.length === 0 && <p className="text-sm text-gray-500">No activity yet.</p>}
-        </div>
+              <div className="space-y-2 p-2 max-h-[600px] overflow-y-auto">
+                {items.slice(0,30).map(a => {
+                  const link = a.partnershipId ? `#/partnerships` : a.programId ? `#/programs` : a.eventId ? `#/events` : a.hubId ? `#/members` : "#/dashboard";
+                  return (
+                    <a key={a.id} href={link}
+                       className="block rounded-xl border border-gray-200/70 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:border-white/[0.08] dark:bg-ink-800 dark:hover:border-brand-500/40">
+                      <p className="line-clamp-2 text-[12px] font-semibold leading-tight">{a.title}</p>
+                      {a.body && <p className="mt-1 line-clamp-2 text-[11px] text-gray-500">{a.body}</p>}
+                      <div className="mt-1.5 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <div className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[8px] font-bold text-white">{(userById[a.userId]?.name ?? "S").slice(0,1)}</div>
+                          <span className="truncate text-[10px] text-gray-500">{userById[a.userId]?.name ?? "system"}</span>
+                        </div>
+                        <span className="text-[10px] text-gray-400">{relTime(a.createdAt)}</span>
+                      </div>
+                    </a>
+                  );
+                })}
+                {items.length === 0 && <p className="py-6 text-center text-[10px] text-gray-400">No activity</p>}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -3721,58 +3762,75 @@ function CampaignsList({ data, update }) {
 // ════════════════════════════════════════════════════════════════════════
 function Intelligence({ data }) {
   const intel = useMemo(() => computeIntelligence(data), [data]);
+  const cols = [
+    { id:"priorities", label:"Hub Priorities",      tone:"green",  bg:"from-brand-500/12 to-brand-500/2",   icon: Icon.star,     count: intel.priorities.length },
+    { id:"churn",      label:"Churn Risk",          tone:"red",    bg:"from-red-500/12 to-red-500/2",       icon: Icon.alert,    count: intel.churn.length },
+    { id:"matches",    label:"Partner Matches",     tone:"orange", bg:"from-accent-500/12 to-accent-500/2", icon: Icon.partnerships, count: intel.matches.length },
+    { id:"funding",    label:"Funding Likelihood",  tone:"blue",   bg:"from-blue-500/12 to-blue-500/2",     icon: Icon.funding,  count: intel.funding.length },
+  ];
+  const tones = { green:"#338e9b", red:"#ef4444", orange:"#ea6a32", blue:"#3b82f6" };
+
   return (
     <div>
-      <PageHeader title="Decision Intelligence" subtitle="Recommendations and risk signals computed live from your data." />
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="card">
-          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Hubs to prioritize</h3><p className="text-sm text-gray-500">Based on payment + tier + engagement.</p></div>
-          <div className="space-y-3 p-5">
-            {intel.priorities.map(h => (
-              <a key={h.hubId} href="#/members" className="flex items-center justify-between rounded-md bg-gray-50 p-3 hover:bg-gray-100">
-                <div><p className="font-medium">{h.hubName}</p><p className="text-xs text-gray-500">{h.signals.join(" · ") || "—"}</p></div>
-                <Badge tone="green">{h.score}</Badge>
-              </a>
-            ))}
-          </div>
-        </div>
-        <div className="card">
-          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Churn risk</h3><p className="text-sm text-gray-500">Hubs likely to lapse without intervention.</p></div>
-          <div className="space-y-3 p-5">
-            {intel.churn.map(h => (
-              <a key={h.hubId} href="#/members" className="flex items-center justify-between rounded-md bg-red-50/50 p-3 ring-1 ring-red-100 hover:bg-red-50">
-                <div><p className="font-medium">{h.hubName}</p><p className="text-xs text-gray-500">{h.reasons.join(" · ")}</p></div>
-                <Badge tone="red">{h.risk}</Badge>
-              </a>
-            ))}
-            {intel.churn.length === 0 && <p className="text-sm text-gray-500">No high-risk hubs detected.</p>}
-          </div>
-        </div>
-        <div className="card">
-          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Suggested partner ↔ program matches</h3></div>
-          <div className="space-y-3 p-5">
-            {intel.matches.map((m,i) => (
-              <div key={i} className="rounded-md bg-gray-50 p-3">
-                <div className="flex items-center justify-between"><span className="text-sm font-medium">{m.partnerName}</span><Badge tone="orange">{m.fitScore}% fit</Badge></div>
-                <p className="text-xs text-gray-600">→ {m.programName}</p>
-                <p className="mt-1 text-xs text-gray-500">{m.rationale.join(" · ")}</p>
+      <PageHeader title="Decision Intelligence" subtitle="AI recommendations grouped into actionable lanes — review, prioritize, act." />
+
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {cols.map(col => {
+          const Ic = col.icon;
+          return (
+            <div key={col.id} className={cls("rounded-2xl border border-gray-200/80 bg-gradient-to-b dark:border-white/[0.06]", col.bg)}>
+              <div className="flex items-center justify-between border-b border-gray-200/70 px-3 py-2.5 dark:border-white/[0.05]">
+                <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider">
+                  <span className="grid h-6 w-6 place-items-center rounded-md bg-white/80 dark:bg-ink-800/60" style={{color: tones[col.tone]}}><Ic className="h-3 w-3"/></span>
+                  {col.label}
+                </span>
+                <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-gray-700 dark:bg-ink-800 dark:text-gray-300">{col.count}</span>
               </div>
-            ))}
-            {intel.matches.length === 0 && <p className="text-sm text-gray-500">No suggestions — add more partners and active programs.</p>}
-          </div>
-        </div>
-        <div className="card">
-          <div className="border-b border-gray-100 px-5 py-4 dark:border-white/5"><h3 className="text-base font-semibold">Funding success likelihood</h3></div>
-          <div className="space-y-3 p-5">
-            {intel.funding.map(f => (
-              <div key={f.fundingId} className="rounded-md bg-gray-50 p-3">
-                <div className="flex items-center justify-between"><span className="text-sm font-medium">{f.name}</span><Badge tone={f.successLikelihood >= 70 ? "green" : f.successLikelihood >= 40 ? "yellow" : "red"}>{f.successLikelihood}%</Badge></div>
-                <p className="mt-1 text-xs text-gray-500">{f.drivers.join(" · ")}</p>
+              <div className="space-y-2 p-2 max-h-[600px] overflow-y-auto min-h-[160px]">
+                {col.id === "priorities" && intel.priorities.map(h => (
+                  <a key={h.hubId} href="#/members" className="block rounded-xl border border-gray-200/70 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:border-white/[0.08] dark:bg-ink-800 dark:hover:border-brand-500/40">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="line-clamp-1 flex-1 text-[12px] font-bold">{h.hubName}</p>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-[11px] font-black text-white">{h.score}</span>
+                    </div>
+                    {h.signals.length > 0 && <p className="mt-1.5 line-clamp-2 text-[10px] text-gray-500">{h.signals.join(" · ")}</p>}
+                  </a>
+                ))}
+                {col.id === "churn" && intel.churn.map(h => (
+                  <a key={h.hubId} href="#/members" className="block rounded-xl border border-red-200/70 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:border-red-400 hover:shadow-md dark:border-red-500/20 dark:bg-ink-800 dark:hover:border-red-500/50">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="line-clamp-1 flex-1 text-[12px] font-bold">{h.hubName}</p>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-[11px] font-black text-white">{h.risk}</span>
+                    </div>
+                    {h.reasons.length > 0 && <p className="mt-1.5 line-clamp-2 text-[10px] text-gray-500">{h.reasons.join(" · ")}</p>}
+                  </a>
+                ))}
+                {col.id === "churn" && intel.churn.length === 0 && <p className="py-6 text-center text-[10px] text-gray-400">No high-risk hubs ✓</p>}
+                {col.id === "matches" && intel.matches.map((m,i) => (
+                  <div key={i} className="rounded-xl border border-gray-200/70 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-300 hover:shadow-md dark:border-white/[0.08] dark:bg-ink-800 dark:hover:border-accent-500/40">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="line-clamp-1 flex-1 text-[12px] font-bold">{m.partnerName}</p>
+                      <Badge tone="orange">{m.fitScore}%</Badge>
+                    </div>
+                    <p className="mt-1 line-clamp-1 text-[11px] text-brand-700 dark:text-brand-300">→ {m.programName}</p>
+                    {m.rationale.length > 0 && <p className="mt-1 line-clamp-2 text-[10px] text-gray-500">{m.rationale.join(" · ")}</p>}
+                  </div>
+                ))}
+                {col.id === "matches" && intel.matches.length === 0 && <p className="py-6 text-center text-[10px] text-gray-400">No suggestions yet</p>}
+                {col.id === "funding" && intel.funding.map(f => (
+                  <div key={f.fundingId} className="rounded-xl border border-gray-200/70 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md dark:border-white/[0.08] dark:bg-ink-800 dark:hover:border-blue-500/40">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="line-clamp-1 flex-1 text-[12px] font-bold">{f.name}</p>
+                      <Badge tone={f.successLikelihood >= 70 ? "green" : f.successLikelihood >= 40 ? "yellow" : "red"}>{f.successLikelihood}%</Badge>
+                    </div>
+                    {f.drivers.length > 0 && <p className="mt-1.5 line-clamp-2 text-[10px] text-gray-500">{f.drivers.join(" · ")}</p>}
+                  </div>
+                ))}
+                {col.id === "funding" && intel.funding.length === 0 && <p className="py-6 text-center text-[10px] text-gray-400">No funding to score</p>}
               </div>
-            ))}
-            {intel.funding.length === 0 && <p className="text-sm text-gray-500">No pledged or approved funding to score.</p>}
-          </div>
-        </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -4014,33 +4072,80 @@ function PeopleList({ data, update }) {
         <div className="card lg:col-span-2 animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Headcount by department</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{headcountByDept.length ? <BarChart data={headcountByDept} height={200}/> : <p className="py-8 text-center text-[12px] text-gray-500">No staff assigned</p>}</div></div>
         <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Role mix</h3></div><div className="p-4"><DonutChart data={roleData} size={160} thickness={20}/></div></div>
       </div>
-      <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {data.users.map(u => {
-          const dept = DEPARTMENTS.find(d=>d.code===u.department);
+      {/* ORG TREE — hierarchical by reporting structure */}
+      <h3 className="mt-6 mb-3 text-[14px] font-bold">Organization tree</h3>
+      {(() => {
+        const exec = data.users.filter(u => u.role === "SUPER_ADMIN" || u.role === "COO" || u.role === "ED");
+        const Person = ({ u, size="md" }) => {
           const isMe = u.id === data.settings.currentUserId;
+          const initials = u.name.split(" ").map(n=>n[0]).slice(0,2).join("");
+          const tone = u.role === "SUPER_ADMIN" ? "purple" : u.role === "COO" || u.role === "ED" ? "orange" : u.role === "DEPT_HEAD" ? "green" : "blue";
+          const sz = size === "lg" ? "h-14 w-14 text-[16px]" : size === "sm" ? "h-9 w-9 text-[11px]" : "h-11 w-11 text-[13px]";
+          const card = size === "lg" ? "p-3.5 min-w-[200px]" : size === "sm" ? "p-2 min-w-[140px]" : "p-3 min-w-[170px]";
           return (
-            <div key={u.id} className="group relative rounded-2xl border border-gray-200/80 bg-white p-4 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md hover:shadow-brand-500/10 dark:border-white/[0.06] dark:bg-ink-800/60 dark:hover:border-brand-500/40">
-              {isMe && <span className="absolute right-3 top-3 rounded-full bg-brand-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">You</span>}
-              <div className="flex items-start gap-3">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[14px] font-bold text-white shadow-md shadow-brand-500/25">{u.name.split(" ").map(n=>n[0]).slice(0,2).join("")}</div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-[14px] font-bold leading-tight">{u.name}</h3>
-                  <p className="mt-0.5 truncate text-[11px] text-gray-500">{u.email}</p>
+            <div className={cls("group relative rounded-2xl border border-gray-200/80 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:border-white/[0.06] dark:bg-ink-800/80 dark:hover:border-brand-500/40", card)}>
+              {isMe && <span className="absolute -right-1 -top-1 rounded-full bg-brand-500 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-white">You</span>}
+              <div className="flex items-center gap-2.5">
+                <div className={cls("grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 font-bold text-white shadow-md shadow-brand-500/25", sz)}>{initials}</div>
+                <div className="min-w-0">
+                  <p className="truncate text-[12px] font-bold leading-tight">{u.name}</p>
+                  <p className="mt-0.5 truncate text-[10px] text-gray-500">{u.email}</p>
+                  <Badge tone={tone}>{u.role.replace(/_/g," ")}</Badge>
                 </div>
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                <Badge tone={u.role==="SUPER_ADMIN"?"purple":u.role==="COO"||u.role==="ED"?"orange":"blue"}>{u.role.replace(/_/g," ")}</Badge>
-                {dept && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-700 dark:bg-white/[0.06] dark:text-gray-300">{dept.name}</span>}
-              </div>
-              <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-2.5 dark:border-white/[0.05]">
-                <span className="text-[11px] text-gray-500">Joined {fmtDate(u.createdAt)}</span>
-                <button onClick={()=>remove(u)} title="Remove" className="action-icon action-icon-danger opacity-0 group-hover:opacity-100 transition"><Icon.trash className="h-3.5 w-3.5"/></button>
-              </div>
+              <button onClick={()=>remove(u)} title="Remove" className="action-icon action-icon-danger absolute right-1 top-1 opacity-0 group-hover:opacity-100"><Icon.trash className="h-3 w-3"/></button>
             </div>
           );
-        })}
-        {data.users.length === 0 && <div className="col-span-full rounded-2xl border border-dashed border-gray-300 bg-white py-10 text-center text-[13px] text-gray-500 dark:border-white/[0.06] dark:bg-ink-800/60">No people yet.</div>}
-      </div>
+        };
+        return (
+          <div className="card overflow-x-auto p-5">
+            {/* Executive tier */}
+            {exec.length > 0 && (
+              <div className="mb-2">
+                <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-widest text-gray-500">Executive</p>
+                <div className="flex flex-wrap items-start justify-center gap-3">
+                  {exec.map(u => <Person key={u.id} u={u} size="lg"/>)}
+                </div>
+                {/* Connector line */}
+                <div className="relative mx-auto mt-3 h-6 w-full">
+                  <div className="absolute left-1/2 top-0 h-3 w-px -translate-x-1/2 bg-gradient-to-b from-brand-300 to-transparent dark:from-brand-600"></div>
+                  <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-brand-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">12 departments</div>
+                </div>
+              </div>
+            )}
+            {/* Department tier */}
+            <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {DEPARTMENTS.map(d => {
+                const head = data.users.find(u => u.department === d.code && u.role === "DEPT_HEAD");
+                const staff = data.users.filter(u => u.department === d.code && u.role !== "DEPT_HEAD");
+                return (
+                  <div key={d.code} className="rounded-2xl border border-gray-200/60 bg-gradient-to-b from-gray-50/50 to-transparent p-3 dark:border-white/[0.05] dark:from-white/[0.03]">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider">
+                        <span className="grid h-5 w-5 place-items-center rounded-md bg-brand-500/15 text-brand-700 dark:text-brand-300"><Icon.depts className="h-3 w-3"/></span>
+                        {d.code}
+                      </span>
+                      <span className="text-[10px] text-gray-500">{d.name}</span>
+                    </div>
+                    {head ? (
+                      <Person u={head} size="sm"/>
+                    ) : (
+                      <button onClick={()=>setCreating(true)} className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-3 py-3 text-[11px] text-gray-500 hover:border-brand-300 hover:text-brand-700 dark:border-white/[0.08] dark:hover:border-brand-500/40">
+                        <Icon.plus className="h-3.5 w-3.5"/> Assign head
+                      </button>
+                    )}
+                    {staff.length > 0 && (
+                      <div className="mt-2 space-y-1.5 border-l-2 border-gray-200 pl-3 dark:border-white/[0.06]">
+                        {staff.map(u => <Person key={u.id} u={u} size="sm"/>)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
       <Modal open={creating} onClose={()=>setCreating(false)} title="Add person" size="md">
         <form onSubmit={save} className="p-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -4063,38 +4168,158 @@ function PeopleList({ data, update }) {
 //  DEPARTMENTS
 // ════════════════════════════════════════════════════════════════════════
 function DepartmentsView({ data }) {
-  const headcountByDept = DEPARTMENTS.map(d => ({label:d.code, value:data.users.filter(u=>u.department===d.code).length}));
-  const tasksByDept = DEPARTMENTS.map(d => ({label:d.code, value:data.tasks.filter(t=>t.department===d.code).length})).filter(d=>d.value>0).sort((a,b)=>b.value-a.value);
   const SUMMARIES = {
-    COO:"Global system overview and performance dashboards.",
-    ED:"Strategic insights and ecosystem growth analytics.",
-    TECH:"System logs, integrations and platform health.",
-    PROGRAMS:"Program dashboards and partner alignment.",
-    PARTNERSHIPS:"Contact sourcing pipeline and deal/funding tracking.",
-    EVENTS:"Event lifecycle dashboards (AAG and program events).",
-    MEMBERS:"Hub management, payment tracking and communications.",
-    PROCUREMENT:"Bookings, hotels, travel and logistics.",
-    COMMS:"Email campaigns, announcements and media tracking.",
-    FINANCE:"Payment records, funding inflows, financial reports.",
-    AUDIT:"Activity logs and financial audit trails.",
-    HR:"Staff management and role assignments.",
+    COO:         { desc:"Global system overview and performance dashboards.", icon: Icon.dashboard, tone:"purple" },
+    ED:          { desc:"Strategic insights and ecosystem growth analytics.",  icon: Icon.intel,     tone:"orange" },
+    TECH:        { desc:"System logs, integrations and platform health.",       icon: Icon.settings,  tone:"blue" },
+    PROGRAMS:    { desc:"Program dashboards and partner alignment.",            icon: Icon.programs,  tone:"orange" },
+    PARTNERSHIPS:{ desc:"Contact sourcing pipeline and deal/funding tracking.", icon: Icon.partnerships, tone:"green" },
+    EVENTS:      { desc:"Event lifecycle dashboards (AAG and program events).", icon: Icon.events,    tone:"purple" },
+    MEMBERS:     { desc:"Hub management, payment tracking and communications.", icon: Icon.hubs,      tone:"green" },
+    PROCUREMENT: { desc:"Bookings, hotels, travel and logistics.",              icon: Icon.procurement, tone:"blue" },
+    COMMS:       { desc:"Email campaigns, announcements and media tracking.",   icon: Icon.campaigns, tone:"orange" },
+    FINANCE:     { desc:"Payment records, funding inflows, financial reports.", icon: Icon.funding,   tone:"green" },
+    AUDIT:       { desc:"Activity logs and financial audit trails.",            icon: Icon.audit,     tone:"red" },
+    HR:          { desc:"Staff management and role assignments.",               icon: Icon.people,    tone:"purple" },
   };
+
+  // Compute richer metrics per department
+  const deptMetrics = DEPARTMENTS.map(d => {
+    const headcount = data.users.filter(u => u.department === d.code).length;
+    const tasks = data.tasks.filter(t => t.department === d.code);
+    const tasksDone = tasks.filter(t => t.status === "DONE").length;
+    const tasksOpen = tasks.length - tasksDone;
+    const auditEvents = data.auditLog.filter(l => l.actorEmail?.startsWith(d.code.toLowerCase())).length;
+    const completion = tasks.length ? Math.round((tasksDone/tasks.length)*100) : null;
+    const head = data.users.find(u => u.department === d.code && u.role === "DEPT_HEAD");
+    return { dept: d, headcount, tasks: tasks.length, tasksDone, tasksOpen, auditEvents, completion, head };
+  });
+
+  const totalHeadcount = deptMetrics.reduce((s,d) => s+d.headcount, 0);
+  const totalTasks = deptMetrics.reduce((s,d) => s+d.tasks, 0);
+  const totalDone = deptMetrics.reduce((s,d) => s+d.tasksDone, 0);
+  const orgCompletion = totalTasks ? Math.round((totalDone/totalTasks)*100) : 0;
+
   return (
     <div>
-      <PageHeader title="Departments" subtitle="Role-based dashboards across the organization." />
-      <div className="mb-5 grid gap-4 lg:grid-cols-2">
-        <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Headcount</h3></div><div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={headcountByDept.filter(d=>d.value>0)} height={200}/></div></div>
-        <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Tasks owned</h3></div><div className="p-4 text-gray-700 dark:text-gray-300">{tasksByDept.length ? <BarChart data={tasksByDept.slice(0,8)} height={200}/> : <p className="py-8 text-center text-[12px] text-gray-500">No tasks</p>}</div></div>
+      <PageHeader title="Departments" subtitle="Cross-organization view of all 12 teams — headcount, workload, performance." />
+
+      {/* TOP STATS */}
+      <div className="grid gap-3 md:grid-cols-4">
+        <StatCard icon={Icon.depts}    label="Departments"     value={DEPARTMENTS.length} hint="All active" accent="purple" />
+        <StatCard icon={Icon.people}   label="Total headcount" value={totalHeadcount} hint={`Avg ${Math.round(totalHeadcount/DEPARTMENTS.length*10)/10} per dept`} accent="green" />
+        <StatCard icon={Icon.tasks}    label="Tasks tracked"   value={totalTasks} hint={`${totalDone} completed`} accent="blue" />
+        <StatCard icon={Icon.trending} label="Org completion"  value={orgCompletion + "%"} hint={`${totalDone}/${totalTasks} done`} accent="orange" />
       </div>
+
+      {/* TOP GRAPH — combined dept activity */}
+      <div className="mt-5 card animate-fade-up">
+        <div className="border-b border-gray-100 px-4 py-3 dark:border-white/[0.05]">
+          <h3 className="text-[14px] font-bold">Department workload distribution</h3>
+          <p className="text-[11px] text-gray-500">Headcount + open tasks per department, side by side</p>
+        </div>
+        <div className="p-4">
+          <div className="space-y-2.5">
+            {deptMetrics.map(m => {
+              const maxH = Math.max(...deptMetrics.map(x=>x.headcount), 1);
+              const maxT = Math.max(...deptMetrics.map(x=>x.tasks), 1);
+              return (
+                <div key={m.dept.code} className="grid grid-cols-[100px_1fr_60px] items-center gap-3 text-[12px]">
+                  <span className="font-mono font-bold uppercase text-gray-700 dark:text-gray-300">{m.dept.code}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-5 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-white/[0.04]">
+                      <div className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-600 flex items-center justify-end px-2"
+                           style={{width: `${(m.headcount/maxH)*100}%`}}>
+                        {m.headcount > 0 && <span className="text-[10px] font-bold text-white">{m.headcount}</span>}
+                      </div>
+                    </div>
+                    <div className="h-5 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-white/[0.04]">
+                      <div className="h-full rounded-full bg-gradient-to-r from-accent-500 to-accent-600 flex items-center justify-end px-2"
+                           style={{width: `${(m.tasks/maxT)*100}%`}}>
+                        {m.tasks > 0 && <span className="text-[10px] font-bold text-white">{m.tasks}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-right text-[11px] font-semibold tabular-nums">{m.completion != null ? m.completion + "%" : "—"}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3 flex items-center justify-end gap-4 border-t border-gray-100 pt-3 text-[10px] dark:border-white/[0.05]">
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-brand-500"/>Headcount</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-accent-500"/>Tasks</span>
+            <span>· completion %</span>
+          </div>
+        </div>
+      </div>
+
+      {/* COMPREHENSIVE DEPT CARDS */}
+      <h3 className="mt-6 mb-3 text-[14px] font-bold">Department breakdown</h3>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {DEPARTMENTS.map(d => {
-          const headcount = data.users.filter(u => u.department === d.code).length;
+        {deptMetrics.map(({dept, headcount, tasks, tasksDone, tasksOpen, completion, head}) => {
+          const cfg = SUMMARIES[dept.code] || {};
+          const Ic = cfg.icon || Icon.layers;
+          const tones = { green:"#338e9b", orange:"#ea6a32", blue:"#3b82f6", purple:"#a855f7", red:"#ef4444" };
+          const bgs = { green:"from-brand-500/12 to-brand-500/2", orange:"from-accent-500/12 to-accent-500/2", blue:"from-blue-500/12 to-blue-500/2", purple:"from-purple-500/12 to-purple-500/2", red:"from-red-500/12 to-red-500/2" };
           return (
-            <div key={d.code} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:bg-gray-50">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{d.code}</p>
-              <h3 className="mt-1 text-base font-semibold">{d.name}</h3>
-              <p className="mt-1 text-sm text-gray-500">{SUMMARIES[d.code]}</p>
-              <p className="mt-3 text-xs text-gray-400">{headcount} {headcount === 1 ? "person" : "people"}</p>
+            <div key={dept.code} className={cls("group rounded-2xl border border-gray-200/80 bg-gradient-to-br p-4 transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md hover:shadow-brand-500/10 dark:border-white/[0.06] dark:hover:border-brand-500/40", bgs[cfg.tone])}>
+              <div className="flex items-start gap-3">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/80 shadow-sm dark:bg-ink-800/60" style={{color: tones[cfg.tone]}}>
+                  <Ic className="h-5 w-5"/>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{dept.code}</p>
+                  <h3 className="text-[14px] font-bold leading-tight">{dept.name}</h3>
+                </div>
+              </div>
+              <p className="mt-2 line-clamp-2 text-[11px] text-gray-600 dark:text-gray-400">{cfg.desc}</p>
+
+              {/* Stats grid */}
+              <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-white/70 p-2.5 dark:bg-ink-800/40">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">Staff</p>
+                  <p className="text-[14px] font-black tabular-nums">{headcount}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">Tasks</p>
+                  <p className="text-[14px] font-black tabular-nums">{tasks}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-gray-500">Done</p>
+                  <p className="text-[14px] font-black tabular-nums">{tasksDone}</p>
+                </div>
+              </div>
+
+              {/* Completion bar */}
+              {completion != null && (
+                <div className="mt-2.5">
+                  <div className="flex items-center justify-between text-[10px] mb-1">
+                    <span className="font-bold uppercase tracking-wider text-gray-500">Task completion</span>
+                    <span className="font-bold tabular-nums">{completion}%</span>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-white/[0.06]">
+                    <div className={cls("h-full rounded-full", completion >= 75 ? "bg-brand-500" : completion >= 50 ? "bg-accent-500" : completion >= 25 ? "bg-yellow-500" : "bg-red-400")} style={{width: completion + "%"}}/>
+                  </div>
+                </div>
+              )}
+
+              {/* Head */}
+              <div className="mt-3 flex items-center gap-2 border-t border-gray-200/60 pt-2.5 dark:border-white/[0.05]">
+                {head ? (
+                  <>
+                    <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[10px] font-bold text-white">{head.name.split(" ").map(n=>n[0]).slice(0,2).join("")}</div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[11px] font-semibold">{head.name}</p>
+                      <p className="text-[10px] text-gray-500">Department head</p>
+                    </div>
+                    <Icon.chevronRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-brand-500 transition"/>
+                  </>
+                ) : (
+                  <a href="#/people" className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-brand-700">
+                    <Icon.plus className="h-3 w-3"/> Assign head
+                  </a>
+                )}
+              </div>
             </div>
           );
         })}
@@ -4315,47 +4540,151 @@ function Africonnect({ data, update }) {
 //  AUDIT
 // ════════════════════════════════════════════════════════════════════════
 function AuditLog({ data }) {
-  const actionData = ["CREATE","UPDATE","DELETE","LOGIN","SYNC","EXPORT"].map((a,i)=>({label:a, value: data.auditLog.filter(l=>l.action===a).length, color:["#3d9462","#3b82f6","#ef4444","#a855f7","#fb7d12","#94a3b8"][i]})).filter(d=>d.value>0);
-  const entityData = {};
-  data.auditLog.forEach(l => { entityData[l.entity] = (entityData[l.entity] || 0) + 1; });
-  const entityList = Object.entries(entityData).sort((a,b)=>b[1]-a[1]).slice(0, 8).map(([label, value]) => ({label, value}));
-  // Activity over last 14 days
+  const [filterActions, setFilterActions] = useState(new Set());
+  const [filterEntities, setFilterEntities] = useState(new Set());
+  const [filterActors, setFilterActors] = useState(new Set());
+  const [search, setSearch] = useState("");
+
+  const actionData = ["CREATE","UPDATE","DELETE","LOGIN","SYNC","EXPORT"].map((a,i)=>({label:a, value: data.auditLog.filter(l=>l.action===a).length, color:["#338e9b","#3b82f6","#ef4444","#a855f7","#ea6a32","#94a3b8"][i]})).filter(d=>d.value>0);
+  const entityCounts = {};
+  data.auditLog.forEach(l => { entityCounts[l.entity] = (entityCounts[l.entity] || 0) + 1; });
+  const entityList = Object.entries(entityCounts).sort((a,b)=>b[1]-a[1]);
+  const actorCounts = {};
+  data.auditLog.forEach(l => { actorCounts[l.actorEmail||"system"] = (actorCounts[l.actorEmail||"system"] || 0) + 1; });
+  const actorList = Object.entries(actorCounts).sort((a,b)=>b[1]-a[1]);
+
   const days = Array.from({length: 14}, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (13-i)); d.setHours(0,0,0,0); return d.getTime(); });
   const auditTrend = days.map((day, i) => {
     const next = i < days.length-1 ? days[i+1] : day + 86400000;
     return data.auditLog.filter(l => { const t = new Date(l.createdAt).getTime(); return t >= day && t < next; }).length;
   });
 
+  const toggleFilter = (set, setter, val) => {
+    const n = new Set(set);
+    if (n.has(val)) n.delete(val); else n.add(val);
+    setter(n);
+  };
+  const clearAll = () => { setFilterActions(new Set()); setFilterEntities(new Set()); setFilterActors(new Set()); setSearch(""); };
+
+  const filtered = data.auditLog.filter(l => {
+    if (filterActions.size > 0 && !filterActions.has(l.action)) return false;
+    if (filterEntities.size > 0 && !filterEntities.has(l.entity)) return false;
+    if (filterActors.size > 0 && !filterActors.has(l.actorEmail || "system")) return false;
+    if (search) { const s = search.toLowerCase(); if (!(l.action + " " + l.entity + " " + (l.actorEmail||"") + " " + (l.entityId||"")).toLowerCase().includes(s)) return false; }
+    return true;
+  });
+
+  const totalFilters = filterActions.size + filterEntities.size + filterActors.size + (search ? 1 : 0);
+
+  // Group by day
+  const byDay = {};
+  filtered.slice(0,300).forEach(l => {
+    const d = new Date(l.createdAt);
+    const key = d.toDateString();
+    if (!byDay[key]) byDay[key] = [];
+    byDay[key].push(l);
+  });
+
+  const FilterChip = ({ label, count, active, onClick, tone="gray" }) => {
+    const tones = { gray:"bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-white/[0.04] dark:text-gray-300 dark:hover:bg-white/[0.08]", green:"bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300", red:"bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400", blue:"bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-300", orange:"bg-accent-50 text-accent-700 hover:bg-accent-100 dark:bg-accent-500/10 dark:text-accent-300", purple:"bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-500/10 dark:text-purple-300" };
+    return (
+      <button onClick={onClick}
+              className={cls("rounded-full px-2.5 py-1 text-[11px] font-medium transition ring-1 ring-inset",
+                active ? tones[tone] + " ring-current/30" : "bg-white text-gray-600 ring-gray-200 hover:bg-gray-50 dark:bg-ink-800/60 dark:text-gray-400 dark:ring-white/[0.08] dark:hover:bg-white/[0.04]")}>
+        {label} {count != null && <span className={cls("ml-1 text-[10px]", active ? "" : "text-gray-400")}>{count}</span>}
+        {active && <span className="ml-1">✓</span>}
+      </button>
+    );
+  };
+
+  const actionTone = { CREATE:"green", UPDATE:"blue", DELETE:"red", LOGIN:"purple", SYNC:"orange", EXPORT:"gray" };
+
   return (
     <div>
-      <PageHeader title="Audit & Compliance" subtitle="Immutable record of system events, financial actions and integrations." />
+      <PageHeader title="Audit & Compliance" subtitle="Immutable record of system events. Filter by action, entity, or actor." />
+
       <div className="grid gap-3 md:grid-cols-4">
         <StatCard icon={Icon.audit}    label="Total events"  value={data.auditLog.length} accent="green" sparkline={auditTrend} />
         <StatCard icon={Icon.refresh}  label="Last 24h"      value={data.auditLog.filter(l => Date.now() - new Date(l.createdAt).getTime() < 86400000).length} accent="blue" />
         <StatCard icon={Icon.contacts} label="Unique actors" value={new Set(data.auditLog.map(l=>l.actorEmail)).size} accent="purple" />
-        <StatCard icon={Icon.layers}   label="Entity types"  value={Object.keys(entityData).length} accent="orange" />
+        <StatCard icon={Icon.layers}   label="Entity types"  value={Object.keys(entityCounts).length} accent="orange" />
       </div>
+
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Action mix</h3></div><div className="p-4"><DonutChart data={actionData} size={160} thickness={20}/></div></div>
-        <div className="card lg:col-span-2 animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Top affected entities</h3><p className="text-[11px] text-gray-500">Most-touched models</p></div><div className="p-4 text-gray-700 dark:text-gray-300">{entityList.length ? <BarChart data={entityList} height={200}/> : <p className="py-8 text-center text-[12px] text-gray-500">No events</p>}</div></div>
+        <div className="card lg:col-span-2 animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">14-day activity</h3></div><div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={auditTrend.map((v, i) => ({label: new Date(days[i]).toLocaleDateString("en",{month:"short",day:"numeric"}), value: v}))} height={180}/></div></div>
       </div>
-      <h3 className="mt-6 mb-3 text-[14px] font-bold">Recent activity ({Math.min(200, data.auditLog.length)})</h3>
-      <div className="card">
-        <table className="table-base">
-          <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Reference</th></tr></thead>
-          <tbody>
-            {data.auditLog.slice(0,200).map(l => (
-              <tr key={l.id}>
-                <td className="text-xs">{relTime(l.createdAt)}</td>
-                <td className="text-gray-700">{l.actorEmail}</td>
-                <td><Badge tone={l.action==="DELETE"?"red":l.action==="CREATE"?"green":"blue"}>{l.action}</Badge></td>
-                <td>{l.entity}</td>
-                <td className="font-mono text-xs text-gray-500">{l.entityId ?? "—"}</td>
-              </tr>
-            ))}
-            {data.auditLog.length === 0 && <tr><td colSpan="5" className="py-6 text-center text-gray-500">No audit events.</td></tr>}
-          </tbody>
-        </table>
+
+      {/* FACETED SEARCH */}
+      <div className="mt-6 card overflow-hidden animate-fade-up">
+        <div className="border-b border-gray-100 px-4 py-3 dark:border-white/[0.05]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Icon.filter className="h-4 w-4 text-gray-400"/>
+              <h3 className="text-[14px] font-bold">Faceted search</h3>
+              {totalFilters > 0 && <span className="rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-bold text-brand-700 dark:text-brand-300">{totalFilters} filter{totalFilters===1?"":"s"} active</span>}
+            </div>
+            {totalFilters > 0 && <button onClick={clearAll} className="text-[11px] font-semibold text-brand-700 hover:underline dark:text-brand-400">Clear all</button>}
+          </div>
+          <div className="relative mt-3">
+            <Icon.search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"/>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by action, entity, actor, or reference…"
+                   className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-[13px] focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/[0.04] dark:focus:bg-ink-800"/>
+          </div>
+          <div className="mt-3 space-y-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mr-1">Action</span>
+              {["CREATE","UPDATE","DELETE","LOGIN","SYNC","EXPORT"].filter(a=>actionData.find(x=>x.label===a)).map(a => (
+                <FilterChip key={a} label={a} count={data.auditLog.filter(l=>l.action===a).length}
+                            active={filterActions.has(a)} tone={actionTone[a]}
+                            onClick={()=>toggleFilter(filterActions, setFilterActions, a)}/>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mr-1">Entity</span>
+              {entityList.slice(0,10).map(([entity, count]) => (
+                <FilterChip key={entity} label={entity} count={count}
+                            active={filterEntities.has(entity)}
+                            onClick={()=>toggleFilter(filterEntities, setFilterEntities, entity)}/>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mr-1">Actor</span>
+              {actorList.slice(0,8).map(([actor, count]) => (
+                <FilterChip key={actor} label={actor.split("@")[0]} count={count}
+                            active={filterActors.has(actor)}
+                            onClick={()=>toggleFilter(filterActors, setFilterActors, actor)}/>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* RESULT LIST */}
+        <div className="px-4 py-3 dark:border-white/[0.05]">
+          <p className="mb-2 text-[11px] text-gray-500">{filtered.length} event{filtered.length===1?"":"s"} matching {totalFilters > 0 ? "filters" : "all events"}</p>
+          {Object.keys(byDay).length === 0 ? (
+            <p className="py-8 text-center text-[12px] text-gray-500">No matching events.</p>
+          ) : (
+            <div className="space-y-3">
+              {Object.entries(byDay).map(([day, items]) => (
+                <div key={day}>
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-500">{day}</p>
+                  <div className="divide-y divide-gray-100/70 rounded-xl border border-gray-100 dark:divide-white/[0.04] dark:border-white/[0.05]">
+                    {items.map(l => (
+                      <div key={l.id} className="flex items-center gap-3 px-3 py-2 transition hover:bg-gray-50/70 dark:hover:bg-white/[0.02]">
+                        <span className="text-[10px] tabular-nums text-gray-400 w-14 shrink-0">{new Date(l.createdAt).toLocaleTimeString("en",{hour:"2-digit",minute:"2-digit"})}</span>
+                        <Badge tone={actionTone[l.action] ?? "gray"}>{l.action}</Badge>
+                        <span className="text-[12px] font-semibold">{l.entity}</span>
+                        {l.entityId && <span className="font-mono text-[10px] text-gray-400 truncate max-w-[180px]">{l.entityId}</span>}
+                        <span className="ml-auto text-[11px] text-gray-500">{l.actorEmail ?? "system"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
