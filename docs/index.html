@@ -73,6 +73,57 @@
   /* hide scrollbar in marquee row */
   .marquee::-webkit-scrollbar { display: none; }
   .marquee { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ─── ANIMATED GLOBE ─── */
+  .globe-stage { mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 60%, transparent 100%); -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 60%, transparent 100%); }
+  .globe-grid { transform-origin: 400px 400px; animation: spin-slow 90s linear infinite; }
+  @keyframes spin-slow { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
+
+  .city circle { transform-origin: center; }
+  .city-ring { transform-origin: center; transform-box: fill-box; animation: ring-pulse 2.6s cubic-bezier(0.4,0,0.6,1) infinite; opacity: 0; }
+  @keyframes ring-pulse {
+    0%   { transform: scale(1);   opacity: 0.9; stroke-width: 2; }
+    70%  { transform: scale(5);   opacity: 0;   stroke-width: 0.5; }
+    100% { transform: scale(5);   opacity: 0;   stroke-width: 0; }
+  }
+  .city[data-i="0"] .city-ring { animation-delay: 0s; }
+  .city[data-i="1"] .city-ring { animation-delay: 0.3s; }
+  .city[data-i="2"] .city-ring { animation-delay: 0.6s; }
+  .city[data-i="3"] .city-ring { animation-delay: 0.9s; }
+  .city[data-i="4"] .city-ring { animation-delay: 1.2s; }
+  .city[data-i="5"] .city-ring { animation-delay: 1.5s; }
+  .city[data-i="6"] .city-ring { animation-delay: 1.8s; }
+  .city[data-i="7"] .city-ring { animation-delay: 2.1s; }
+  .city[data-i="8"] .city-ring { animation-delay: 2.4s; }
+  .city[data-i="9"] .city-ring { animation-delay: 2.7s; }
+
+  .arc {
+    stroke-dasharray: 240;
+    stroke-dashoffset: 240;
+    animation: arc-draw 5s cubic-bezier(0.4,0,0.2,1) infinite;
+  }
+  .arc.a1  { animation-delay: 0s; }
+  .arc.a2  { animation-delay: 0.6s; }
+  .arc.a3  { animation-delay: 1.2s; }
+  .arc.a4  { animation-delay: 1.8s; }
+  .arc.a5  { animation-delay: 2.4s; }
+  .arc.a6  { animation-delay: 3.0s; }
+  .arc.a7  { animation-delay: 0.3s; animation-duration: 6s; }
+  .arc.a8  { animation-delay: 1.0s; animation-duration: 6s; }
+  .arc.a9  { animation-delay: 2.0s; animation-duration: 7s; }
+  .arc.a10 { animation-delay: 2.7s; animation-duration: 5.5s; }
+  @keyframes arc-draw {
+    0%   { stroke-dashoffset: 240; opacity: 0; }
+    15%  { opacity: 1; }
+    50%  { stroke-dashoffset: 0;   opacity: 1; }
+    75%  { stroke-dashoffset: -240; opacity: 0; }
+    100% { stroke-dashoffset: -240; opacity: 0; }
+  }
+
+  /* Reduce motion accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .globe-grid, .city-ring, .arc { animation: none !important; }
+  }
 </style>
 </head>
 <body class="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
@@ -115,6 +166,124 @@
   <div class="orb h-96 w-96 bg-brand-400 animate-float" style="top:-100px; left:-100px;"></div>
   <div class="orb h-96 w-96 bg-accent-500 animate-float-slow" style="bottom:-100px; right:-100px;"></div>
   <div class="orb h-72 w-72 bg-brand-300 animate-float" style="top:40%; right:20%; animation-delay:-3s;"></div>
+
+  <!-- ─── ANIMATED GLOBE BACKGROUND ─── -->
+  <div class="globe-stage pointer-events-none absolute inset-y-0 right-0 hidden lg:block lg:w-3/5 xl:w-1/2">
+    <svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 h-full w-full">
+      <defs>
+        <radialGradient id="globeFill" cx="48%" cy="42%" r="58%">
+          <stop offset="0%" stop-color="rgba(82,168,180,0.45)"/>
+          <stop offset="55%" stop-color="rgba(20,60,80,0.45)"/>
+          <stop offset="100%" stop-color="rgba(8,22,28,0.7)"/>
+        </radialGradient>
+        <radialGradient id="globeAura" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="rgba(82,168,180,0.3)"/>
+          <stop offset="60%" stop-color="rgba(82,168,180,0.05)"/>
+          <stop offset="100%" stop-color="rgba(82,168,180,0)"/>
+        </radialGradient>
+        <linearGradient id="arcGrad" x1="0%" x2="100%">
+          <stop offset="0%" stop-color="rgba(234,106,50,0)"/>
+          <stop offset="50%" stop-color="rgba(234,106,50,0.95)"/>
+          <stop offset="100%" stop-color="rgba(234,106,50,0)"/>
+        </linearGradient>
+        <linearGradient id="arcGrad2" x1="0%" x2="100%">
+          <stop offset="0%" stop-color="rgba(82,168,180,0)"/>
+          <stop offset="50%" stop-color="rgba(82,168,180,0.9)"/>
+          <stop offset="100%" stop-color="rgba(82,168,180,0)"/>
+        </linearGradient>
+        <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="3" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Outer aura -->
+      <circle cx="400" cy="400" r="395" fill="url(#globeAura)"/>
+
+      <!-- Globe sphere -->
+      <circle cx="400" cy="400" r="320" fill="url(#globeFill)" stroke="rgba(131,197,205,0.35)" stroke-width="0.7"/>
+
+      <!-- Lat/long grid (rotates slowly) -->
+      <g class="globe-grid" stroke="rgba(131,197,205,0.18)" stroke-width="0.6" fill="none">
+        <ellipse cx="400" cy="400" rx="320" ry="80"/>
+        <ellipse cx="400" cy="400" rx="320" ry="160"/>
+        <ellipse cx="400" cy="400" rx="320" ry="240"/>
+        <ellipse cx="400" cy="400" rx="80" ry="320"/>
+        <ellipse cx="400" cy="400" rx="160" ry="320"/>
+        <ellipse cx="400" cy="400" rx="240" ry="320"/>
+      </g>
+
+      <!-- Africa silhouette (approximate hand-drawn path, with dot stipple effect) -->
+      <g>
+        <path d="M 380,170
+                 C 410,162 460,170 488,200
+                 L 510,250
+                 C 522,290 524,330 510,370
+                 L 502,420
+                 C 498,470 478,520 450,565
+                 C 430,592 405,605 380,605
+                 C 358,600 340,590 326,570
+                 C 308,545 295,510 290,475
+                 C 282,440 280,405 285,365
+                 C 290,325 298,285 308,250
+                 C 322,212 348,180 380,170 Z"
+              fill="rgba(51,142,155,0.30)"
+              stroke="rgba(82,168,180,0.65)"
+              stroke-width="1.2"/>
+        <!-- Madagascar -->
+        <path d="M 530,500 C 540,510 545,540 538,565 C 532,580 522,580 518,560 C 513,535 518,510 530,500 Z"
+              fill="rgba(51,142,155,0.30)"
+              stroke="rgba(82,168,180,0.55)" stroke-width="1"/>
+      </g>
+
+      <!-- Stippled dot overlay on Africa for the "constellation" feel -->
+      <g fill="rgba(131,197,205,0.55)">
+        <circle cx="395" cy="195" r="1.2"/><circle cx="420" cy="200" r="1"/><circle cx="450" cy="210" r="1.2"/>
+        <circle cx="475" cy="225" r="1"/><circle cx="495" cy="245" r="1.3"/><circle cx="505" cy="270" r="1"/>
+        <circle cx="510" cy="295" r="1.2"/><circle cx="510" cy="320" r="1"/><circle cx="505" cy="345" r="1.3"/>
+        <circle cx="500" cy="370" r="1"/><circle cx="495" cy="395" r="1.2"/><circle cx="490" cy="420" r="1"/>
+        <circle cx="478" cy="445" r="1.3"/><circle cx="465" cy="475" r="1"/><circle cx="448" cy="510" r="1.2"/>
+        <circle cx="425" cy="550" r="1"/><circle cx="400" cy="585" r="1.3"/><circle cx="375" cy="595" r="1"/>
+        <circle cx="350" cy="585" r="1.2"/><circle cx="335" cy="565" r="1"/><circle cx="320" cy="540" r="1.3"/>
+        <circle cx="305" cy="510" r="1"/><circle cx="298" cy="475" r="1.2"/><circle cx="290" cy="445" r="1"/>
+        <circle cx="285" cy="410" r="1.3"/><circle cx="285" cy="380" r="1"/><circle cx="290" cy="345" r="1.2"/>
+        <circle cx="298" cy="310" r="1"/><circle cx="308" cy="280" r="1.3"/><circle cx="320" cy="245" r="1"/>
+        <circle cx="338" cy="215" r="1.2"/><circle cx="358" cy="195" r="1"/>
+        <circle cx="380" cy="265" r="0.9"/><circle cx="410" cy="280" r="0.9"/><circle cx="440" cy="290" r="0.9"/>
+        <circle cx="425" cy="325" r="0.9"/><circle cx="395" cy="335" r="0.9"/><circle cx="370" cy="365" r="0.9"/>
+        <circle cx="430" cy="385" r="0.9"/><circle cx="455" cy="425" r="0.9"/><circle cx="395" cy="465" r="0.9"/>
+        <circle cx="425" cy="500" r="0.9"/><circle cx="370" cy="525" r="0.9"/><circle cx="395" cy="555" r="0.9"/>
+      </g>
+
+      <!-- Cities (pulsing dots) -->
+      <g filter="url(#glow)">
+        <g class="city" data-i="0"><circle cx="450" cy="220" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="450" cy="220" r="3" fill="none" stroke="#f7ad7d"/></g>
+        <g class="city" data-i="1"><circle cx="345" cy="350" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="345" cy="350" r="3" fill="none" stroke="#f7ad7d"/></g>
+        <g class="city" data-i="2"><circle cx="475" cy="400" r="3" fill="#83c5cd"/><circle class="city-ring" cx="475" cy="400" r="3" fill="none" stroke="#83c5cd"/></g>
+        <g class="city" data-i="3"><circle cx="395" cy="565" r="3" fill="#83c5cd"/><circle class="city-ring" cx="395" cy="565" r="3" fill="none" stroke="#83c5cd"/></g>
+        <g class="city" data-i="4"><circle cx="335" cy="380" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="335" cy="380" r="3" fill="none" stroke="#f7ad7d"/></g>
+        <g class="city" data-i="5"><circle cx="345" cy="225" r="3" fill="#83c5cd"/><circle class="city-ring" cx="345" cy="225" r="3" fill="none" stroke="#83c5cd"/></g>
+        <g class="city" data-i="6"><circle cx="425" cy="540" r="3" fill="#83c5cd"/><circle class="city-ring" cx="425" cy="540" r="3" fill="none" stroke="#83c5cd"/></g>
+        <g class="city" data-i="7"><circle cx="490" cy="340" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="490" cy="340" r="3" fill="none" stroke="#f7ad7d"/></g>
+        <g class="city" data-i="8"><circle cx="290" cy="320" r="3" fill="#83c5cd"/><circle class="city-ring" cx="290" cy="320" r="3" fill="none" stroke="#83c5cd"/></g>
+        <g class="city" data-i="9"><circle cx="410" cy="445" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="410" cy="445" r="3" fill="none" stroke="#f7ad7d"/></g>
+      </g>
+
+      <!-- Connection arcs (animated draw-in/out) -->
+      <g fill="none" stroke-linecap="round" stroke-width="1.4" filter="url(#glow)">
+        <path class="arc a1" d="M 450,220 Q 380,250 345,350" stroke="url(#arcGrad)"/>
+        <path class="arc a2" d="M 345,350 Q 410,380 475,400" stroke="url(#arcGrad2)"/>
+        <path class="arc a3" d="M 475,400 Q 425,470 395,565" stroke="url(#arcGrad)"/>
+        <path class="arc a4" d="M 345,225 Q 320,275 290,320" stroke="url(#arcGrad2)"/>
+        <path class="arc a5" d="M 290,320 Q 350,380 410,445" stroke="url(#arcGrad)"/>
+        <path class="arc a6" d="M 490,340 Q 460,440 425,540" stroke="url(#arcGrad2)"/>
+        <path class="arc a7" d="M 450,220 Q 470,290 490,340" stroke="url(#arcGrad)"/>
+        <path class="arc a8" d="M 335,380 Q 380,420 410,445" stroke="url(#arcGrad2)"/>
+        <path class="arc a9" d="M 345,225 Q 400,260 450,220" stroke="url(#arcGrad)"/>
+        <path class="arc a10" d="M 410,445 Q 415,490 425,540" stroke="url(#arcGrad2)"/>
+      </g>
+    </svg>
+  </div>
 
   <div class="relative mx-auto max-w-7xl px-6 pt-32 pb-32 lg:pt-40 lg:pb-40">
     <div class="reveal max-w-4xl">
