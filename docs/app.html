@@ -2044,6 +2044,7 @@ function PaymentForm({ hubId, onSave, onCancel }) {
 
 function HubsList({ data, update, search }) {
   const [tab, setTab] = useState("all"); // all, paid, pending, expired, renewals
+  const [viewMode, setViewMode] = useState("cards"); // cards | spreadsheet | map
   const [filterRegion, setFilterRegion] = useState("");
   const [filterTier, setFilterTier] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
@@ -2329,13 +2330,132 @@ function HubsList({ data, update, search }) {
           ))}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-4 py-2.5 dark:border-white/5">
-          <span className="text-[12px] text-gray-500">Showing <strong>{filtered.length}</strong> hub{filtered.length===1?"":"s"}</span>
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] text-gray-500">Showing <strong className="text-gray-900 dark:text-gray-100">{filtered.length}</strong> hub{filtered.length===1?"":"s"}</span>
+            {/* View mode toggle */}
+            <div className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 p-0.5 text-[11px] dark:border-white/10 dark:bg-white/[0.04]">
+              {[
+                { id:"cards",       label:"Cards",       icon: Icon.layers },
+                { id:"spreadsheet", label:"Spreadsheet", icon: Icon.tasks },
+                { id:"map",         label:"Map",         icon: Icon.africonnect },
+              ].map(v => {
+                const I = v.icon, on = viewMode === v.id;
+                return (
+                  <button key={v.id} onClick={()=>setViewMode(v.id)}
+                          className={cls("flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold transition",
+                            on ? "bg-white text-brand-700 shadow-sm dark:bg-ink-800 dark:text-brand-300" : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-200")}>
+                    <I className="h-3 w-3"/>{v.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <div className="flex gap-1.5 text-[11px]">
             <select className="rounded-md border border-gray-300 bg-white px-2 py-1 dark:border-white/10 dark:bg-gray-800" value={filterRegion} onChange={e=>setFilterRegion(e.target.value)}><option value="">All regions</option>{REGIONS.map(r=><option key={r}>{r}</option>)}</select>
             <select className="rounded-md border border-gray-300 bg-white px-2 py-1 dark:border-white/10 dark:bg-gray-800" value={filterTier} onChange={e=>setFilterTier(e.target.value)}><option value="">All tiers</option>{TIERS.map(t=><option key={t}>{t}</option>)}</select>
             <select className="rounded-md border border-gray-300 bg-white px-2 py-1 dark:border-white/10 dark:bg-gray-800" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option value="">Any status</option>{HUB_STATUS.map(s=><option key={s}>{s}</option>)}</select>
           </div>
         </div>
+
+        {/* SPREADSHEET VIEW */}
+        {viewMode === "spreadsheet" && (
+          <div className="overflow-x-auto">
+            <table className="table-base">
+              <thead><tr><th></th><th>Hub</th><th>Country</th><th>Region</th><th>City</th><th>Sector</th><th>Tier</th><th>Status</th><th>Engage</th><th>Payment</th><th>Renewal</th><th>Founded</th><th>AfriconnectID</th><th></th></tr></thead>
+              <tbody>
+                {filtered.map(h => {
+                  const last = data.payments.filter(p=>p.hubId===h.id).sort((a,b)=>new Date(b.periodEnd)-new Date(a.periodEnd))[0];
+                  const r = renewalInfo(h);
+                  return (
+                    <tr key={h.id} onClick={()=>setViewing(h)} className="cursor-pointer">
+                      <td className="!w-6">{isPriorityHub(h) && <Icon.star className="h-3 w-3 text-purple-500"/>}</td>
+                      <td className="font-semibold text-[12px]">{h.name}</td>
+                      <td className="text-[12px]">{h.country}</td>
+                      <td className="text-[11px] text-gray-500">{h.region}</td>
+                      <td className="text-[11px] text-gray-500">{h.city ?? "—"}</td>
+                      <td className="text-[11px] text-gray-500">{h.sector ?? "—"}</td>
+                      <td><StageBadge stage={h.membershipTier}/></td>
+                      <td><StageBadge stage={h.status}/></td>
+                      <td className="num">{h.engagementScore}</td>
+                      <td className="text-[11px]">{last ? <><StageBadge stage={last.status}/> <span className="ml-1 font-mono">{fmtCurrency(last.amount)}</span></> : <span className="text-gray-400">—</span>}</td>
+                      <td className="text-[11px]">
+                        {r.status === "no-payment" ? <span className="text-gray-400">—</span>
+                          : r.status === "expired" ? <span className="text-red-600">{Math.abs(r.days)}d expired</span>
+                          : r.status === "renewal-soon" ? <span className="text-accent-700 font-medium">{r.days}d</span>
+                          : <span className="text-gray-500">{r.days}d</span>}
+                      </td>
+                      <td className="text-[11px] text-gray-500">{h.foundedYear ?? "—"}</td>
+                      <td className="font-mono text-[10px] text-gray-400">{h.africonnectId ?? "—"}</td>
+                      <td className="text-right" onClick={e=>e.stopPropagation()}>
+                        <button onClick={()=>setPaymentFor(h)} title="Record payment" className="action-icon"><Icon.plus className="h-3 w-3"/></button>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filtered.length === 0 && <tr><td colSpan="14" className="py-10 text-center text-gray-500 text-[13px]">No hubs match filters.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* MAP VIEW — regional clusters laid out approximately geographically */}
+        {viewMode === "map" && (() => {
+          // Layout regions in a 3x3-ish grid mimicking Africa shape
+          const layout = [
+            { region: "North Africa",    col: "2 / 4", row: "1" },
+            { region: "West Africa",     col: "1 / 3", row: "2" },
+            { region: "East Africa",     col: "3 / 5", row: "2" },
+            { region: "Central Africa",  col: "2 / 4", row: "3" },
+            { region: "Southern Africa", col: "2 / 4", row: "4" },
+          ];
+          const tierColor = { STANDARD:"#94a3b8", PREMIUM:"#3b82f6", STRATEGIC:"#a855f7" };
+          return (
+            <div className="p-4">
+              <div className="mb-3 flex items-center justify-between text-[11px]">
+                <p className="text-gray-500">Click a region to focus · click a pin for a hub</p>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-purple-500"/>Strategic</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-500"/>Premium</span>
+                  <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-gray-400"/>Standard</span>
+                </div>
+              </div>
+              <div className="relative mx-auto max-w-3xl rounded-2xl bg-gradient-to-br from-brand-50 via-white to-accent-50 p-4 dark:from-brand-500/5 dark:via-ink-800/30 dark:to-accent-500/5">
+                <div className="grid gap-2" style={{gridTemplateColumns:"repeat(4, 1fr)", gridTemplateRows:"repeat(4, 1fr)"}}>
+                  {layout.map(zone => {
+                    const hubsInZone = filtered.filter(h => h.region === zone.region);
+                    const isFocused = filterRegion === zone.region;
+                    return (
+                      <button key={zone.region} onClick={()=>setFilterRegion(filterRegion === zone.region ? "" : zone.region)}
+                              style={{gridColumn: zone.col, gridRow: zone.row}}
+                              className={cls("relative rounded-2xl border p-3 text-left transition",
+                                isFocused ? "border-brand-500 bg-white shadow-md ring-2 ring-brand-500/20 dark:bg-ink-800" : "border-brand-200/60 bg-white/70 hover:border-brand-400 hover:bg-white dark:border-white/[0.06] dark:bg-ink-800/40 dark:hover:bg-ink-800/70")}>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[11px] font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300">{zone.region.replace(" Africa","")}</p>
+                          <span className="rounded-full bg-brand-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{hubsInZone.length}</span>
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {hubsInZone.slice(0,12).map(h => (
+                            <span key={h.id} title={`${h.name} · ${h.membershipTier}`}
+                                  onClick={e=>{e.stopPropagation(); setViewing(h);}}
+                                  className="grid h-6 w-6 place-items-center rounded-full border border-white text-[8px] font-bold text-white shadow transition hover:scale-125 cursor-pointer"
+                                  style={{background: tierColor[h.membershipTier] ?? "#94a3b8"}}>
+                              {h.name.slice(0,2).toUpperCase()}
+                            </span>
+                          ))}
+                          {hubsInZone.length > 12 && <span className="text-[10px] font-bold text-gray-500">+{hubsInZone.length - 12}</span>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              {filtered.length === 0 && <p className="py-8 text-center text-[12px] text-gray-500">No hubs match filters.</p>}
+            </div>
+          );
+        })()}
+
+        {/* CARDS VIEW (default) */}
+        {viewMode === "cards" && (
         <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map(h => {
             const last = data.payments.filter(p=>p.hubId===h.id).sort((a,b)=>new Date(b.periodEnd)-new Date(a.periodEnd))[0];
@@ -2397,6 +2517,7 @@ function HubsList({ data, update, search }) {
           })}
           {filtered.length === 0 && <div className="col-span-full py-10 text-center text-[13px] text-gray-500">No hubs match filters.</div>}
         </div>
+        )}
       </div>
 
       <Modal open={!!viewing || creating || !!editing} onClose={()=>{setViewing(null); setCreating(false); setEditing(null);}}
@@ -4695,6 +4816,7 @@ function AuditLog({ data }) {
 // ════════════════════════════════════════════════════════════════════════
 function Settings({ data, update }) {
   const fileRef = useRef();
+  const [section, setSection] = useState("profile");
   const exportAll = () => download(`afrilabs-os-export-${Date.now()}.json`, JSON.stringify(data, null, 2));
   const importAll = (e) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -4723,45 +4845,290 @@ function Settings({ data, update }) {
       hubs:[], payments:[], partners:[], partnerships:[], partnershipPrograms:[],
       programs:[], programHubs:[], fundingSources:[], events:[], eventPartners:[],
       tasks:[], campaigns:[], activities:[], bookings:[], jobs:[], auditLog:[], syncLog:[],
+      contacts:[], deals:[], crmActivities:[], notes:[],
     }));
   };
 
+  const me = data.users.find(u => u.id === data.settings.currentUserId) || data.users[0];
+  const prefs = data.settings.prefs || {
+    notif: { email: true, inApp: true, weeklyDigest: false, paymentReminders: true, renewalAlerts: true, integrationEvents: true },
+    locale: { currency: "USD", dateFormat: "MMM d, yyyy", timezone: "Africa/Lagos", language: "en" },
+    display: { density: "comfortable", sidebarDefault: "expanded" },
+  };
+  const setPrefs = (next) => update(d => { d.settings.prefs = next; logAudit(d, "UPDATE", "Settings", "prefs"); return d; });
+  const togglePref = (group, key) => setPrefs({ ...prefs, [group]: { ...prefs[group], [key]: !prefs[group][key] }});
+  const setLocale = (key, val) => setPrefs({ ...prefs, locale: { ...prefs.locale, [key]: val }});
+  const setDisplay = (key, val) => setPrefs({ ...prefs, display: { ...prefs.display, [key]: val }});
+
+  const sections = [
+    { id:"profile",       label:"Profile",       icon: Icon.contacts },
+    { id:"notifications", label:"Notifications", icon: Icon.bell },
+    { id:"display",       label:"Display",       icon: Icon.layers },
+    { id:"localization",  label:"Localization",  icon: Icon.africonnect },
+    { id:"integrations",  label:"Integrations",  icon: Icon.refresh },
+    { id:"security",      label:"Security",      icon: Icon.audit },
+    { id:"data",          label:"Data sovereignty", icon: Icon.download },
+    { id:"danger",        label:"Danger zone",   icon: Icon.alert },
+  ];
+
+  const Toggle = ({ on, onChange }) => (
+    <button onClick={onChange} role="switch" aria-checked={on}
+            className={cls("relative h-5 w-9 rounded-full transition-all", on ? "bg-brand-500" : "bg-gray-200 dark:bg-white/[0.1]")}>
+      <span className={cls("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all", on ? "left-4" : "left-0.5")}/>
+    </button>
+  );
+
+  const Row = ({ label, hint, children }) => (
+    <div className="flex items-center justify-between gap-4 border-b border-gray-100 py-3 last:border-b-0 dark:border-white/[0.05]">
+      <div className="min-w-0">
+        <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100">{label}</p>
+        {hint && <p className="text-[11px] text-gray-500 dark:text-gray-400">{hint}</p>}
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  );
+
+  const Card = ({ id, title, subtitle, icon: I, tone="brand", children }) => {
+    const tones = { brand:"text-brand-700 dark:text-brand-300", red:"text-red-600 dark:text-red-400" };
+    return (
+      <section id={id} className="card scroll-mt-20 animate-fade-up">
+        <div className="flex items-start gap-3 border-b border-gray-100 px-5 py-4 dark:border-white/[0.05]">
+          <div className={cls("grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500/15 to-accent-500/10", tones[tone])}>
+            <I className="h-5 w-5"/>
+          </div>
+          <div>
+            <h3 className="text-[14px] font-bold">{title}</h3>
+            {subtitle && <p className="text-[11px] text-gray-500">{subtitle}</p>}
+          </div>
+        </div>
+        <div className="px-5 py-2">{children}</div>
+      </section>
+    );
+  };
+
   return (
-    <div className="max-w-3xl">
-      <PageHeader title="Settings & Data" subtitle="Your data lives in your browser's localStorage. Export to keep, import to restore." />
+    <div>
+      <PageHeader title="Settings" subtitle="Manage your profile, preferences, integrations, and data sovereignty." />
 
-      <div className="space-y-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h3 className="font-semibold">Sovereignty (your data)</h3>
-          <p className="mt-1 text-sm text-gray-600">Everything you create in this app is stored in your browser only. There is no server. To preserve or move data, use Export/Import below.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button onClick={exportAll} className="btn-primary">↓ Export all data</button>
-            <button onClick={()=>fileRef.current?.click()} className="btn-outline">↑ Import JSON</button>
-            <input ref={fileRef} type="file" accept="application/json" onChange={importAll} className="hidden" />
-          </div>
+      {/* SECTION NAV — sticky pill row */}
+      <div className="mb-5 sticky top-14 z-[5] -mx-5 bg-gray-50/85 px-5 py-2 backdrop-blur dark:bg-ink-950/85 lg:-mx-7 lg:px-7">
+        <div className="flex flex-wrap gap-1.5">
+          {sections.map(s => {
+            const I = s.icon, on = section === s.id;
+            return (
+              <button key={s.id} onClick={()=>{setSection(s.id); document.getElementById(s.id)?.scrollIntoView({behavior:"smooth", block:"start"});}}
+                      className={cls("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition",
+                        on ? "bg-brand-500 text-white shadow-md shadow-brand-500/25" : "bg-white text-gray-700 ring-1 ring-inset ring-gray-200 hover:bg-gray-50 dark:bg-ink-800/60 dark:text-gray-300 dark:ring-white/[0.08] dark:hover:bg-white/[0.04]")}>
+                <I className="h-3.5 w-3.5"/>{s.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+
+          {/* PROFILE */}
+          <Card id="profile" title="Your profile" subtitle="Identity and role within Afrilabs OS" icon={Icon.contacts}>
+            <Row label="Avatar" hint="Initials only — generated from your name">
+              <div className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[14px] font-bold text-white shadow-md shadow-brand-500/25">{(me?.name || "?").split(" ").map(n=>n[0]).slice(0,2).join("")}</div>
+            </Row>
+            <Row label="Display name" hint="How others see you">
+              <input className="input !w-64" defaultValue={me?.name} onBlur={e => update(d => { const idx = d.users.findIndex(u=>u.id===me.id); if(idx>=0)d.users[idx].name = e.target.value; return d; })}/>
+            </Row>
+            <Row label="Email" hint="Login + notification address">
+              <input className="input !w-64" defaultValue={me?.email} onBlur={e => update(d => { const idx = d.users.findIndex(u=>u.id===me.id); if(idx>=0)d.users[idx].email = e.target.value; return d; })}/>
+            </Row>
+            <Row label="Role" hint="Your access level">
+              <Badge tone={me?.role==="SUPER_ADMIN"?"purple":me?.role==="COO"||me?.role==="ED"?"orange":"blue"}>{me?.role.replace(/_/g," ")}</Badge>
+            </Row>
+            <Row label="Department" hint="Primary team affiliation">
+              <select className="input !w-64" value={me?.department||""} onChange={e => update(d => { const idx = d.users.findIndex(u=>u.id===me.id); if(idx>=0)d.users[idx].department = e.target.value || null; return d; })}>
+                <option value="">—</option>
+                {DEPARTMENTS.map(dpt => <option key={dpt.code} value={dpt.code}>{dpt.name}</option>)}
+              </select>
+            </Row>
+          </Card>
+
+          {/* NOTIFICATIONS */}
+          <Card id="notifications" title="Notifications" subtitle="Choose what reaches you and where" icon={Icon.bell}>
+            <Row label="In-app notifications" hint="Bell icon in the topbar"><Toggle on={prefs.notif.inApp} onChange={()=>togglePref("notif","inApp")}/></Row>
+            <Row label="Email digest" hint="Daily ecosystem summary"><Toggle on={prefs.notif.email} onChange={()=>togglePref("notif","email")}/></Row>
+            <Row label="Weekly executive digest" hint="Monday 9am · top moves of the week"><Toggle on={prefs.notif.weeklyDigest} onChange={()=>togglePref("notif","weeklyDigest")}/></Row>
+            <Row label="Payment reminders" hint="When member hubs have overdue invoices"><Toggle on={prefs.notif.paymentReminders} onChange={()=>togglePref("notif","paymentReminders")}/></Row>
+            <Row label="Renewal alerts" hint="30 days before subscription expiry"><Toggle on={prefs.notif.renewalAlerts} onChange={()=>togglePref("notif","renewalAlerts")}/></Row>
+            <Row label="Integration events" hint="Africonnect sync results, errors"><Toggle on={prefs.notif.integrationEvents} onChange={()=>togglePref("notif","integrationEvents")}/></Row>
+          </Card>
+
+          {/* DISPLAY */}
+          <Card id="display" title="Display & theme" subtitle="How the interface looks for you" icon={Icon.layers}>
+            <Row label="Theme" hint="Light, dark, or system">
+              <div className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 p-0.5 text-[11px] dark:border-white/10 dark:bg-white/[0.04]">
+                {[
+                  { id:"light", label:"Light", icon: Icon.sun },
+                  { id:"dark",  label:"Dark",  icon: Icon.moon },
+                ].map(t => {
+                  const I = t.icon, on = (t.id==="dark") === document.documentElement.classList.contains("dark");
+                  return (
+                    <button key={t.id} onClick={()=>{ if (t.id === "dark") { document.documentElement.classList.add("dark"); localStorage.setItem("afrilabs-theme","dark"); } else { document.documentElement.classList.remove("dark"); localStorage.setItem("afrilabs-theme","light"); } update(d=>d); }}
+                            className={cls("flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold transition", on ? "bg-white text-brand-700 shadow-sm dark:bg-ink-800 dark:text-brand-300" : "text-gray-500 hover:text-gray-900")}>
+                      <I className="h-3 w-3"/>{t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </Row>
+            <Row label="Sidebar default" hint="When you open the app">
+              <select className="input !w-44" value={prefs.display.sidebarDefault} onChange={e=>setDisplay("sidebarDefault", e.target.value)}>
+                <option value="expanded">Expanded</option><option value="collapsed">Collapsed</option>
+              </select>
+            </Row>
+            <Row label="Density" hint="Spacing between rows">
+              <select className="input !w-44" value={prefs.display.density} onChange={e=>setDisplay("density", e.target.value)}>
+                <option value="comfortable">Comfortable</option><option value="compact">Compact</option>
+              </select>
+            </Row>
+          </Card>
+
+          {/* LOCALIZATION */}
+          <Card id="localization" title="Localization" subtitle="Currency, dates, language, timezone" icon={Icon.africonnect}>
+            <Row label="Currency" hint="Used in funding ledger and dashboards">
+              <select className="input !w-44" value={prefs.locale.currency} onChange={e=>setLocale("currency", e.target.value)}>
+                <option value="USD">USD — US Dollar</option><option value="EUR">EUR — Euro</option><option value="ZAR">ZAR — South African Rand</option><option value="NGN">NGN — Nigerian Naira</option><option value="KES">KES — Kenyan Shilling</option><option value="GHS">GHS — Ghanaian Cedi</option><option value="EGP">EGP — Egyptian Pound</option>
+              </select>
+            </Row>
+            <Row label="Date format" hint="Format used everywhere dates appear">
+              <select className="input !w-44" value={prefs.locale.dateFormat} onChange={e=>setLocale("dateFormat", e.target.value)}>
+                <option value="MMM d, yyyy">Apr 30, 2026</option><option value="d MMM yyyy">30 Apr 2026</option><option value="yyyy-MM-dd">2026-04-30</option><option value="dd/MM/yyyy">30/04/2026</option>
+              </select>
+            </Row>
+            <Row label="Timezone" hint="Your default timezone">
+              <select className="input !w-44" value={prefs.locale.timezone} onChange={e=>setLocale("timezone", e.target.value)}>
+                <option value="Africa/Lagos">Africa/Lagos (UTC+1)</option><option value="Africa/Nairobi">Africa/Nairobi (UTC+3)</option><option value="Africa/Cairo">Africa/Cairo (UTC+2)</option><option value="Africa/Johannesburg">Africa/Johannesburg (UTC+2)</option><option value="Europe/London">Europe/London (UTC+0)</option><option value="UTC">UTC</option>
+              </select>
+            </Row>
+            <Row label="Language" hint="Interface language">
+              <select className="input !w-44" value={prefs.locale.language} onChange={e=>setLocale("language", e.target.value)}>
+                <option value="en">English</option><option value="fr">Français</option><option value="ar">العربية</option><option value="pt">Português</option><option value="sw">Kiswahili</option>
+              </select>
+            </Row>
+          </Card>
+
+          {/* INTEGRATIONS */}
+          <Card id="integrations" title="Integrations" subtitle="External systems connected to Afrilabs OS" icon={Icon.refresh}>
+            <div className="space-y-2 py-3">
+              <div className="flex items-center gap-3 rounded-xl border border-gray-200/80 bg-gradient-to-br from-brand-500/8 to-accent-500/4 p-3 dark:border-white/[0.06]">
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-white shadow-sm dark:bg-ink-800/60"><Icon.africonnect className="h-5 w-5 text-brand-700 dark:text-brand-300"/></div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-bold">Africonnect</p>
+                  <p className="text-[11px] text-gray-500">{data.hubs.filter(h=>h.africonnectId).length}/{data.hubs.length} hubs synced · {data.syncLog?.length || 0} sync events</p>
+                </div>
+                <a href="#/africonnect" className="rounded-full bg-brand-500/15 px-3 py-1 text-[11px] font-bold text-brand-700 hover:bg-brand-500/20 dark:text-brand-300">Connected</a>
+              </div>
+              {[
+                { name:"Mailchimp",   desc:"Email campaign delivery", connected: false, icon: Icon.send },
+                { name:"Stripe",      desc:"Payment collection for hub subscriptions", connected: false, icon: Icon.funding },
+                { name:"Google Calendar", desc:"Sync events to your calendar", connected: false, icon: Icon.events },
+                { name:"Slack",       desc:"Cross-team notifications", connected: false, icon: Icon.collab },
+                { name:"Zapier",      desc:"Automate cross-app workflows", connected: false, icon: Icon.refresh },
+              ].map(intg => {
+                const Ic = intg.icon;
+                return (
+                  <div key={intg.name} className="flex items-center gap-3 rounded-xl border border-gray-200/80 bg-white p-3 dark:border-white/[0.06] dark:bg-ink-800/40">
+                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-gray-100 text-gray-500 dark:bg-white/[0.04]"><Ic className="h-5 w-5"/></div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-bold">{intg.name}</p>
+                      <p className="text-[11px] text-gray-500">{intg.desc}</p>
+                    </div>
+                    <button className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-bold text-gray-700 hover:bg-gray-200 dark:bg-white/[0.06] dark:text-gray-300 dark:hover:bg-white/[0.1]">Connect</button>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* SECURITY */}
+          <Card id="security" title="Security & access" subtitle="Sessions, password, multi-factor" icon={Icon.audit}>
+            <Row label="Active sessions" hint="Devices currently signed in">
+              <div className="flex items-center gap-2 rounded-full bg-brand-500/15 px-3 py-1 text-[11px] font-bold text-brand-700 dark:text-brand-300"><span className="live-dot"/>1 active</div>
+            </Row>
+            <Row label="Two-factor authentication" hint="Add an extra step at sign-in">
+              <button onClick={()=>alert("2FA setup is a stub in the local-only build. Connect Stripe/Auth0 in production.")} className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-bold text-gray-700 hover:bg-gray-200 dark:bg-white/[0.06] dark:text-gray-300">Set up</button>
+            </Row>
+            <Row label="Change password" hint="For browser-stored credentials">
+              <button onClick={()=>alert("Password change is a stub in the local-only build.")} className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-bold text-gray-700 hover:bg-gray-200 dark:bg-white/[0.06] dark:text-gray-300">Update</button>
+            </Row>
+            <Row label="API tokens" hint="For Africonnect & external integrations">
+              <a href="#/africonnect" className="rounded-full bg-brand-500/15 px-3 py-1 text-[11px] font-bold text-brand-700 hover:bg-brand-500/20 dark:text-brand-300">Manage</a>
+            </Row>
+          </Card>
+
+          {/* DATA SOVEREIGNTY */}
+          <Card id="data" title="Data sovereignty" subtitle="Your data lives in your browser only — no server, no telemetry" icon={Icon.download} tone="brand">
+            <Row label="Export all data" hint="Full JSON snapshot of every record">
+              <button onClick={exportAll} className="btn-primary"><Icon.download className="h-4 w-4"/> Export</button>
+            </Row>
+            <Row label="Import data" hint="Replace current data with a saved JSON export">
+              <>
+                <button onClick={()=>fileRef.current?.click()} className="btn-outline"><Icon.upload className="h-4 w-4"/> Import JSON</button>
+                <input ref={fileRef} type="file" accept="application/json" onChange={importAll} className="hidden"/>
+              </>
+            </Row>
+          </Card>
+
+          {/* DANGER ZONE */}
+          <Card id="danger" title="Danger zone" subtitle="Irreversible actions — export your data first" icon={Icon.alert} tone="red">
+            <Row label="Reset to seed data" hint="Restores the demo dataset (30 hubs, 8 partners, etc.)">
+              <button onClick={reset} className="btn-outline">Reset</button>
+            </Row>
+            <Row label="Erase all data" hint="Wipes everything to a blank state. Cannot be undone.">
+              <button onClick={wipeAll} className="btn-danger"><Icon.trash className="h-4 w-4"/> Erase</button>
+            </Row>
+          </Card>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h3 className="font-semibold">Data stats</h3>
-          <div className="mt-2 grid gap-2 md:grid-cols-3 text-sm">
-            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Hubs:</span> <b>{data.hubs.length}</b></div>
-            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Partnerships:</span> <b>{data.partnerships.length}</b></div>
-            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Programs:</span> <b>{data.programs.length}</b></div>
-            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Funding:</span> <b>{data.fundingSources.length}</b></div>
-            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Events:</span> <b>{data.events.length}</b></div>
-            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Tasks:</span> <b>{data.tasks.length}</b></div>
-            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Campaigns:</span> <b>{data.campaigns.length}</b></div>
-            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Activities:</span> <b>{data.activities.length}</b></div>
-            <div className="rounded-md bg-gray-50 px-3 py-2"><span className="text-gray-500">Audit log:</span> <b>{data.auditLog.length}</b></div>
+        {/* RIGHT COLUMN — data summary */}
+        <div className="space-y-4">
+          <div className="card animate-fade-up">
+            <div className="border-b border-gray-100 px-4 py-3 dark:border-white/[0.05]">
+              <h3 className="text-[14px] font-bold">Data summary</h3>
+              <p className="text-[11px] text-gray-500">Live record counts</p>
+            </div>
+            <div className="space-y-1 p-3">
+              {[
+                ["Hubs",          data.hubs.length],
+                ["Partnerships",  data.partnerships.length],
+                ["Programs",      data.programs.length],
+                ["Funding",       data.fundingSources.length],
+                ["Events",        data.events.length],
+                ["Tasks",         data.tasks.length],
+                ["Campaigns",     data.campaigns.length],
+                ["Contacts",      data.contacts?.length || 0],
+                ["Deals",         data.deals?.length || 0],
+                ["CRM activities",data.crmActivities?.length || 0],
+                ["Activities",    data.activities.length],
+                ["Audit log",     data.auditLog.length],
+              ].map(([label, val]) => (
+                <div key={label} className="flex items-center justify-between rounded-md px-3 py-1.5 text-[12px] hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                  <span className="text-gray-600 dark:text-gray-400">{label}</span>
+                  <span className="font-mono font-bold tabular-nums">{val}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-
-        <div className="rounded-xl border border-red-200 bg-red-50/30 p-5 shadow-sm">
-          <h3 className="font-semibold text-red-800">Danger zone</h3>
-          <p className="mt-1 text-sm text-red-700">These actions cannot be undone. Export first.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button onClick={reset} className="btn-outline">Reset to seed data</button>
-            <button onClick={wipeAll} className="btn-danger">Erase all data</button>
+          <div className="rounded-2xl border border-brand-200/60 bg-gradient-to-br from-brand-500/8 to-accent-500/4 p-4 dark:border-brand-500/20">
+            <div className="flex items-center gap-2 mb-2">
+              <Icon.audit className="h-4 w-4 text-brand-700 dark:text-brand-300"/>
+              <h4 className="text-[12px] font-bold uppercase tracking-wider">Sovereignty guarantees</h4>
+            </div>
+            <ul className="space-y-1.5 text-[11px] text-gray-700 dark:text-gray-300">
+              <li className="flex items-start gap-1.5"><Icon.check className="h-3 w-3 shrink-0 mt-0.5 text-brand-600"/>No server-side storage</li>
+              <li className="flex items-start gap-1.5"><Icon.check className="h-3 w-3 shrink-0 mt-0.5 text-brand-600"/>No telemetry, no third-party tracking</li>
+              <li className="flex items-start gap-1.5"><Icon.check className="h-3 w-3 shrink-0 mt-0.5 text-brand-600"/>JSON export at any time</li>
+              <li className="flex items-start gap-1.5"><Icon.check className="h-3 w-3 shrink-0 mt-0.5 text-brand-600"/>Open source: 100% inspectable code</li>
+              <li className="flex items-start gap-1.5"><Icon.check className="h-3 w-3 shrink-0 mt-0.5 text-brand-600"/>Audit log records every action</li>
+            </ul>
           </div>
         </div>
       </div>
