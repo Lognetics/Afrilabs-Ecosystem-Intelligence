@@ -726,31 +726,43 @@ function PageHeader({ title, subtitle, action, breadcrumb }) {
 // ════════════════════════════════════════════════════════════════════════
 const CHART_COLORS = ["#3d9462","#fb7d12","#3b82f6","#a855f7","#eab308","#10b981","#ef4444","#06b6d4","#8b5cf6","#f97316"];
 
-function BarChart({ data, height=200, animate=true, onBarClick }) {
+function BarChart({ data, height=200, animate=true, onBarClick, accent }) {
   // Pure HTML/CSS bars — no SVG fragment refs. Bars always render with gradient.
   const max = Math.max(...data.map(d => d.value), 1);
   const chartH = height - 30;
   const gridLines = [0.25, 0.5, 0.75, 1];
+  // Per-chart accent palette — choose by passing accent="brand" | "accent" | "blue" | "purple"
+  const palettes = {
+    brand:  { top:"#7fc8d4", mid:"#338e9b", bottom:"#1c5b66", glow:"rgba(82,168,180,0.4)" },
+    accent: { top:"#ffb98a", mid:"#ea6a32", bottom:"#9c3b10", glow:"rgba(234,106,50,0.4)" },
+    blue:   { top:"#93c5fd", mid:"#3b82f6", bottom:"#1e40af", glow:"rgba(59,130,246,0.4)" },
+    purple: { top:"#d6bcfa", mid:"#a855f7", bottom:"#6b21a8", glow:"rgba(168,85,247,0.4)" },
+    green:  { top:"#86efac", mid:"#22c55e", bottom:"#15803d", glow:"rgba(34,197,94,0.4)" },
+  };
+  const p = palettes[accent] || palettes.brand;
+  // Cap bar width so charts with many data points still look like columns, not lines
+  const barWidthCss = data.length > 8 ? { maxWidth: "32px" } : data.length > 5 ? { maxWidth: "48px" } : {};
   return (
     <div style={{height}}>
       <div className="relative" style={{height: chartH}}>
         {/* Horizontal grid lines */}
         <div className="pointer-events-none absolute inset-0">
-          {gridLines.map(p => (
-            <div key={p} className="absolute left-0 right-0 border-t border-gray-200/60 dark:border-white/[0.05]" style={{top: `${(1-p)*100}%`}}/>
+          {gridLines.map(g => (
+            <div key={g} className="absolute left-0 right-0 border-t border-dashed border-gray-200/60 dark:border-white/[0.05]" style={{top: `${(1-g)*100}%`}}/>
           ))}
           {/* Y-axis ticks */}
-          <span className="absolute -left-1 top-0 -translate-x-full text-[9px] tabular-nums text-gray-400">{max}</span>
+          <span className="absolute -left-1 top-0 -translate-x-full text-[9px] tabular-nums text-gray-400">{max >= 1000 ? (max/1000).toFixed(1)+'k' : max}</span>
           <span className="absolute -left-1 bottom-0 -translate-x-full text-[9px] tabular-nums text-gray-400">0</span>
         </div>
         {/* Bars */}
-        <div className="relative flex h-full items-end gap-2 px-1">
+        <div className="relative flex h-full items-end justify-center gap-2 px-1">
           {data.map((d, i) => {
             const pct = (d.value / max) * 100;
             return (
               <div key={i}
                    onClick={onBarClick ? ()=>onBarClick(d, i) : undefined}
-                   className={cls("group relative flex flex-1 flex-col items-center justify-end", onBarClick && "cursor-pointer")}>
+                   className={cls("group relative flex flex-1 flex-col items-center justify-end", onBarClick && "cursor-pointer")}
+                   style={barWidthCss}>
                 {/* Tooltip on hover */}
                 <div className="pointer-events-none absolute -top-1 z-10 -translate-y-full opacity-0 transition group-hover:opacity-100">
                   <div className="whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-[10px] font-semibold text-white shadow-xl dark:bg-ink-900 dark:ring-1 dark:ring-white/10">
@@ -759,20 +771,20 @@ function BarChart({ data, height=200, animate=true, onBarClick }) {
                   <div className="mx-auto h-2 w-2 -translate-y-1 rotate-45 bg-gray-900 dark:bg-ink-900"/>
                 </div>
                 {/* Always-visible value label above bar */}
-                <span className="mb-1 text-[10px] font-bold tabular-nums text-gray-700 dark:text-gray-200" style={{opacity: pct < 8 ? 0 : 0.85}}>
+                <span className="mb-1 text-[10px] font-bold tabular-nums text-gray-700 dark:text-gray-200" style={{opacity: pct < 8 ? 0 : 0.9}}>
                   {typeof d.value === 'number' && d.value >= 1000 ? (d.value/1000).toFixed(1)+'k' : d.value}
                 </span>
-                {/* The bar itself */}
-                <div className="w-full rounded-t-lg transition-all duration-300 hover:brightness-110 group-hover:shadow-lg"
+                {/* The bar itself — gradient column with rounded top, inner highlight, hover glow */}
+                <div className="w-full rounded-t-lg transition-all duration-300 group-hover:brightness-110"
                      style={{
                        height: `${Math.max(pct, 0)}%`,
-                       minHeight: pct > 0 ? "2px" : 0,
+                       minHeight: pct > 0 ? "3px" : 0,
                        background: d.color
-                         ? `linear-gradient(to top, ${d.color}, ${d.color}cc)`
-                         : "linear-gradient(to top, #2a727f 0%, #338e9b 50%, #52a8b4 100%)",
-                       boxShadow: "inset 0 -1px 0 rgba(255,255,255,0.18), 0 0 0 1px rgba(255,255,255,0.05)",
+                         ? `linear-gradient(to top, ${d.color}88 0%, ${d.color} 60%, ${d.color}ff 100%)`
+                         : `linear-gradient(to top, ${p.bottom} 0%, ${p.mid} 55%, ${p.top} 100%)`,
+                       boxShadow: `inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.05)`,
                        transformOrigin: "bottom",
-                       animation: animate ? `grow-bar 0.9s cubic-bezier(0.4,0,0.2,1) ${i*0.05}s both` : undefined,
+                       animation: animate ? `grow-bar 0.9s cubic-bezier(0.34,1.56,0.64,1) ${i*0.05}s both` : undefined,
                      }}>
                 </div>
               </div>
@@ -780,9 +792,9 @@ function BarChart({ data, height=200, animate=true, onBarClick }) {
           })}
         </div>
       </div>
-      <div className="mt-2 flex gap-2 px-1">
+      <div className="mt-2 flex justify-center gap-2 px-1">
         {data.map((d, i) => (
-          <div key={i} className="flex-1 truncate text-center text-[10px] font-medium text-gray-500 dark:text-gray-400" title={d.label}>{d.label}</div>
+          <div key={i} className="flex-1 truncate text-center text-[10px] font-medium text-gray-500 dark:text-gray-400" title={d.label} style={barWidthCss}>{d.label}</div>
         ))}
       </div>
     </div>
@@ -1440,7 +1452,7 @@ function Dashboard({ data }) {
             <div><h3 className="text-base font-bold">Hubs by region</h3><p className="text-sm text-gray-500 dark:text-gray-400">Pan-African coverage</p></div>
             <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">{data.hubs.length} hubs</span>
           </div>
-          <div className="p-5 text-gray-700 dark:text-gray-300"><BarChart data={hubsByRegion} height={200} /></div>
+          <div className="p-5 pl-7 text-gray-700 dark:text-gray-300"><BarChart data={hubsByRegion} height={220} accent="brand"/></div>
         </div>
         <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-white/5 dark:border-white/5">
@@ -1683,7 +1695,7 @@ function CRMOverview({ data }) {
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
         <div className="card lg:col-span-2 animate-fade-up">
           <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Deal pipeline by stage</h3><p className="text-[11px] text-gray-500">Live count per stage</p></div>
-          <div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={stageData.map(s => ({label: s.label, value: s.value, color: s.color}))} height={180} /></div>
+          <div className="p-4 pl-6 text-gray-700 dark:text-gray-300"><BarChart data={stageData.map(s => ({label: s.label, value: s.value, color: s.color}))} height={220} /></div>
         </div>
         <div className="card animate-fade-up" style={{animationDelay:"0.1s"}}>
           <div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Contact lifecycle</h3><p className="text-[11px] text-gray-500">Lead → Customer</p></div>
@@ -4790,7 +4802,7 @@ function Africonnect({ data, update }) {
             </div>
           </div>
           <div className="p-4 pl-6 text-gray-700 dark:text-gray-300">
-            <BarChart data={coverageHistory} height={220}/>
+            <BarChart data={coverageHistory} height={220} accent="brand"/>
           </div>
         </div>
         <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}>
@@ -4927,7 +4939,7 @@ function AuditLog({ data }) {
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <div className="card animate-fade-up"><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">Action mix</h3></div><div className="p-4"><DonutChart data={actionData} size={160} thickness={20}/></div></div>
-        <div className="card lg:col-span-2 animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">14-day activity</h3></div><div className="p-4 text-gray-700 dark:text-gray-300"><BarChart data={auditTrend.map((v, i) => ({label: new Date(days[i]).toLocaleDateString("en",{month:"short",day:"numeric"}), value: v}))} height={180}/></div></div>
+        <div className="card lg:col-span-2 animate-fade-up" style={{animationDelay:"0.05s"}}><div className="border-b border-gray-100 px-4 py-3 dark:border-white/5"><h3 className="text-[14px] font-bold">14-day activity</h3><p className="text-[11px] text-gray-500">Audit events per day</p></div><div className="p-4 pl-6 text-gray-700 dark:text-gray-300"><BarChart data={auditTrend.map((v, i) => ({label: new Date(days[i]).toLocaleDateString("en",{month:"short",day:"numeric"}), value: v}))} height={200} accent="accent"/></div></div>
       </div>
 
       {/* FACETED SEARCH */}
