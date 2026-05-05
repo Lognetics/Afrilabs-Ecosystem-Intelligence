@@ -74,10 +74,46 @@
   .marquee::-webkit-scrollbar { display: none; }
   .marquee { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* ─── ANIMATED GLOBE ─── */
-  .globe-stage { mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 60%, transparent 100%); -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 60%, transparent 100%); }
+  /* ─── 3D ANIMATED GLOBE ─── */
+  .globe-stage {
+    mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black 55%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black 55%, transparent 100%);
+    opacity: 0.45;
+  }
+  @media (min-width: 1024px) { .globe-stage { opacity: 0.85; } }
+
+  /* Perspective container for parallax tilt */
+  .globe-perspective { perspective: 1500px; perspective-origin: 50% 50%; }
+  .globe-tilt {
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+    animation: globe-float 8s ease-in-out infinite;
+  }
+  @keyframes globe-float {
+    0%, 100% { transform: rotateX(0deg) rotateY(0deg) translateZ(0); }
+    50%      { transform: rotateX(-2deg) rotateY(3deg) translateZ(8px); }
+  }
+
+  /* Lat/long grid rotating slowly to suggest planetary spin */
   .globe-grid { transform-origin: 400px 400px; animation: spin-slow 90s linear infinite; }
   @keyframes spin-slow { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
+
+  /* Africa silhouette + dot pattern drifts horizontally to suggest rotation */
+  .planet-spin {
+    transform-origin: 400px 400px;
+    animation: planet-drift 35s linear infinite;
+  }
+  @keyframes planet-drift {
+    0%   { transform: translateX(0px) scale(1); opacity: 1; }
+    25%  { transform: translateX(40px) scale(0.92); opacity: 0.55; }
+    50%  { transform: translateX(0) scale(1); opacity: 1; }
+    75%  { transform: translateX(-40px) scale(0.92); opacity: 0.55; }
+    100% { transform: translateX(0px) scale(1); opacity: 1; }
+  }
+
+  /* Orbit rings slowly counter-rotate */
+  .orbit-ring { transform-origin: 400px 400px; animation: spin-slow 60s linear infinite reverse; }
 
   .city circle { transform-origin: center; }
   .city-ring { transform-origin: center; transform-box: fill-box; animation: ring-pulse 2.6s cubic-bezier(0.4,0,0.6,1) infinite; opacity: 0; }
@@ -96,6 +132,22 @@
   .city[data-i="7"] .city-ring { animation-delay: 2.1s; }
   .city[data-i="8"] .city-ring { animation-delay: 2.4s; }
   .city[data-i="9"] .city-ring { animation-delay: 2.7s; }
+
+  /* City core dots subtly breathe */
+  .city > circle:first-child { animation: city-breathe 3s ease-in-out infinite; }
+  @keyframes city-breathe {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.25); filter: brightness(1.4); }
+  }
+  .city[data-i="1"] > circle:first-child { animation-delay: 0.4s; }
+  .city[data-i="2"] > circle:first-child { animation-delay: 0.8s; }
+  .city[data-i="3"] > circle:first-child { animation-delay: 1.2s; }
+  .city[data-i="4"] > circle:first-child { animation-delay: 1.6s; }
+  .city[data-i="5"] > circle:first-child { animation-delay: 2.0s; }
+  .city[data-i="6"] > circle:first-child { animation-delay: 0.2s; }
+  .city[data-i="7"] > circle:first-child { animation-delay: 0.6s; }
+  .city[data-i="8"] > circle:first-child { animation-delay: 1.0s; }
+  .city[data-i="9"] > circle:first-child { animation-delay: 1.4s; }
 
   .arc {
     stroke-dasharray: 240;
@@ -122,7 +174,7 @@
 
   /* Reduce motion accessibility */
   @media (prefers-reduced-motion: reduce) {
-    .globe-grid, .city-ring, .arc { animation: none !important; }
+    .globe-grid, .city-ring, .arc, .planet-spin, .orbit-ring, .globe-tilt, .city > circle:first-child { animation: none !important; }
   }
 </style>
 </head>
@@ -167,122 +219,176 @@
   <div class="orb h-96 w-96 bg-accent-500 animate-float-slow" style="bottom:-100px; right:-100px;"></div>
   <div class="orb h-72 w-72 bg-brand-300 animate-float" style="top:40%; right:20%; animation-delay:-3s;"></div>
 
-  <!-- ─── ANIMATED GLOBE BACKGROUND ─── -->
-  <div class="globe-stage pointer-events-none absolute inset-y-0 right-0 hidden lg:block lg:w-3/5 xl:w-1/2">
-    <svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 h-full w-full">
-      <defs>
-        <radialGradient id="globeFill" cx="48%" cy="42%" r="58%">
-          <stop offset="0%" stop-color="rgba(82,168,180,0.45)"/>
-          <stop offset="55%" stop-color="rgba(20,60,80,0.45)"/>
-          <stop offset="100%" stop-color="rgba(8,22,28,0.7)"/>
-        </radialGradient>
-        <radialGradient id="globeAura" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="rgba(82,168,180,0.3)"/>
-          <stop offset="60%" stop-color="rgba(82,168,180,0.05)"/>
-          <stop offset="100%" stop-color="rgba(82,168,180,0)"/>
-        </radialGradient>
-        <linearGradient id="arcGrad" x1="0%" x2="100%">
-          <stop offset="0%" stop-color="rgba(234,106,50,0)"/>
-          <stop offset="50%" stop-color="rgba(234,106,50,0.95)"/>
-          <stop offset="100%" stop-color="rgba(234,106,50,0)"/>
-        </linearGradient>
-        <linearGradient id="arcGrad2" x1="0%" x2="100%">
-          <stop offset="0%" stop-color="rgba(82,168,180,0)"/>
-          <stop offset="50%" stop-color="rgba(82,168,180,0.9)"/>
-          <stop offset="100%" stop-color="rgba(82,168,180,0)"/>
-        </linearGradient>
-        <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur stdDeviation="3" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
+  <!-- ─── 3D ANIMATED GLOBE BACKGROUND ─── -->
+  <div class="globe-stage absolute inset-0 lg:inset-y-0 lg:right-0 lg:left-auto lg:w-3/5 xl:w-1/2 pointer-events-none">
+    <div class="globe-perspective h-full w-full">
+      <div class="globe-tilt h-full w-full" id="globeTilt">
+        <svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 h-full w-full">
+          <defs>
+            <!-- 3D sphere lighting: light source upper-left, terminator at lower-right -->
+            <radialGradient id="sphereLighting" cx="32%" cy="28%" r="78%">
+              <stop offset="0%"   stop-color="rgba(168,220,228,0.85)"/>
+              <stop offset="18%"  stop-color="rgba(110,190,205,0.68)"/>
+              <stop offset="40%"  stop-color="rgba(68,150,170,0.55)"/>
+              <stop offset="62%"  stop-color="rgba(36,90,110,0.55)"/>
+              <stop offset="82%"  stop-color="rgba(15,45,60,0.75)"/>
+              <stop offset="100%" stop-color="rgba(5,20,30,0.95)"/>
+            </radialGradient>
+            <!-- Specular highlight (top-left bright spot) -->
+            <radialGradient id="specHighlight" cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stop-color="rgba(255,255,255,0.55)"/>
+              <stop offset="50%"  stop-color="rgba(255,255,255,0.10)"/>
+              <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+            </radialGradient>
+            <!-- Atmosphere rim glow -->
+            <radialGradient id="atmoRim" cx="50%" cy="50%" r="50%">
+              <stop offset="78%"  stop-color="rgba(120,200,215,0)"/>
+              <stop offset="92%"  stop-color="rgba(120,200,215,0.45)"/>
+              <stop offset="100%" stop-color="rgba(120,200,215,0)"/>
+            </radialGradient>
+            <!-- Soft outer aura -->
+            <radialGradient id="globeAura" cx="50%" cy="50%" r="50%">
+              <stop offset="50%"  stop-color="rgba(82,168,180,0.25)"/>
+              <stop offset="80%"  stop-color="rgba(82,168,180,0.08)"/>
+              <stop offset="100%" stop-color="rgba(82,168,180,0)"/>
+            </radialGradient>
+            <!-- Terminator shadow (dark crescent on the right side) -->
+            <radialGradient id="terminator" cx="78%" cy="68%" r="55%">
+              <stop offset="0%"   stop-color="rgba(0,0,0,0)"/>
+              <stop offset="60%"  stop-color="rgba(0,0,0,0.18)"/>
+              <stop offset="100%" stop-color="rgba(0,0,0,0.55)"/>
+            </radialGradient>
+            <linearGradient id="arcGrad" x1="0%" x2="100%">
+              <stop offset="0%" stop-color="rgba(234,106,50,0)"/>
+              <stop offset="50%" stop-color="rgba(255,150,90,0.95)"/>
+              <stop offset="100%" stop-color="rgba(234,106,50,0)"/>
+            </linearGradient>
+            <linearGradient id="arcGrad2" x1="0%" x2="100%">
+              <stop offset="0%" stop-color="rgba(82,168,180,0)"/>
+              <stop offset="50%" stop-color="rgba(140,220,235,0.95)"/>
+              <stop offset="100%" stop-color="rgba(82,168,180,0)"/>
+            </linearGradient>
+            <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="3" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="softBlur" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="14"/>
+            </filter>
+            <!-- Clip to sphere so internal motion stays inside -->
+            <clipPath id="sphereClip">
+              <circle cx="400" cy="400" r="320"/>
+            </clipPath>
+          </defs>
 
-      <!-- Outer aura -->
-      <circle cx="400" cy="400" r="395" fill="url(#globeAura)"/>
+          <!-- Outer aura -->
+          <circle cx="400" cy="400" r="395" fill="url(#globeAura)"/>
 
-      <!-- Globe sphere -->
-      <circle cx="400" cy="400" r="320" fill="url(#globeFill)" stroke="rgba(131,197,205,0.35)" stroke-width="0.7"/>
+          <!-- Atmosphere rim glow (under the sphere edge, soft halo) -->
+          <circle cx="400" cy="400" r="335" fill="url(#atmoRim)"/>
 
-      <!-- Lat/long grid (rotates slowly) -->
-      <g class="globe-grid" stroke="rgba(131,197,205,0.18)" stroke-width="0.6" fill="none">
-        <ellipse cx="400" cy="400" rx="320" ry="80"/>
-        <ellipse cx="400" cy="400" rx="320" ry="160"/>
-        <ellipse cx="400" cy="400" rx="320" ry="240"/>
-        <ellipse cx="400" cy="400" rx="80" ry="320"/>
-        <ellipse cx="400" cy="400" rx="160" ry="320"/>
-        <ellipse cx="400" cy="400" rx="240" ry="320"/>
-      </g>
+          <!-- Sphere body with realistic 3D lighting -->
+          <circle cx="400" cy="400" r="320" fill="url(#sphereLighting)"/>
 
-      <!-- Africa silhouette (approximate hand-drawn path, with dot stipple effect) -->
-      <g>
-        <path d="M 380,170
-                 C 410,162 460,170 488,200
-                 L 510,250
-                 C 522,290 524,330 510,370
-                 L 502,420
-                 C 498,470 478,520 450,565
-                 C 430,592 405,605 380,605
-                 C 358,600 340,590 326,570
-                 C 308,545 295,510 290,475
-                 C 282,440 280,405 285,365
-                 C 290,325 298,285 308,250
-                 C 322,212 348,180 380,170 Z"
-              fill="rgba(51,142,155,0.30)"
-              stroke="rgba(82,168,180,0.65)"
-              stroke-width="1.2"/>
-        <!-- Madagascar -->
-        <path d="M 530,500 C 540,510 545,540 538,565 C 532,580 522,580 518,560 C 513,535 518,510 530,500 Z"
-              fill="rgba(51,142,155,0.30)"
-              stroke="rgba(82,168,180,0.55)" stroke-width="1"/>
-      </g>
+          <!-- Sphere clipped contents: lat/long grid + Africa + dots -->
+          <g clip-path="url(#sphereClip)">
+            <!-- Lat/long grid (rotating slowly to suggest planetary spin) -->
+            <g class="globe-grid" stroke="rgba(160,210,225,0.22)" stroke-width="0.7" fill="none">
+              <ellipse cx="400" cy="400" rx="320" ry="55"/>
+              <ellipse cx="400" cy="400" rx="320" ry="115"/>
+              <ellipse cx="400" cy="400" rx="320" ry="180"/>
+              <ellipse cx="400" cy="400" rx="320" ry="245"/>
+              <ellipse cx="400" cy="400" rx="55" ry="320"/>
+              <ellipse cx="400" cy="400" rx="115" ry="320"/>
+              <ellipse cx="400" cy="400" rx="180" ry="320"/>
+              <ellipse cx="400" cy="400" rx="245" ry="320"/>
+            </g>
 
-      <!-- Stippled dot overlay on Africa for the "constellation" feel -->
-      <g fill="rgba(131,197,205,0.55)">
-        <circle cx="395" cy="195" r="1.2"/><circle cx="420" cy="200" r="1"/><circle cx="450" cy="210" r="1.2"/>
-        <circle cx="475" cy="225" r="1"/><circle cx="495" cy="245" r="1.3"/><circle cx="505" cy="270" r="1"/>
-        <circle cx="510" cy="295" r="1.2"/><circle cx="510" cy="320" r="1"/><circle cx="505" cy="345" r="1.3"/>
-        <circle cx="500" cy="370" r="1"/><circle cx="495" cy="395" r="1.2"/><circle cx="490" cy="420" r="1"/>
-        <circle cx="478" cy="445" r="1.3"/><circle cx="465" cy="475" r="1"/><circle cx="448" cy="510" r="1.2"/>
-        <circle cx="425" cy="550" r="1"/><circle cx="400" cy="585" r="1.3"/><circle cx="375" cy="595" r="1"/>
-        <circle cx="350" cy="585" r="1.2"/><circle cx="335" cy="565" r="1"/><circle cx="320" cy="540" r="1.3"/>
-        <circle cx="305" cy="510" r="1"/><circle cx="298" cy="475" r="1.2"/><circle cx="290" cy="445" r="1"/>
-        <circle cx="285" cy="410" r="1.3"/><circle cx="285" cy="380" r="1"/><circle cx="290" cy="345" r="1.2"/>
-        <circle cx="298" cy="310" r="1"/><circle cx="308" cy="280" r="1.3"/><circle cx="320" cy="245" r="1"/>
-        <circle cx="338" cy="215" r="1.2"/><circle cx="358" cy="195" r="1"/>
-        <circle cx="380" cy="265" r="0.9"/><circle cx="410" cy="280" r="0.9"/><circle cx="440" cy="290" r="0.9"/>
-        <circle cx="425" cy="325" r="0.9"/><circle cx="395" cy="335" r="0.9"/><circle cx="370" cy="365" r="0.9"/>
-        <circle cx="430" cy="385" r="0.9"/><circle cx="455" cy="425" r="0.9"/><circle cx="395" cy="465" r="0.9"/>
-        <circle cx="425" cy="500" r="0.9"/><circle cx="370" cy="525" r="0.9"/><circle cx="395" cy="555" r="0.9"/>
-      </g>
+            <!-- Internal rotating "texture" — Africa drifts horizontally to imply planetary spin -->
+            <g class="planet-spin">
+              <!-- Africa silhouette -->
+              <path d="M 380,170
+                       C 410,162 460,170 488,200
+                       L 510,250
+                       C 522,290 524,330 510,370
+                       L 502,420
+                       C 498,470 478,520 450,565
+                       C 430,592 405,605 380,605
+                       C 358,600 340,590 326,570
+                       C 308,545 295,510 290,475
+                       C 282,440 280,405 285,365
+                       C 290,325 298,285 308,250
+                       C 322,212 348,180 380,170 Z"
+                    fill="rgba(60,160,175,0.32)"
+                    stroke="rgba(140,220,235,0.7)"
+                    stroke-width="1.4"/>
+              <!-- Madagascar -->
+              <path d="M 530,500 C 540,510 545,540 538,565 C 532,580 522,580 518,560 C 513,535 518,510 530,500 Z"
+                    fill="rgba(60,160,175,0.32)" stroke="rgba(140,220,235,0.6)" stroke-width="1"/>
 
-      <!-- Cities (pulsing dots) -->
-      <g filter="url(#glow)">
-        <g class="city" data-i="0"><circle cx="450" cy="220" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="450" cy="220" r="3" fill="none" stroke="#f7ad7d"/></g>
-        <g class="city" data-i="1"><circle cx="345" cy="350" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="345" cy="350" r="3" fill="none" stroke="#f7ad7d"/></g>
-        <g class="city" data-i="2"><circle cx="475" cy="400" r="3" fill="#83c5cd"/><circle class="city-ring" cx="475" cy="400" r="3" fill="none" stroke="#83c5cd"/></g>
-        <g class="city" data-i="3"><circle cx="395" cy="565" r="3" fill="#83c5cd"/><circle class="city-ring" cx="395" cy="565" r="3" fill="none" stroke="#83c5cd"/></g>
-        <g class="city" data-i="4"><circle cx="335" cy="380" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="335" cy="380" r="3" fill="none" stroke="#f7ad7d"/></g>
-        <g class="city" data-i="5"><circle cx="345" cy="225" r="3" fill="#83c5cd"/><circle class="city-ring" cx="345" cy="225" r="3" fill="none" stroke="#83c5cd"/></g>
-        <g class="city" data-i="6"><circle cx="425" cy="540" r="3" fill="#83c5cd"/><circle class="city-ring" cx="425" cy="540" r="3" fill="none" stroke="#83c5cd"/></g>
-        <g class="city" data-i="7"><circle cx="490" cy="340" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="490" cy="340" r="3" fill="none" stroke="#f7ad7d"/></g>
-        <g class="city" data-i="8"><circle cx="290" cy="320" r="3" fill="#83c5cd"/><circle class="city-ring" cx="290" cy="320" r="3" fill="none" stroke="#83c5cd"/></g>
-        <g class="city" data-i="9"><circle cx="410" cy="445" r="3" fill="#f7ad7d"/><circle class="city-ring" cx="410" cy="445" r="3" fill="none" stroke="#f7ad7d"/></g>
-      </g>
+              <!-- Stippled dot pattern (constellation effect) -->
+              <g fill="rgba(160,220,235,0.6)">
+                <circle cx="395" cy="195" r="1.3"/><circle cx="420" cy="200" r="1.1"/><circle cx="450" cy="210" r="1.3"/>
+                <circle cx="475" cy="225" r="1.1"/><circle cx="495" cy="245" r="1.4"/><circle cx="505" cy="270" r="1.1"/>
+                <circle cx="510" cy="295" r="1.3"/><circle cx="510" cy="320" r="1.1"/><circle cx="505" cy="345" r="1.4"/>
+                <circle cx="500" cy="370" r="1.1"/><circle cx="495" cy="395" r="1.3"/><circle cx="490" cy="420" r="1.1"/>
+                <circle cx="478" cy="445" r="1.4"/><circle cx="465" cy="475" r="1.1"/><circle cx="448" cy="510" r="1.3"/>
+                <circle cx="425" cy="550" r="1.1"/><circle cx="400" cy="585" r="1.4"/><circle cx="375" cy="595" r="1.1"/>
+                <circle cx="350" cy="585" r="1.3"/><circle cx="335" cy="565" r="1.1"/><circle cx="320" cy="540" r="1.4"/>
+                <circle cx="305" cy="510" r="1.1"/><circle cx="298" cy="475" r="1.3"/><circle cx="290" cy="445" r="1.1"/>
+                <circle cx="285" cy="410" r="1.4"/><circle cx="285" cy="380" r="1.1"/><circle cx="290" cy="345" r="1.3"/>
+                <circle cx="298" cy="310" r="1.1"/><circle cx="308" cy="280" r="1.4"/><circle cx="320" cy="245" r="1.1"/>
+                <circle cx="338" cy="215" r="1.3"/><circle cx="358" cy="195" r="1.1"/>
+                <circle cx="380" cy="265" r="1"/><circle cx="410" cy="280" r="1"/><circle cx="440" cy="290" r="1"/>
+                <circle cx="425" cy="325" r="1"/><circle cx="395" cy="335" r="1"/><circle cx="370" cy="365" r="1"/>
+                <circle cx="430" cy="385" r="1"/><circle cx="455" cy="425" r="1"/><circle cx="395" cy="465" r="1"/>
+                <circle cx="425" cy="500" r="1"/><circle cx="370" cy="525" r="1"/><circle cx="395" cy="555" r="1"/>
+              </g>
+            </g>
 
-      <!-- Connection arcs (animated draw-in/out) -->
-      <g fill="none" stroke-linecap="round" stroke-width="1.4" filter="url(#glow)">
-        <path class="arc a1" d="M 450,220 Q 380,250 345,350" stroke="url(#arcGrad)"/>
-        <path class="arc a2" d="M 345,350 Q 410,380 475,400" stroke="url(#arcGrad2)"/>
-        <path class="arc a3" d="M 475,400 Q 425,470 395,565" stroke="url(#arcGrad)"/>
-        <path class="arc a4" d="M 345,225 Q 320,275 290,320" stroke="url(#arcGrad2)"/>
-        <path class="arc a5" d="M 290,320 Q 350,380 410,445" stroke="url(#arcGrad)"/>
-        <path class="arc a6" d="M 490,340 Q 460,440 425,540" stroke="url(#arcGrad2)"/>
-        <path class="arc a7" d="M 450,220 Q 470,290 490,340" stroke="url(#arcGrad)"/>
-        <path class="arc a8" d="M 335,380 Q 380,420 410,445" stroke="url(#arcGrad2)"/>
-        <path class="arc a9" d="M 345,225 Q 400,260 450,220" stroke="url(#arcGrad)"/>
-        <path class="arc a10" d="M 410,445 Q 415,490 425,540" stroke="url(#arcGrad2)"/>
-      </g>
-    </svg>
+            <!-- Terminator shadow on right side for 3D depth -->
+            <circle cx="400" cy="400" r="320" fill="url(#terminator)"/>
+          </g>
+
+          <!-- Specular highlight (above sphere — gives 3D illusion) -->
+          <ellipse cx="320" cy="280" rx="95" ry="55" fill="url(#specHighlight)" filter="url(#softBlur)"/>
+
+          <!-- Cities (pulsing dots) -->
+          <g filter="url(#glow)">
+            <g class="city" data-i="0"><circle cx="450" cy="220" r="3.5" fill="#ffb98a"/><circle class="city-ring" cx="450" cy="220" r="3" fill="none" stroke="#ffb98a"/></g>
+            <g class="city" data-i="1"><circle cx="345" cy="350" r="3.5" fill="#ffb98a"/><circle class="city-ring" cx="345" cy="350" r="3" fill="none" stroke="#ffb98a"/></g>
+            <g class="city" data-i="2"><circle cx="475" cy="400" r="3.5" fill="#a4dde6"/><circle class="city-ring" cx="475" cy="400" r="3" fill="none" stroke="#a4dde6"/></g>
+            <g class="city" data-i="3"><circle cx="395" cy="565" r="3.5" fill="#a4dde6"/><circle class="city-ring" cx="395" cy="565" r="3" fill="none" stroke="#a4dde6"/></g>
+            <g class="city" data-i="4"><circle cx="335" cy="380" r="3.5" fill="#ffb98a"/><circle class="city-ring" cx="335" cy="380" r="3" fill="none" stroke="#ffb98a"/></g>
+            <g class="city" data-i="5"><circle cx="345" cy="225" r="3.5" fill="#a4dde6"/><circle class="city-ring" cx="345" cy="225" r="3" fill="none" stroke="#a4dde6"/></g>
+            <g class="city" data-i="6"><circle cx="425" cy="540" r="3.5" fill="#a4dde6"/><circle class="city-ring" cx="425" cy="540" r="3" fill="none" stroke="#a4dde6"/></g>
+            <g class="city" data-i="7"><circle cx="490" cy="340" r="3.5" fill="#ffb98a"/><circle class="city-ring" cx="490" cy="340" r="3" fill="none" stroke="#ffb98a"/></g>
+            <g class="city" data-i="8"><circle cx="290" cy="320" r="3.5" fill="#a4dde6"/><circle class="city-ring" cx="290" cy="320" r="3" fill="none" stroke="#a4dde6"/></g>
+            <g class="city" data-i="9"><circle cx="410" cy="445" r="3.5" fill="#ffb98a"/><circle class="city-ring" cx="410" cy="445" r="3" fill="none" stroke="#ffb98a"/></g>
+          </g>
+
+          <!-- Connection arcs (animated draw-in/out) -->
+          <g fill="none" stroke-linecap="round" stroke-width="1.6" filter="url(#glow)">
+            <path class="arc a1" d="M 450,220 Q 380,250 345,350" stroke="url(#arcGrad)"/>
+            <path class="arc a2" d="M 345,350 Q 410,380 475,400" stroke="url(#arcGrad2)"/>
+            <path class="arc a3" d="M 475,400 Q 425,470 395,565" stroke="url(#arcGrad)"/>
+            <path class="arc a4" d="M 345,225 Q 320,275 290,320" stroke="url(#arcGrad2)"/>
+            <path class="arc a5" d="M 290,320 Q 350,380 410,445" stroke="url(#arcGrad)"/>
+            <path class="arc a6" d="M 490,340 Q 460,440 425,540" stroke="url(#arcGrad2)"/>
+            <path class="arc a7" d="M 450,220 Q 470,290 490,340" stroke="url(#arcGrad)"/>
+            <path class="arc a8" d="M 335,380 Q 380,420 410,445" stroke="url(#arcGrad2)"/>
+            <path class="arc a9" d="M 345,225 Q 400,260 450,220" stroke="url(#arcGrad)"/>
+            <path class="arc a10" d="M 410,445 Q 415,490 425,540" stroke="url(#arcGrad2)"/>
+          </g>
+
+          <!-- Orbit rings (decorative, around sphere) -->
+          <g fill="none" stroke="rgba(140,220,235,0.18)" stroke-width="0.6" class="orbit-ring">
+            <ellipse cx="400" cy="400" rx="370" ry="120" transform="rotate(-25 400 400)"/>
+            <ellipse cx="400" cy="400" rx="370" ry="80" transform="rotate(20 400 400)"/>
+          </g>
+        </svg>
+      </div>
+    </div>
   </div>
 
   <div class="relative mx-auto max-w-7xl px-6 pt-32 pb-32 lg:pt-40 lg:pb-40">
@@ -536,6 +642,36 @@
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ─── Globe mouse parallax (tilts based on cursor position) ───
+  (function() {
+    const tilt = document.getElementById('globeTilt');
+    if (!tilt) return;
+    const stage = tilt.closest('.globe-stage');
+    let raf = null, targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+    function update() {
+      currentX += (targetX - currentX) * 0.08;
+      currentY += (targetY - currentY) * 0.08;
+      tilt.style.transform = `rotateX(${currentY * -10}deg) rotateY(${currentX * 18}deg) translateZ(0)`;
+      if (Math.abs(targetX - currentX) > 0.001 || Math.abs(targetY - currentY) > 0.001) {
+        raf = requestAnimationFrame(update);
+      } else { raf = null; }
+    }
+    function onMove(e) {
+      const r = stage.getBoundingClientRect();
+      const x = e.clientX ?? (e.touches && e.touches[0]?.clientX);
+      const y = e.clientY ?? (e.touches && e.touches[0]?.clientY);
+      if (x == null || y == null) return;
+      targetX = ((x - r.left) / r.width - 0.5) * 2;
+      targetY = ((y - r.top) / r.height - 0.5) * 2;
+      if (!raf) raf = requestAnimationFrame(update);
+    }
+    function onLeave() { targetX = 0; targetY = 0; if (!raf) raf = requestAnimationFrame(update); }
+    document.addEventListener('mousemove', onMove, { passive: true });
+    document.addEventListener('mouseleave', onLeave);
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onLeave);
+  })();
 
   // ─── Counter animation ───
   function animateCounter(el) {
