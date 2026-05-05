@@ -76,11 +76,37 @@
 
   /* ─── 3D ANIMATED GLOBE ─── */
   .globe-stage {
-    mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black 55%, transparent 100%);
-    -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black 55%, transparent 100%);
-    opacity: 0.45;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 58%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 58%, transparent 100%);
+    opacity: 0.55;
   }
-  @media (min-width: 1024px) { .globe-stage { opacity: 0.85; } }
+  @media (min-width: 1024px) { .globe-stage { opacity: 1; } }
+
+  /* Starfield — tiny twinkling stars behind the planet */
+  .starfield {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      radial-gradient(1.2px 1.2px at 12% 18%, rgba(255,255,255,0.85), transparent 60%),
+      radial-gradient(1px 1px at 25% 8%, rgba(255,255,255,0.5), transparent 60%),
+      radial-gradient(1.5px 1.5px at 38% 25%, rgba(255,255,255,0.9), transparent 55%),
+      radial-gradient(1px 1px at 55% 12%, rgba(180,220,255,0.6), transparent 60%),
+      radial-gradient(1.2px 1.2px at 72% 22%, rgba(255,255,255,0.75), transparent 55%),
+      radial-gradient(1px 1px at 88% 9%, rgba(255,255,255,0.5), transparent 60%),
+      radial-gradient(1.4px 1.4px at 8%  55%, rgba(255,220,180,0.7), transparent 55%),
+      radial-gradient(1px 1px at 92% 48%, rgba(255,255,255,0.6), transparent 60%),
+      radial-gradient(1.2px 1.2px at 18% 78%, rgba(180,220,255,0.7), transparent 55%),
+      radial-gradient(1px 1px at 35% 92%, rgba(255,255,255,0.5), transparent 60%),
+      radial-gradient(1.6px 1.6px at 64% 88%, rgba(255,255,255,0.85), transparent 55%),
+      radial-gradient(1.2px 1.2px at 86% 75%, rgba(180,220,255,0.7), transparent 55%),
+      radial-gradient(1px 1px at 5% 30%, rgba(255,255,255,0.55), transparent 60%),
+      radial-gradient(1px 1px at 48% 50%, rgba(255,255,255,0.45), transparent 60%),
+      radial-gradient(1.3px 1.3px at 78% 60%, rgba(255,220,180,0.6), transparent 55%);
+    animation: star-twinkle 6s ease-in-out infinite;
+  }
+  @keyframes star-twinkle {
+    0%, 100% { opacity: 0.85; }
+    50%      { opacity: 0.55; }
+  }
 
   /* Perspective container for parallax tilt */
   .globe-perspective { perspective: 1500px; perspective-origin: 50% 50%; }
@@ -102,14 +128,22 @@
   /* Africa silhouette + dot pattern drifts horizontally to suggest rotation */
   .planet-spin {
     transform-origin: 400px 400px;
-    animation: planet-drift 35s linear infinite;
+    animation: planet-drift 40s ease-in-out infinite;
   }
   @keyframes planet-drift {
     0%   { transform: translateX(0px) scale(1); opacity: 1; }
-    25%  { transform: translateX(40px) scale(0.92); opacity: 0.55; }
+    25%  { transform: translateX(35px) scale(0.94); opacity: 0.7; }
     50%  { transform: translateX(0) scale(1); opacity: 1; }
-    75%  { transform: translateX(-40px) scale(0.92); opacity: 0.55; }
+    75%  { transform: translateX(-35px) scale(0.94); opacity: 0.7; }
     100% { transform: translateX(0px) scale(1); opacity: 1; }
+  }
+
+  /* Cloud puffs drift slowly across the sphere */
+  .cloud-drift { animation: cloud-flow 60s linear infinite; transform-origin: 400px 400px; }
+  @keyframes cloud-flow {
+    0%   { transform: translateX(-20px); opacity: 0.7; }
+    50%  { transform: translateX(20px);  opacity: 1; }
+    100% { transform: translateX(-20px); opacity: 0.7; }
   }
 
   /* Orbit rings slowly counter-rotate */
@@ -221,42 +255,58 @@
 
   <!-- ─── 3D ANIMATED GLOBE BACKGROUND ─── -->
   <div class="globe-stage absolute inset-0 lg:inset-y-0 lg:right-0 lg:left-auto lg:w-3/5 xl:w-1/2 pointer-events-none">
+    <!-- Starfield backdrop -->
+    <div class="starfield"></div>
     <div class="globe-perspective h-full w-full">
       <div class="globe-tilt h-full w-full" id="globeTilt">
         <svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 h-full w-full">
           <defs>
-            <!-- 3D sphere lighting: light source upper-left, terminator at lower-right -->
-            <radialGradient id="sphereLighting" cx="32%" cy="28%" r="78%">
-              <stop offset="0%"   stop-color="rgba(168,220,228,0.85)"/>
-              <stop offset="18%"  stop-color="rgba(110,190,205,0.68)"/>
-              <stop offset="40%"  stop-color="rgba(68,150,170,0.55)"/>
-              <stop offset="62%"  stop-color="rgba(36,90,110,0.55)"/>
-              <stop offset="82%"  stop-color="rgba(15,45,60,0.75)"/>
-              <stop offset="100%" stop-color="rgba(5,20,30,0.95)"/>
+            <!-- 3D sphere lighting: deep ocean base with strong specular at upper-left -->
+            <radialGradient id="sphereLighting" cx="32%" cy="28%" r="80%">
+              <stop offset="0%"   stop-color="#a8e0ec"/>
+              <stop offset="8%"   stop-color="#5fbed0"/>
+              <stop offset="20%"  stop-color="#2e8aa1"/>
+              <stop offset="38%"  stop-color="#0e4a64"/>
+              <stop offset="58%"  stop-color="#062536"/>
+              <stop offset="80%"  stop-color="#020e18"/>
+              <stop offset="100%" stop-color="#000408"/>
             </radialGradient>
-            <!-- Specular highlight (top-left bright spot) -->
+            <!-- Specular highlight: bright bloom near light source -->
             <radialGradient id="specHighlight" cx="50%" cy="50%" r="50%">
-              <stop offset="0%"   stop-color="rgba(255,255,255,0.55)"/>
-              <stop offset="50%"  stop-color="rgba(255,255,255,0.10)"/>
+              <stop offset="0%"   stop-color="rgba(255,255,255,0.8)"/>
+              <stop offset="35%"  stop-color="rgba(255,255,255,0.25)"/>
               <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
             </radialGradient>
-            <!-- Atmosphere rim glow -->
+            <!-- Atmosphere rim glow: cyan halo at sphere edge (Rayleigh-style) -->
             <radialGradient id="atmoRim" cx="50%" cy="50%" r="50%">
-              <stop offset="78%"  stop-color="rgba(120,200,215,0)"/>
-              <stop offset="92%"  stop-color="rgba(120,200,215,0.45)"/>
-              <stop offset="100%" stop-color="rgba(120,200,215,0)"/>
+              <stop offset="76%"  stop-color="rgba(110,200,235,0)"/>
+              <stop offset="88%"  stop-color="rgba(110,200,235,0.55)"/>
+              <stop offset="94%"  stop-color="rgba(140,220,250,0.35)"/>
+              <stop offset="100%" stop-color="rgba(110,200,235,0)"/>
             </radialGradient>
             <!-- Soft outer aura -->
             <radialGradient id="globeAura" cx="50%" cy="50%" r="50%">
-              <stop offset="50%"  stop-color="rgba(82,168,180,0.25)"/>
-              <stop offset="80%"  stop-color="rgba(82,168,180,0.08)"/>
-              <stop offset="100%" stop-color="rgba(82,168,180,0)"/>
+              <stop offset="48%"  stop-color="rgba(82,168,200,0.4)"/>
+              <stop offset="78%"  stop-color="rgba(60,140,180,0.12)"/>
+              <stop offset="100%" stop-color="rgba(60,140,180,0)"/>
             </radialGradient>
-            <!-- Terminator shadow (dark crescent on the right side) -->
-            <radialGradient id="terminator" cx="78%" cy="68%" r="55%">
+            <!-- Terminator: dramatic shadow on the dark side -->
+            <radialGradient id="terminator" cx="78%" cy="72%" r="60%">
               <stop offset="0%"   stop-color="rgba(0,0,0,0)"/>
-              <stop offset="60%"  stop-color="rgba(0,0,0,0.18)"/>
-              <stop offset="100%" stop-color="rgba(0,0,0,0.55)"/>
+              <stop offset="50%"  stop-color="rgba(0,0,0,0.35)"/>
+              <stop offset="100%" stop-color="rgba(0,0,0,0.85)"/>
+            </radialGradient>
+            <!-- Inner edge shadow (gives sphere true 3D depth) -->
+            <radialGradient id="innerEdge" cx="50%" cy="50%" r="50%">
+              <stop offset="68%"  stop-color="rgba(0,0,0,0)"/>
+              <stop offset="92%"  stop-color="rgba(0,0,0,0.55)"/>
+              <stop offset="100%" stop-color="rgba(0,0,0,0.9)"/>
+            </radialGradient>
+            <!-- Cloud gradient -->
+            <radialGradient id="cloudGrad">
+              <stop offset="0%"   stop-color="rgba(220,235,245,0.45)"/>
+              <stop offset="65%"  stop-color="rgba(200,220,235,0.2)"/>
+              <stop offset="100%" stop-color="rgba(200,220,235,0)"/>
             </radialGradient>
             <linearGradient id="arcGrad" x1="0%" x2="100%">
               <stop offset="0%" stop-color="rgba(234,106,50,0)"/>
@@ -284,16 +334,16 @@
           <!-- Outer aura -->
           <circle cx="400" cy="400" r="395" fill="url(#globeAura)"/>
 
-          <!-- Atmosphere rim glow (under the sphere edge, soft halo) -->
-          <circle cx="400" cy="400" r="335" fill="url(#atmoRim)"/>
+          <!-- Atmosphere rim glow (Rayleigh-style halo at sphere edge) -->
+          <circle cx="400" cy="400" r="345" fill="url(#atmoRim)"/>
 
-          <!-- Sphere body with realistic 3D lighting -->
+          <!-- Sphere body — deep ocean with realistic 3D lighting -->
           <circle cx="400" cy="400" r="320" fill="url(#sphereLighting)"/>
 
-          <!-- Sphere clipped contents: lat/long grid + Africa + dots -->
+          <!-- Sphere clipped contents -->
           <g clip-path="url(#sphereClip)">
             <!-- Lat/long grid (rotating slowly to suggest planetary spin) -->
-            <g class="globe-grid" stroke="rgba(160,210,225,0.22)" stroke-width="0.7" fill="none">
+            <g class="globe-grid" stroke="rgba(160,220,235,0.16)" stroke-width="0.6" fill="none">
               <ellipse cx="400" cy="400" rx="320" ry="55"/>
               <ellipse cx="400" cy="400" rx="320" ry="115"/>
               <ellipse cx="400" cy="400" rx="320" ry="180"/>
@@ -304,54 +354,69 @@
               <ellipse cx="400" cy="400" rx="245" ry="320"/>
             </g>
 
-            <!-- Internal rotating "texture" — Africa drifts horizontally to imply planetary spin -->
+            <!-- CLOUD LAYER: drifting puffs across the sphere -->
+            <g class="cloud-drift">
+              <ellipse cx="200" cy="280" rx="55" ry="18" fill="url(#cloudGrad)" filter="url(#softBlur)"/>
+              <ellipse cx="320" cy="500" rx="70" ry="22" fill="url(#cloudGrad)" filter="url(#softBlur)"/>
+              <ellipse cx="540" cy="280" rx="60" ry="20" fill="url(#cloudGrad)" filter="url(#softBlur)"/>
+              <ellipse cx="600" cy="450" rx="65" ry="22" fill="url(#cloudGrad)" filter="url(#softBlur)"/>
+              <ellipse cx="450" cy="620" rx="58" ry="20" fill="url(#cloudGrad)" filter="url(#softBlur)"/>
+            </g>
+
+            <!-- AFRICA — dense dot constellation (golden + cyan) — drifts horizontally to suggest rotation -->
             <g class="planet-spin">
-              <!-- Africa silhouette -->
-              <path d="M 380,170
-                       C 410,162 460,170 488,200
-                       L 510,250
-                       C 522,290 524,330 510,370
-                       L 502,420
-                       C 498,470 478,520 450,565
-                       C 430,592 405,605 380,605
-                       C 358,600 340,590 326,570
-                       C 308,545 295,510 290,475
-                       C 282,440 280,405 285,365
-                       C 290,325 298,285 308,250
-                       C 322,212 348,180 380,170 Z"
-                    fill="rgba(60,160,175,0.32)"
-                    stroke="rgba(140,220,235,0.7)"
-                    stroke-width="1.4"/>
+              <!-- Africa silhouette body (dim glow under dots) -->
+              <path d="M 380,170 C 410,162 460,170 488,200 L 510,250 C 522,290 524,330 510,370 L 502,420 C 498,470 478,520 450,565 C 430,592 405,605 380,605 C 358,600 340,590 326,570 C 308,545 295,510 290,475 C 282,440 280,405 285,365 C 290,325 298,285 308,250 C 322,212 348,180 380,170 Z"
+                    fill="rgba(120,90,40,0.25)" stroke="rgba(255,200,120,0.3)" stroke-width="0.8"/>
               <!-- Madagascar -->
               <path d="M 530,500 C 540,510 545,540 538,565 C 532,580 522,580 518,560 C 513,535 518,510 530,500 Z"
-                    fill="rgba(60,160,175,0.32)" stroke="rgba(140,220,235,0.6)" stroke-width="1"/>
+                    fill="rgba(120,90,40,0.25)" stroke="rgba(255,200,120,0.25)"/>
 
-              <!-- Stippled dot pattern (constellation effect) -->
-              <g fill="rgba(160,220,235,0.6)">
-                <circle cx="395" cy="195" r="1.3"/><circle cx="420" cy="200" r="1.1"/><circle cx="450" cy="210" r="1.3"/>
-                <circle cx="475" cy="225" r="1.1"/><circle cx="495" cy="245" r="1.4"/><circle cx="505" cy="270" r="1.1"/>
-                <circle cx="510" cy="295" r="1.3"/><circle cx="510" cy="320" r="1.1"/><circle cx="505" cy="345" r="1.4"/>
-                <circle cx="500" cy="370" r="1.1"/><circle cx="495" cy="395" r="1.3"/><circle cx="490" cy="420" r="1.1"/>
-                <circle cx="478" cy="445" r="1.4"/><circle cx="465" cy="475" r="1.1"/><circle cx="448" cy="510" r="1.3"/>
-                <circle cx="425" cy="550" r="1.1"/><circle cx="400" cy="585" r="1.4"/><circle cx="375" cy="595" r="1.1"/>
-                <circle cx="350" cy="585" r="1.3"/><circle cx="335" cy="565" r="1.1"/><circle cx="320" cy="540" r="1.4"/>
-                <circle cx="305" cy="510" r="1.1"/><circle cx="298" cy="475" r="1.3"/><circle cx="290" cy="445" r="1.1"/>
-                <circle cx="285" cy="410" r="1.4"/><circle cx="285" cy="380" r="1.1"/><circle cx="290" cy="345" r="1.3"/>
-                <circle cx="298" cy="310" r="1.1"/><circle cx="308" cy="280" r="1.4"/><circle cx="320" cy="245" r="1.1"/>
-                <circle cx="338" cy="215" r="1.3"/><circle cx="358" cy="195" r="1.1"/>
-                <circle cx="380" cy="265" r="1"/><circle cx="410" cy="280" r="1"/><circle cx="440" cy="290" r="1"/>
-                <circle cx="425" cy="325" r="1"/><circle cx="395" cy="335" r="1"/><circle cx="370" cy="365" r="1"/>
-                <circle cx="430" cy="385" r="1"/><circle cx="455" cy="425" r="1"/><circle cx="395" cy="465" r="1"/>
-                <circle cx="425" cy="500" r="1"/><circle cx="370" cy="525" r="1"/><circle cx="395" cy="555" r="1"/>
+              <!-- Outline dots (warm gold) - the continent contour -->
+              <g fill="rgba(255,200,110,0.85)">
+                <circle cx="395" cy="195" r="1.6"/><circle cx="412" cy="190" r="1.4"/><circle cx="430" cy="188" r="1.5"/><circle cx="450" cy="190" r="1.6"/>
+                <circle cx="468" cy="198" r="1.4"/><circle cx="482" cy="208" r="1.5"/><circle cx="495" cy="222" r="1.6"/><circle cx="503" cy="240" r="1.4"/>
+                <circle cx="510" cy="262" r="1.5"/><circle cx="513" cy="285" r="1.6"/><circle cx="514" cy="308" r="1.4"/><circle cx="513" cy="330" r="1.5"/>
+                <circle cx="510" cy="352" r="1.6"/><circle cx="506" cy="375" r="1.4"/><circle cx="500" cy="398" r="1.5"/><circle cx="495" cy="420" r="1.6"/>
+                <circle cx="488" cy="445" r="1.4"/><circle cx="478" cy="470" r="1.5"/><circle cx="465" cy="500" r="1.6"/><circle cx="450" cy="528" r="1.4"/>
+                <circle cx="432" cy="555" r="1.5"/><circle cx="412" cy="580" r="1.6"/><circle cx="390" cy="595" r="1.4"/><circle cx="368" cy="600" r="1.5"/>
+                <circle cx="348" cy="592" r="1.6"/><circle cx="332" cy="578" r="1.4"/><circle cx="318" cy="560" r="1.5"/><circle cx="306" cy="540" r="1.6"/>
+                <circle cx="296" cy="518" r="1.4"/><circle cx="290" cy="495" r="1.5"/><circle cx="285" cy="470" r="1.6"/><circle cx="282" cy="445" r="1.4"/>
+                <circle cx="282" cy="420" r="1.5"/><circle cx="284" cy="395" r="1.6"/><circle cx="287" cy="370" r="1.4"/><circle cx="291" cy="345" r="1.5"/>
+                <circle cx="296" cy="320" r="1.6"/><circle cx="302" cy="298" r="1.4"/><circle cx="310" cy="276" r="1.5"/><circle cx="320" cy="255" r="1.6"/>
+                <circle cx="332" cy="235" r="1.4"/><circle cx="346" cy="218" r="1.5"/><circle cx="362" cy="205" r="1.6"/><circle cx="378" cy="198" r="1.4"/>
+              </g>
+              <!-- Interior dots (cyan + gold mix, like data points / cities) -->
+              <g fill="rgba(140,220,235,0.75)">
+                <circle cx="380" cy="240" r="1.3"/><circle cx="410" cy="230" r="1.1"/><circle cx="440" cy="240" r="1.3"/><circle cx="470" cy="252" r="1.2"/>
+                <circle cx="395" cy="270" r="1.2"/><circle cx="425" cy="265" r="1.4"/><circle cx="455" cy="278" r="1.1"/><circle cx="485" cy="295" r="1.3"/>
+                <circle cx="370" cy="298" r="1.2"/><circle cx="400" cy="295" r="1.3"/><circle cx="435" cy="305" r="1.2"/><circle cx="468" cy="320" r="1.4"/>
+                <circle cx="358" cy="330" r="1.1"/><circle cx="388" cy="328" r="1.3"/><circle cx="420" cy="335" r="1.2"/><circle cx="455" cy="350" r="1.3"/>
+                <circle cx="350" cy="362" r="1.4"/><circle cx="380" cy="358" r="1.1"/><circle cx="412" cy="368" r="1.3"/><circle cx="445" cy="382" r="1.2"/>
+                <circle cx="345" cy="395" r="1.2"/><circle cx="375" cy="392" r="1.4"/><circle cx="408" cy="402" r="1.1"/><circle cx="438" cy="418" r="1.3"/>
+                <circle cx="345" cy="430" r="1.3"/><circle cx="378" cy="428" r="1.1"/><circle cx="410" cy="438" r="1.4"/><circle cx="440" cy="455" r="1.2"/>
+                <circle cx="350" cy="465" r="1.2"/><circle cx="382" cy="462" r="1.3"/><circle cx="415" cy="475" r="1.1"/><circle cx="445" cy="492" r="1.4"/>
+                <circle cx="362" cy="500" r="1.3"/><circle cx="395" cy="498" r="1.2"/><circle cx="425" cy="510" r="1.4"/>
+                <circle cx="378" cy="535" r="1.1"/><circle cx="408" cy="535" r="1.3"/><circle cx="395" cy="568" r="1.2"/>
+              </g>
+              <!-- Bright accent dots (warm orange — major capitals, landmarks) -->
+              <g fill="rgba(255,150,80,0.95)">
+                <circle cx="450" cy="220" r="2.2"/><circle cx="490" cy="340" r="2"/><circle cx="475" cy="400" r="2.2"/>
+                <circle cx="425" cy="540" r="2"/><circle cx="395" cy="565" r="2.2"/><circle cx="345" cy="350" r="2"/>
+                <circle cx="335" cy="380" r="2.2"/><circle cx="290" cy="320" r="2"/>
               </g>
             </g>
 
-            <!-- Terminator shadow on right side for 3D depth -->
+            <!-- Inner edge shadow (sphere's curved depth) -->
+            <circle cx="400" cy="400" r="320" fill="url(#innerEdge)"/>
+
+            <!-- Terminator shadow on right side -->
             <circle cx="400" cy="400" r="320" fill="url(#terminator)"/>
           </g>
 
-          <!-- Specular highlight (above sphere — gives 3D illusion) -->
-          <ellipse cx="320" cy="280" rx="95" ry="55" fill="url(#specHighlight)" filter="url(#softBlur)"/>
+          <!-- Specular highlight (above sphere) -->
+          <ellipse cx="320" cy="270" rx="105" ry="65" fill="url(#specHighlight)" filter="url(#softBlur)"/>
+          <ellipse cx="295" cy="245" rx="40" ry="22" fill="rgba(255,255,255,0.45)" filter="url(#softBlur)"/>
 
           <!-- Cities (pulsing dots) -->
           <g filter="url(#glow)">
