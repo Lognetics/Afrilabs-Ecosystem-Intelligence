@@ -4790,12 +4790,7 @@ function Africonnect({ data, update }) {
             </div>
           </div>
           <div className="p-4 pl-6 text-gray-700 dark:text-gray-300">
-            <LineChart
-              data={coverageHistory.map(d => d.value)}
-              labels={coverageHistory.map(d => d.label)}
-              height={220}
-              color="#338e9b"
-            />
+            <BarChart data={coverageHistory} height={220}/>
           </div>
         </div>
         <div className="card animate-fade-up" style={{animationDelay:"0.05s"}}>
