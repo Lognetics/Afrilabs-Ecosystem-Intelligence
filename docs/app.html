@@ -75,6 +75,60 @@
   .table-base tbody tr:last-child td { @apply border-b-0; }
   /* Modal */
   .modal-bg { background: rgba(11, 24, 36, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  /* Modern modal */
+  .modal-backdrop {
+    background: radial-gradient(ellipse at top, rgba(11,24,36,0.55), rgba(0,0,0,0.75));
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  }
+  .modal-card { animation: modal-slide-up 0.35s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+  @media (min-width: 640px) {
+    .modal-card { animation: modal-scale-in 0.3s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+  }
+  @keyframes modal-slide-up {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes modal-scale-in {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  /* Modern form fields inside modals */
+  .modal-card .input,
+  .modal-card input[type="text"],
+  .modal-card input[type="email"],
+  .modal-card input[type="number"],
+  .modal-card input[type="date"],
+  .modal-card input[type="url"],
+  .modal-card select,
+  .modal-card textarea {
+    border-radius: 12px;
+    border-width: 1px;
+    padding: 10px 14px;
+    font-size: 13px;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  }
+  .modal-card .input:focus,
+  .modal-card input:focus,
+  .modal-card select:focus,
+  .modal-card textarea:focus {
+    box-shadow: 0 0 0 4px rgba(51,142,155,0.12);
+    border-color: rgba(51,142,155,0.7);
+  }
+  .modal-card .label, .modal-card label {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: rgb(107 114 128);
+  }
+  .dark .modal-card .label, .dark .modal-card label { color: rgb(156 163 175); }
+  /* Modal form footer with sticky actions */
+  .modal-footer {
+    position: sticky; bottom: 0;
+    background: white; border-top: 1px solid rgb(229 231 235);
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  }
+  .dark .modal-footer { background: rgb(15, 23, 36); border-top-color: rgba(255,255,255,0.06); }
   /* Cards — softer rounded, subtle shadow, smooth dark mode */
   .card { @apply rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(11,24,36,0.04)] transition dark:border-white/[0.06] dark:bg-ink-800/60 dark:shadow-none; }
   .card-hover { transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s, border-color 0.25s; cursor: pointer; }
@@ -565,17 +619,57 @@ function StageBadge({ stage }) {
   return <Badge tone={STAGE_TONES[stage] ?? "gray"}>{(stage||"").replace(/_/g," ")}</Badge>;
 }
 
-function Modal({ open, onClose, title, children, size="md" }) {
+function Modal({ open, onClose, title, subtitle, icon, children, size="md", tone="brand" }) {
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") onClose?.(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
   if (!open) return null;
   const sizeCls = { sm:"max-w-md", md:"max-w-2xl", lg:"max-w-4xl", xl:"max-w-6xl" }[size];
+  const I = icon || null;
+  const toneMap = {
+    brand:  "from-brand-500/15 to-accent-500/8 text-brand-700 dark:text-brand-300",
+    accent: "from-accent-500/15 to-accent-500/5 text-accent-700 dark:text-accent-300",
+    blue:   "from-blue-500/15 to-blue-500/5 text-blue-700 dark:text-blue-300",
+    purple: "from-purple-500/15 to-purple-500/5 text-purple-700 dark:text-purple-300",
+    red:    "from-red-500/15 to-red-500/5 text-red-700 dark:text-red-400",
+  };
   return (
-    <div className="modal-bg fixed inset-0 z-50 grid place-items-center p-4">
-      <div className={cls("w-full rounded-2xl bg-white shadow-2xl", sizeCls)} onClick={e=>e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
+    <div className="modal-backdrop fixed inset-0 z-50 grid place-items-end sm:place-items-center p-0 sm:p-4 animate-fade-in"
+         onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()}
+           className={cls(
+             "modal-card relative w-full bg-white dark:bg-ink-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/[0.06]",
+             "rounded-t-3xl sm:rounded-3xl",
+             "max-h-[92vh] flex flex-col overflow-hidden",
+             sizeCls
+           )}>
+        {/* Mobile drag handle */}
+        <div className="mx-auto mt-2 mb-1 h-1 w-10 rounded-full bg-gray-300 dark:bg-white/15 sm:hidden"/>
+
+        {/* Header */}
+        <div className="flex items-start gap-3 border-b border-gray-100 px-5 py-4 dark:border-white/[0.06] sm:px-6 sm:py-5">
+          {I && (
+            <div className={cls("grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br", toneMap[tone])}>
+              <I className="h-5 w-5"/>
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[16px] font-bold leading-tight tracking-tight">{title}</h2>
+            {subtitle && <p className="mt-0.5 truncate text-[12px] text-gray-500 dark:text-gray-400">{subtitle}</p>}
+          </div>
+          <button onClick={onClose} aria-label="Close" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/[0.06] dark:hover:text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
-        <div className="max-h-[75vh] overflow-y-auto">{children}</div>
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-ink-950/30">{children}</div>
       </div>
     </div>
   );
@@ -740,8 +834,8 @@ function BarChart({ data, height=200, animate=true, onBarClick, accent }) {
     green:  { top:"#86efac", mid:"#22c55e", bottom:"#15803d", glow:"rgba(34,197,94,0.4)" },
   };
   const p = palettes[accent] || palettes.brand;
-  // Cap bar width so charts with many data points still look like columns, not lines
-  const barWidthCss = data.length > 8 ? { maxWidth: "32px" } : data.length > 5 ? { maxWidth: "48px" } : {};
+  // Cap bar width so charts with many data points still look like proper thick columns
+  const barWidthCss = data.length > 14 ? { maxWidth: "44px" } : data.length > 8 ? { maxWidth: "60px" } : data.length > 5 ? { maxWidth: "80px" } : { maxWidth: "110px" };
   return (
     <div style={{height}}>
       <div className="relative" style={{height: chartH}}>
